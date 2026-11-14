@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, Save, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Eye, EyeOff, Lock, Plus, Save, Trash2 } from "lucide-react";
 import { NavItem, SiteSettings } from "@/lib/types";
 
 export function MenuFooterTab({
@@ -74,27 +74,23 @@ export function MenuFooterTab({
           Üst Kırmızı Atatürk Kuşağı
         </h2>
         <div className="mt-3 grid gap-4 sm:grid-cols-2">
-          <label className="flex items-center gap-2 rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs font-medium text-[#191919]">
-            <input
-              type="checkbox"
-              checked={settings.ataturk_ribbon_visible !== false}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  ataturk_ribbon_visible: e.target.checked,
-                })
-              }
-              className="h-4 w-4 rounded border-[#e6e5e0]"
-            />
-            Üst Atatürk ve Türk Bayrağı kuşağını göster
-          </label>
+          <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50/70 px-3 py-2 text-xs font-medium text-[#991b1b]">
+            <Lock className="h-3.5 w-3.5 shrink-0" />
+            <span>
+              Zorunlu Kurumsal Kuşak (Kapatılamaz): Gazi Mustafa Kemal Atatürk ★ Sonsuza Dek
+            </span>
+          </div>
           <div>
             <input
               type="text"
               placeholder="Sonsuza Dek"
               value={settings.ataturk_ribbon_text ?? "Sonsuza Dek"}
               onChange={(e) =>
-                setSettings({ ...settings, ataturk_ribbon_text: e.target.value })
+                setSettings({
+                  ...settings,
+                  ataturk_ribbon_visible: true,
+                  ataturk_ribbon_text: e.target.value,
+                })
               }
               className="w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-sm"
             />

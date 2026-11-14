@@ -290,10 +290,7 @@ function normalizeStore(raw: Partial<StoreData> | null | undefined): StoreData {
     ...defaults.site_settings,
     ...rawSettings,
     nav_items: navItems,
-    ataturk_ribbon_visible:
-      typeof rawSettings.ataturk_ribbon_visible === "boolean"
-        ? rawSettings.ataturk_ribbon_visible
-        : true,
+    ataturk_ribbon_visible: true,
     ataturk_ribbon_text:
       typeof rawSettings.ataturk_ribbon_text === "string"
         ? rawSettings.ataturk_ribbon_text

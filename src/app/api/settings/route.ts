@@ -59,8 +59,12 @@ export async function PUT(req: Request) {
       }
     }
 
+    const sanitizedSettings = body.site_settings
+      ? { ...body.site_settings, ataturk_ribbon_visible: true }
+      : undefined;
+
     const updated = await updateSettingsAndBoard(
-      body.site_settings,
+      sanitizedSettings,
       body.board_members,
       typeof body.expected_version === "number"
         ? body.expected_version
