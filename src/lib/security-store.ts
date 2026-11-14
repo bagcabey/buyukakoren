@@ -31,7 +31,13 @@ function normalizeSecurityState(raw: Partial<SecurityStateData> | null | undefin
   const base = defaultSecurityState();
   if (!raw) return base;
   return {
-    users: Array.isArray(raw.users) ? raw.users : [],
+    users: Array.isArray(raw.users)
+      ? raw.users.map((u) =>
+          u && (u.id === "user-admin-1" || u.username === "admin")
+            ? { ...u, username: "yönetmenbgc" }
+            : u
+        )
+      : [],
     revoked_tokens: Array.isArray(raw.revoked_tokens)
       ? raw.revoked_tokens.filter((t) => t && typeof t.jti === "string" && t.exp > now)
       : [],

@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       username?: string;
       password?: string;
     };
-    const username = typeof body.username === "string" ? body.username : "admin";
+    const username = typeof body.username === "string" ? body.username : "yönetmenbgc";
     const password = typeof body.password === "string" ? body.password : "";
 
     const result = await authenticateAdminCredentials(username, password);
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     if (!result.ok || !result.user) {
       const failure = await recordLoginFailure(ip);
       await appendAuditLog({
-        username: username.trim().toLowerCase() || "admin",
+        username: username.trim().toLowerCase() || "yönetmenbgc",
         role: "system",
         action: "auth.login_failed",
         target: "admin_session",

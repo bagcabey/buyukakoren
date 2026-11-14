@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdminAuth } from "@/lib/auth";
+import { isPrimaryAdminAlias, requireAdminAuth } from "@/lib/auth";
 import { hashPassword, verifyPassword } from "@/lib/crypto";
 import {
   appendAuditLog,
@@ -9,6 +9,13 @@ import {
 import { AdminRole, AdminUser } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+function matchesSessionUser(user: AdminUser, sessionSub: string): boolean {
+  return (
+    user.username === sessionSub ||
+    (user.id === "user-admin-1" && isPrimaryAdminAlias(sessionSub))
+  );
+}
 
 function sanitizeUser(u: AdminUser) {
   return {
@@ -32,7 +39,7 @@ export async function GET() {
     auth.session.role === "yonetici"
       ? secState.users.map(sanitizeUser)
       : secState.users
-          .filter((u) => u.username === auth.session.sub)
+          .filter((u) => matchesSessionUser(u, auth.session.sub))
           .map(sanitizeUser);
 
   return NextResponse.json({
@@ -62,7 +69,7 @@ export async function POST(req: Request) {
     const role: AdminRole = body.role === "yonetici" ? "yonetici" : "editor";
     const password = body.password || "";
 
-    if (!/^[a-z0-9._-]{3,32}$/.test(username)) {
+    if (!/^[a-z0-9çğıöşü._-]{3,32}$/.test(username)) {
       return NextResponse.json(
         {
           error:
@@ -143,7 +150,7 @@ export async function PATCH(req: Request) {
     const secState = await readSecurityState();
     const targetUser = body.id
       ? secState.users.find((u) => u.id === body.id)
-      : secState.users.find((u) => u.username === auth.session.sub);
+      : secState.users.find((u) => matchesSessionUser(u, auth.session.sub));
 
     if (!targetUser) {
       return NextResponse.json(
@@ -152,7 +159,7 @@ export async function PATCH(req: Request) {
       );
     }
 
-    const isSelf = targetUser.username === auth.session.sub;
+    const isSelf = matchesSessionUser(targetUser, auth.session.sub);
     const isYonetici = auth.session.role === "yonetici";
 
     if (!isSelf && !isYonetici) {
@@ -258,7 +265,7 @@ export async function DELETE(req: Request) {
   if (!target) {
     return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
   }
-  if (target.username === auth.session.sub) {
+  if (matchesSessionUser(target, auth.session.sub)) {
     return NextResponse.json(
       { error: "Kendi aktif yönetici hesabınızı silemezsiniz." },
       { status: 400 }

@@ -13,6 +13,15 @@ import { AdminRole, AdminUser } from "./types";
 export const SESSION_COOKIE_NAME = "akoren_admin_session";
 export const SESSION_TTL_SECONDS = 60 * 60 * 12; // 12 saat
 
+export function isPrimaryAdminAlias(value: string): boolean {
+  const normalized = (value || "").trim().toLowerCase();
+  return (
+    normalized === "yönetmenbgc" ||
+    normalized === "yonetmenbgc" ||
+    normalized === "admin"
+  );
+}
+
 // Tek yönlü scrypt başlangıç karması (Vercel env ADMIN_PASSWORD henüz tanımlanmadığında ilk girişte Blob'a yazılır)
 const INITIAL_ADMIN_PASSWORD_HASH =
   "scrypt:v1:7f03b56b4f23f432e3a365013ac98825:e6fd05440adb2cd8816fa136c9ad8d6118ebdbea61dda6a647637f5faf16c7eabb019cc4a3d9f755d6394090d6dcdbd5e13eccb19c7f5eff6017abd1bea1edc1";
@@ -109,7 +118,11 @@ export async function verifySessionToken(
     if (isRevoked) {
       return null;
     }
-    const userRecord = secState.users.find((u) => u.username === parsed.sub);
+    const userRecord = secState.users.find(
+      (u) =>
+        u.username === parsed.sub ||
+        (u.id === "user-admin-1" && isPrimaryAdminAlias(parsed.sub))
+    );
     if (userRecord) {
       if (!userRecord.is_active) {
         return null;
@@ -194,7 +207,8 @@ export async function authenticateAdminCredentials(
     return { ok: false, configMissing: true };
   }
 
-  const username = (usernameInput || "admin").trim().toLowerCase();
+  const rawUser = (usernameInput || "yönetmenbgc").trim().toLowerCase();
+  const username = isPrimaryAdminAlias(rawUser) ? "yönetmenbgc" : rawUser;
   const password = typeof passwordInput === "string" ? passwordInput : "";
   if (!username || !password) {
     return { ok: false };
@@ -204,17 +218,29 @@ export async function authenticateAdminCredentials(
   const envPassword = process.env.ADMIN_PASSWORD?.trim();
 
   // 1) Veritabanında kayıtlı kullanıcı varsa doğrula
-  const existingUser = secState.users.find((u) => u.username.toLowerCase() === username);
+  const existingUser = secState.users.find(
+    (u) =>
+      u.username.toLowerCase() === username ||
+      (u.id === "user-admin-1" && isPrimaryAdminAlias(username))
+  );
   if (existingUser) {
     if (!existingUser.is_active) {
       return { ok: false };
     }
     if (verifyPassword(password, existingUser.password_hash)) {
+      const resolvedUsername =
+        existingUser.id === "user-admin-1" ? "yönetmenbgc" : existingUser.username;
       try {
         await mutateSecurityState((s) => ({
           ...s,
           users: s.users.map((u) =>
-            u.id === existingUser.id ? { ...u, last_login_at: new Date().toISOString() } : u
+            u.id === existingUser.id
+              ? {
+                  ...u,
+                  username: resolvedUsername,
+                  last_login_at: new Date().toISOString(),
+                }
+              : u
           ),
         }));
       } catch (err) {
@@ -224,7 +250,7 @@ export async function authenticateAdminCredentials(
         ok: true,
         user: {
           id: existingUser.id,
-          username: existingUser.username,
+          username: resolvedUsername,
           display_name: existingUser.display_name,
           role: existingUser.role,
         },
@@ -238,11 +264,11 @@ export async function authenticateAdminCredentials(
     const matchedEnv = envPassword ? safeCompareStrings(password, envPassword) : false;
     const matchedInitialHash =
       !envPassword && verifyPassword(password, INITIAL_ADMIN_PASSWORD_HASH);
-    if (username === "admin" && (matchedEnv || matchedInitialHash)) {
+    if (isPrimaryAdminAlias(username) && (matchedEnv || matchedInitialHash)) {
       const now = new Date().toISOString();
       const bootstrapAdmin: AdminUser = {
         id: "user-admin-1",
-        username: "admin",
+        username: "yönetmenbgc",
         display_name: "Baş Yönetici",
         role: "yonetici",
         password_hash: matchedEnv ? hashPassword(password) : INITIAL_ADMIN_PASSWORD_HASH,

@@ -20,7 +20,7 @@ export function AdminLogin() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username: username.trim() || "admin",
+          username: username.trim() || "yönetmenbgc",
           password,
         }),
       });
@@ -56,7 +56,7 @@ export function AdminLogin() {
               htmlFor="admin-username"
               className="block text-xs font-medium text-[#191919]"
             >
-              Kullanıcı Adı (Boş bırakılırsa admin)
+              Kullanıcı Adı
             </label>
             <input
               id="admin-username"
@@ -64,7 +64,7 @@ export function AdminLogin() {
               autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="admin"
+              placeholder="yönetmenbgc"
               className="mt-1.5 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-sm text-[#191919] outline-none focus:border-[#191919]"
             />
           </div>
