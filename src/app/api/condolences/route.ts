@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/auth";
 import {
@@ -5,6 +6,8 @@ import {
   deleteCondolence,
   getAllStoreData,
 } from "@/lib/store";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const data = await getAllStoreData();
@@ -43,6 +46,7 @@ export async function POST(req: Request) {
     relatives: body.relatives?.trim() || null,
     is_published: body.is_published !== false,
   });
+  revalidatePath("/", "layout");
   return NextResponse.json({ condolence: created });
 }
 
@@ -56,5 +60,6 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "ID gerekli." }, { status: 400 });
   }
   await deleteCondolence(id);
+  revalidatePath("/", "layout");
   return NextResponse.json({ ok: true });
 }

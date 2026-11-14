@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import os from "os";
 import path from "path";
 import crypto from "crypto";
+import { del, list, put } from "@vercel/blob";
 import { createClient } from "@supabase/supabase-js";
 import { INITIAL_STORE_DATA } from "./seed";
 import {
@@ -17,12 +18,19 @@ import {
 const DATA_DIR = path.join(process.cwd(), "data");
 const STORE_PATH = path.join(DATA_DIR, "store.json");
 const TMP_STORE_PATH = path.join(os.tmpdir(), "bakoren-store.json");
+const BLOB_STATE_PREFIX = "store/state-";
+
+let lastBlobTimestamp = 0;
 
 function isSupabaseConfigured(): boolean {
   return Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.SUPABASE_SERVICE_ROLE_KEY
   );
+}
+
+function isBlobConfigured(): boolean {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 }
 
 function getSupabaseAdmin() {
@@ -33,7 +41,60 @@ function getSupabaseAdmin() {
   );
 }
 
+async function readBlobStore(): Promise<StoreData> {
+  const { blobs } = await list({ prefix: BLOB_STATE_PREFIX });
+  if (blobs.length === 0) {
+    const initial = structuredClone(INITIAL_STORE_DATA);
+    await writeBlobStore(initial);
+    return initial;
+  }
+
+  const sorted = [...blobs].sort((a, b) =>
+    b.pathname.localeCompare(a.pathname)
+  );
+  for (const blob of sorted.slice(0, 3)) {
+    const res = await fetch(blob.url, { cache: "no-store" });
+    if (res.ok) {
+      return (await res.json()) as StoreData;
+    }
+  }
+
+  const fallback = structuredClone(INITIAL_STORE_DATA);
+  await writeBlobStore(fallback);
+  return fallback;
+}
+
+async function writeBlobStore(data: StoreData): Promise<void> {
+  const serialized = JSON.stringify(data, null, 2);
+  const ts = Math.max(Date.now(), lastBlobTimestamp + 1);
+  lastBlobTimestamp = ts;
+  const key = `${BLOB_STATE_PREFIX}${ts}-${crypto.randomUUID().slice(0, 6)}.json`;
+
+  await put(key, serialized, {
+    access: "public",
+    addRandomSuffix: false,
+    contentType: "application/json",
+    cacheControlMaxAge: 60,
+  });
+
+  const { blobs } = await list({ prefix: BLOB_STATE_PREFIX });
+  const sorted = [...blobs].sort((a, b) =>
+    b.pathname.localeCompare(a.pathname)
+  );
+  const staleUrls = sorted
+    .slice(2)
+    .filter((b) => b.pathname !== key)
+    .map((b) => b.url);
+  if (staleUrls.length > 0) {
+    await del(staleUrls);
+  }
+}
+
 async function readLocalStore(): Promise<StoreData> {
+  if (isBlobConfigured()) {
+    return readBlobStore();
+  }
+
   try {
     const tmpRaw = await fs.readFile(TMP_STORE_PATH, "utf-8");
     return JSON.parse(tmpRaw) as StoreData;
@@ -62,6 +123,11 @@ async function readLocalStore(): Promise<StoreData> {
 }
 
 async function writeLocalStore(data: StoreData): Promise<void> {
+  if (isBlobConfigured()) {
+    await writeBlobStore(data);
+    return;
+  }
+
   const serialized = JSON.stringify(data, null, 2);
   if (!process.env.VERCEL) {
     try {

@@ -1,8 +1,11 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { slugifyTR } from "@/lib/format";
 import { createOrUpdatePost, deletePost, getAllStoreData } from "@/lib/store";
 import { PostCategory, ProjectStatus } from "@/lib/types";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const data = await getAllStoreData();
@@ -53,6 +56,7 @@ export async function POST(req: Request) {
       published_at: body.published_at || new Date().toISOString(),
     });
 
+    revalidatePath("/", "layout");
     return NextResponse.json({ post: saved });
   } catch (err) {
     return NextResponse.json(
@@ -72,5 +76,6 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "ID gerekli." }, { status: 400 });
   }
   await deletePost(id);
+  revalidatePath("/", "layout");
   return NextResponse.json({ ok: true });
 }

@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/auth";
 import {
@@ -6,6 +7,8 @@ import {
   getAllStoreData,
   markMessageRead,
 } from "@/lib/store";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   if (!(await isAdminAuthenticated())) {
@@ -35,6 +38,7 @@ export async function POST(req: Request) {
       subject: body.subject?.trim() || "Genel Talep / Öneri",
       message: body.message.trim(),
     });
+    revalidatePath("/admin");
     return NextResponse.json({ message: created });
   } catch {
     return NextResponse.json({ error: "Mesaj gönderilemedi." }, { status: 500 });
@@ -51,6 +55,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "ID gerekli." }, { status: 400 });
   }
   await markMessageRead(id);
+  revalidatePath("/admin");
   return NextResponse.json({ ok: true });
 }
 
@@ -64,5 +69,6 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "ID gerekli." }, { status: 400 });
   }
   await deleteContactMessage(id);
+  revalidatePath("/admin");
   return NextResponse.json({ ok: true });
 }

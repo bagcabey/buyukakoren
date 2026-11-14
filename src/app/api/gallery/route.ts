@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/auth";
 import {
@@ -5,6 +6,8 @@ import {
   deleteGalleryPhoto,
   getAllStoreData,
 } from "@/lib/store";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const data = await getAllStoreData();
@@ -35,6 +38,7 @@ export async function POST(req: Request) {
     image_url: body.image_url.trim(),
     taken_year: body.taken_year?.trim() || null,
   });
+  revalidatePath("/", "layout");
   return NextResponse.json({ photo: created });
 }
 
@@ -48,5 +52,6 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "ID gerekli." }, { status: 400 });
   }
   await deleteGalleryPhoto(id);
+  revalidatePath("/", "layout");
   return NextResponse.json({ ok: true });
 }

@@ -60,11 +60,11 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
 
   async function refreshAll() {
     const [pRes, cRes, gRes, sRes, mRes] = await Promise.all([
-      fetch("/api/posts"),
-      fetch("/api/condolences"),
-      fetch("/api/gallery"),
-      fetch("/api/settings"),
-      fetch("/api/contact"),
+      fetch("/api/posts", { cache: "no-store" }),
+      fetch("/api/condolences", { cache: "no-store" }),
+      fetch("/api/gallery", { cache: "no-store" }),
+      fetch("/api/settings", { cache: "no-store" }),
+      fetch("/api/contact", { cache: "no-store" }),
     ]);
     const [p, c, g, s, m] = await Promise.all([
       pRes.json(),

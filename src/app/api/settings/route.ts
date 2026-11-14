@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/auth";
 import {
@@ -6,6 +7,8 @@ import {
   updateSiteSettings,
 } from "@/lib/store";
 import { BoardMember, SiteSettings } from "@/lib/types";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const data = await getAllStoreData();
@@ -29,6 +32,7 @@ export async function PUT(req: Request) {
   if (body.board_members) {
     await saveBoardMembers(body.board_members);
   }
+  revalidatePath("/", "layout");
   const updated = await getAllStoreData();
   return NextResponse.json({
     site_settings: updated.site_settings,
