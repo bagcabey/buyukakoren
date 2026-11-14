@@ -18,17 +18,25 @@ import {
   X,
 } from "lucide-react";
 import { Logo, TurkishFlagSvg } from "./Logo";
+import { NavItem, SiteSettings } from "@/lib/types";
 
-const NAV_LINKS = [
-  { href: "/", label: "Ana Sayfa" },
-  { href: "/duyurular", label: "Duyuru & Haberler" },
-  { href: "/faaliyetler", label: "Faaliyetler" },
-  { href: "/taziye", label: "Taziye" },
-  { href: "/koyumuz", label: "Köyümüz" },
-  { href: "/dernek", label: "Derneğimiz" },
-  { href: "/galeri", label: "Galeri" },
-  { href: "/bagis", label: "Bağış" },
-  { href: "/iletisim", label: "İletişim" },
+export interface NavbarExtraPage {
+  slug: string;
+  title: string;
+  menu_label?: string;
+  menu_order?: number;
+}
+
+const FALLBACK_NAV_LINKS: NavItem[] = [
+  { id: "nav-home", href: "/", label: "Ana Sayfa", visible: true, order: 1 },
+  { id: "nav-posts", href: "/duyurular", label: "Duyuru & Haberler", visible: true, order: 2 },
+  { id: "nav-activities", href: "/faaliyetler", label: "Faaliyetler", visible: true, order: 3 },
+  { id: "nav-condolences", href: "/taziye", label: "Taziye", visible: true, order: 4 },
+  { id: "nav-village", href: "/koyumuz", label: "Köyümüz", visible: true, order: 5 },
+  { id: "nav-association", href: "/dernek", label: "Derneğimiz", visible: true, order: 6 },
+  { id: "nav-gallery", href: "/galeri", label: "Galeri", visible: true, order: 7 },
+  { id: "nav-donate", href: "/bagis", label: "Bağış", visible: true, order: 8 },
+  { id: "nav-contact", href: "/iletisim", label: "İletişim", visible: true, order: 9 },
 ];
 
 const MOBILE_GROUPS = [
@@ -52,7 +60,19 @@ const MOBILE_GROUPS = [
   },
 ];
 
-export function Navbar() {
+function normalizeHref(slug: string): string {
+  const s = (slug || "/").trim();
+  if (s === "/" || s === "") return "/";
+  return s.startsWith("/") ? s : `/${s}`;
+}
+
+export function Navbar({
+  settings,
+  extraPages = [],
+}: {
+  settings?: SiteSettings;
+  extraPages?: NavbarExtraPage[];
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -60,44 +80,86 @@ export function Navbar() {
     setOpen(false);
   }, [pathname]);
 
+  const baseNav =
+    settings?.nav_items && settings.nav_items.length > 0
+      ? settings.nav_items
+      : FALLBACK_NAV_LINKS;
+
+  const hiddenHrefs = new Set(
+    baseNav.filter((i) => i.visible === false).map((i) => normalizeHref(i.href))
+  );
+  const existingHrefs = new Set(baseNav.map((i) => normalizeHref(i.href)));
+
+  const visibleNavItems: NavItem[] = [
+    ...baseNav.filter((i) => i.visible !== false),
+    ...extraPages
+      .map((p, idx) => ({
+        id: `page-${p.slug}`,
+        href: normalizeHref(p.slug),
+        label: p.menu_label?.trim() || p.title,
+        visible: true,
+        order: typeof p.menu_order === "number" ? p.menu_order : 50 + idx,
+      }))
+      .filter((p) => !existingHrefs.has(p.href)),
+  ].sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+
+  const showRibbon = settings?.ataturk_ribbon_visible !== false;
+  const ribbonText = settings?.ataturk_ribbon_text?.trim() || "Sonsuza Dek";
+
   return (
     <header className="sticky top-0 z-40 border-b border-[#e6e5e0] bg-white/95 backdrop-blur-md">
       {/* Kırmızı Üst Kuşak */}
-      <div className="border-b border-[#9a0715] bg-gradient-to-r from-[#b5091a] via-[#e30a17] to-[#b5091a] px-3 py-1 text-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-center gap-2 text-center sm:gap-2.5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/ataturk.jpg"
-            alt="Gazi Mustafa Kemal Atatürk"
-            className="h-5 w-5 shrink-0 rounded-full object-cover object-top shadow-xs ring-1 ring-white/90 sm:h-6 sm:w-6"
-          />
-          <TurkishFlagSvg className="h-3 w-[18px] ring-white/30 sm:h-3.5 sm:w-[21px]" />
-          <p className="flex flex-wrap items-center justify-center gap-x-1.5 text-[10px] font-semibold tracking-[0.1em] uppercase sm:gap-x-2 sm:text-[11px]">
-            <span>Gazi Mustafa Kemal Atatürk</span>
-            <span className="text-white/75" aria-hidden="true">
-              ★
-            </span>
-            <span className="font-bold tracking-[0.14em] text-white">
-              Sonsuza Dek
-            </span>
-          </p>
-          <TurkishFlagSvg className="h-3 w-[18px] ring-white/30 sm:h-3.5 sm:w-[21px]" />
+      {showRibbon && (
+        <div className="border-b border-[#9a0715] bg-gradient-to-r from-[#b5091a] via-[#e30a17] to-[#b5091a] px-3 py-1 text-white">
+          <div className="mx-auto flex max-w-6xl items-center justify-center gap-2 text-center sm:gap-2.5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/ataturk.jpg"
+              alt="Gazi Mustafa Kemal Atatürk"
+              className="h-5 w-5 shrink-0 rounded-full object-cover object-top shadow-xs ring-1 ring-white/90 sm:h-6 sm:w-6"
+            />
+            <TurkishFlagSvg className="h-3 w-[18px] ring-white/30 sm:h-3.5 sm:w-[21px]" />
+            <p className="flex flex-wrap items-center justify-center gap-x-1.5 text-[10px] font-semibold tracking-[0.1em] uppercase sm:gap-x-2 sm:text-[11px]">
+              <span>Gazi Mustafa Kemal Atatürk</span>
+              <span className="text-white/75" aria-hidden="true">
+                ★
+              </span>
+              <span className="font-bold tracking-[0.14em] text-white">
+                {ribbonText}
+              </span>
+            </p>
+            <TurkishFlagSvg className="h-3 w-[18px] ring-white/30 sm:h-3.5 sm:w-[21px]" />
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:h-16 sm:px-6">
         <Logo />
 
-        <nav className="hidden items-center gap-1 lg:flex">
-          {NAV_LINKS.map((item) => {
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Ana menü">
+          {visibleNavItems.map((item) => {
+            const href = normalizeHref(item.href);
+            const isExternal = item.is_external || href.startsWith("http");
             const active =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.href);
+              !isExternal &&
+              (href === "/" ? pathname === "/" : pathname.startsWith(href));
+            if (isExternal) {
+              return (
+                <a
+                  key={item.id}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-md px-2.5 py-1.5 text-[13.5px] font-medium text-[#666560] transition-colors hover:bg-[#fbfbfa] hover:text-[#191919]"
+                >
+                  {item.label}
+                </a>
+              );
+            }
             return (
               <Link
-                key={item.href}
-                href={item.href}
+                key={item.id}
+                href={href}
                 className={`rounded-md px-2.5 py-1.5 text-[13.5px] font-medium transition-colors ${
                   active
                     ? "bg-[#f4f3ef] text-[#191919]"
@@ -142,21 +204,60 @@ export function Navbar() {
       {open && (
         <div className="max-h-[calc(100vh-5.5rem)] overflow-y-auto border-t border-[#e6e5e0] bg-white px-4 py-4 shadow-lg lg:hidden">
           <div className="space-y-5">
-            {MOBILE_GROUPS.map((group) => (
-              <div key={group.title}>
+            {MOBILE_GROUPS.map((group) => {
+              const filteredItems = group.items.filter(
+                (item) => !hiddenHrefs.has(normalizeHref(item.href))
+              );
+              if (filteredItems.length === 0) return null;
+              return (
+                <div key={group.title}>
+                  <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-[#666560]">
+                    {group.title}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {filteredItems.map((item) => {
+                      const active = item.exact
+                        ? pathname === item.href
+                        : pathname.startsWith(item.href);
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setOpen(false)}
+                          className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-[13px] font-medium transition-colors ${
+                            active
+                              ? "border-[#191919] bg-[#191919] text-white"
+                              : "border-[#e6e5e0] bg-[#fbfbfa] text-[#191919] hover:bg-[#f4f3ef]"
+                          }`}
+                        >
+                          <Icon
+                            className={`h-4 w-4 shrink-0 ${
+                              active ? "text-white" : "text-[#666560]"
+                            }`}
+                          />
+                          <span className="truncate">{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+
+            {extraPages.length > 0 && (
+              <div>
                 <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-[#666560]">
-                  {group.title}
+                  Diğer Sayfalar
                 </p>
                 <div className="grid grid-cols-2 gap-2">
-                  {group.items.map((item) => {
-                    const active = item.exact
-                      ? pathname === item.href
-                      : pathname.startsWith(item.href);
-                    const Icon = item.icon;
+                  {extraPages.map((p) => {
+                    const href = normalizeHref(p.slug);
+                    const active = pathname.startsWith(href);
                     return (
                       <Link
-                        key={item.href}
-                        href={item.href}
+                        key={href}
+                        href={href}
                         onClick={() => setOpen(false)}
                         className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-[13px] font-medium transition-colors ${
                           active
@@ -164,18 +265,13 @@ export function Navbar() {
                             : "border-[#e6e5e0] bg-[#fbfbfa] text-[#191919] hover:bg-[#f4f3ef]"
                         }`}
                       >
-                        <Icon
-                          className={`h-4 w-4 shrink-0 ${
-                            active ? "text-white" : "text-[#666560]"
-                          }`}
-                        />
-                        <span className="truncate">{item.label}</span>
+                        <span className="truncate">{p.menu_label?.trim() || p.title}</span>
                       </Link>
                     );
                   })}
                 </div>
               </div>
-            ))}
+            )}
 
             <div className="grid grid-cols-2 gap-2 border-t border-[#e6e5e0] pt-4">
               <Link

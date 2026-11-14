@@ -1,4 +1,17 @@
-import { StoreData } from "./types";
+import { buildDefaultPages } from "./default-pages";
+import { NavItem, StoreData } from "./types";
+
+export const DEFAULT_NAV_ITEMS: NavItem[] = [
+  { id: "nav-home", label: "Ana Sayfa", href: "/", visible: true, order: 1 },
+  { id: "nav-posts", label: "Duyuru & Haberler", href: "/duyurular", visible: true, order: 2 },
+  { id: "nav-activities", label: "Faaliyetler", href: "/faaliyetler", visible: true, order: 3 },
+  { id: "nav-condolences", label: "Taziye", href: "/taziye", visible: true, order: 4 },
+  { id: "nav-village", label: "Köyümüz", href: "/koyumuz", visible: true, order: 5 },
+  { id: "nav-association", label: "Derneğimiz", href: "/dernek", visible: true, order: 6 },
+  { id: "nav-gallery", label: "Galeri", href: "/galeri", visible: true, order: 7 },
+  { id: "nav-donate", label: "Bağış", href: "/bagis", visible: true, order: 8 },
+  { id: "nav-contact", label: "İletişim", href: "/iletisim", visible: true, order: 9 },
+];
 
 export const INITIAL_STORE_DATA: StoreData = {
   posts: [
@@ -190,6 +203,14 @@ export const INITIAL_STORE_DATA: StoreData = {
     donation_note:
       "Bağış ve aidat gönderimlerinde açıklama kısmına ad-soyad ve 'Köy Derneği Aidat/Bağış' yazmanız rica olunur. Resmî IBAN bilgisi yönetici panelinden güncellenebilir.",
     mukhtar_phone: "",
+    nav_items: DEFAULT_NAV_ITEMS,
+    footer_description:
+      "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği. Sivas ili Yıldızeli ilçesi Büyükakören Köyü sakinleri ve gurbetteki tüm hemşehrilerimiz için şeffaf duyuru, faaliyet ve dayanışma portalı.",
+    footer_links: [],
+    social_links: {},
+    ataturk_ribbon_visible: true,
+    ataturk_ribbon_text: "Sonsuza Dek",
   },
   contact_messages: [],
+  pages: buildDefaultPages(),
 };

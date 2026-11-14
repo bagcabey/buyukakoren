@@ -9,7 +9,7 @@ import {
   isEncryptionConfigured,
 } from "./crypto";
 import { slugifyTR } from "./format";
-import { INITIAL_STORE_DATA } from "./seed";
+import { DEFAULT_NAV_ITEMS, INITIAL_STORE_DATA } from "./seed";
 import {
   BoardMember,
   Condolence,
@@ -71,6 +71,22 @@ function cloneInitial(): StoreData {
   return JSON.parse(JSON.stringify(INITIAL_STORE_DATA)) as StoreData;
 }
 
+function mergeDefaultPages(rawPages: PageConfig[] | undefined, defaultPages: PageConfig[]): PageConfig[] {
+  if (!Array.isArray(rawPages) || rawPages.length === 0) {
+    return defaultPages;
+  }
+  const bySlug = new Map<string, PageConfig>();
+  for (const dp of defaultPages) {
+    bySlug.set(dp.slug, dp);
+  }
+  for (const rp of rawPages) {
+    if (rp && typeof rp.slug === "string") {
+      bySlug.set(rp.slug, rp);
+    }
+  }
+  return Array.from(bySlug.values());
+}
+
 function normalizeStore(raw: Partial<StoreData> | null | undefined): StoreData {
   const defaults = cloneInitial();
   if (!raw || typeof raw !== "object") {
@@ -82,6 +98,12 @@ function normalizeStore(raw: Partial<StoreData> | null | undefined): StoreData {
       pages: defaults.pages || [],
     };
   }
+  const rawSettings = (raw.site_settings || {}) as Partial<SiteSettings>;
+  const navItems =
+    Array.isArray(rawSettings.nav_items) && rawSettings.nav_items.length > 0
+      ? rawSettings.nav_items
+      : defaults.site_settings.nav_items || DEFAULT_NAV_ITEMS;
+
   return {
     version: typeof raw.version === "number" && raw.version >= 1 ? raw.version : 1,
     updated_at: raw.updated_at || new Date().toISOString(),
@@ -97,13 +119,19 @@ function normalizeStore(raw: Partial<StoreData> | null | undefined): StoreData {
       : defaults.board_members,
     site_settings: {
       ...defaults.site_settings,
-      ...(raw.site_settings || {}),
+      ...rawSettings,
+      nav_items: navItems,
+      ataturk_ribbon_visible:
+        typeof rawSettings.ataturk_ribbon_visible === "boolean"
+          ? rawSettings.ataturk_ribbon_visible
+          : true,
+      ataturk_ribbon_text:
+        typeof rawSettings.ataturk_ribbon_text === "string"
+          ? rawSettings.ataturk_ribbon_text
+          : defaults.site_settings.ataturk_ribbon_text || "Sonsuza Dek",
     },
     contact_messages: [], // PII asla genel state blob'unda saklanmaz
-    pages:
-      Array.isArray(raw.pages) && raw.pages.length > 0
-        ? raw.pages
-        : defaults.pages || [],
+    pages: mergeDefaultPages(raw.pages, defaults.pages || []),
   };
 }
 

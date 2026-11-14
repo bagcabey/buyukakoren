@@ -34,19 +34,40 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+const BUILTIN_EDITABLE_SLUGS = new Set([
+  "/",
+  "/koyumuz",
+  "/dernek",
+  "/bagis",
+  "/iletisim",
+]);
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const data = await getAllStoreData();
+  const data = await getAllStoreData(false);
+  const extraMenuPages = (data.pages || [])
+    .filter(
+      (p) =>
+        p.status === "published" &&
+        p.show_in_menu &&
+        !BUILTIN_EDITABLE_SLUGS.has(p.slug)
+    )
+    .map((p) => ({
+      slug: p.slug,
+      title: p.title,
+      menu_label: p.menu_label,
+      menu_order: p.menu_order,
+    }));
 
   return (
     <html lang="tr" className={`${inter.variable} ${jakarta.variable}`}>
       <body className="flex min-h-screen flex-col bg-white text-[#191919] antialiased">
-        <Navbar />
+        <Navbar settings={data.site_settings} extraPages={extraMenuPages} />
         <main className="flex-1">{children}</main>
-        <Footer settings={data.site_settings} />
+        <Footer settings={data.site_settings} extraPages={extraMenuPages} />
         <MobileBottomNav />
       </body>
     </html>

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { ShareWhatsAppButton } from "@/components/ShareWhatsAppButton";
 import { STATUS_LABELS, formatDateTR, getCategoryLabel } from "@/lib/format";
+import { renderSafeRichText } from "@/lib/sanitize";
 import { getAllStoreData, getPostBySlugWithRedirect } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -132,9 +133,10 @@ export default async function PostDetailPage({
         </figure>
       )}
 
-      <div className="mt-6 space-y-4 whitespace-pre-line text-[15px] leading-[1.75] text-[#191919] sm:mt-8 sm:text-base sm:leading-relaxed">
-        {post.content}
-      </div>
+      <div
+        className="prose-akoren mt-6 space-y-4 text-[15px] leading-[1.75] text-[#191919] sm:mt-8 sm:text-base sm:leading-relaxed [&_a]:font-medium [&_a]:underline [&_h2]:mt-6 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mt-5 [&_h3]:text-lg [&_h3]:font-semibold [&_li]:ml-5 [&_li]:list-disc [&_p]:mb-3"
+        dangerouslySetInnerHTML={{ __html: renderSafeRichText(post.content) }}
+      />
 
       {/* Share & Contact Box */}
       <div className="no-print mt-10 flex flex-col gap-4 rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] p-5 sm:flex-row sm:items-center sm:justify-between">

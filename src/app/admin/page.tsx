@@ -23,5 +23,14 @@ export default async function AdminPage() {
   }
 
   const data = await getAllStoreData(true);
-  return <AdminDashboard initialData={data} />;
+  return (
+    <AdminDashboard
+      initialData={data}
+      currentUser={{
+        username: session.sub,
+        display_name: session.displayName,
+        role: session.role,
+      }}
+    />
+  );
 }

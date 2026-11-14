@@ -1,8 +1,31 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
 import { SiteSettings } from "@/lib/types";
+import { sanitizeSafeUrl } from "@/lib/sanitize";
+import { NavbarExtraPage } from "./Navbar";
 
-export function Footer({ settings }: { settings: SiteSettings }) {
+const SOCIAL_META: { key: keyof NonNullable<SiteSettings["social_links"]>; label: string }[] = [
+  { key: "facebook", label: "Facebook" },
+  { key: "instagram", label: "Instagram" },
+  { key: "youtube", label: "YouTube" },
+  { key: "twitter", label: "X / Twitter" },
+  { key: "whatsapp", label: "WhatsApp" },
+];
+
+export function Footer({
+  settings,
+  extraPages = [],
+}: {
+  settings: SiteSettings;
+  extraPages?: NavbarExtraPage[];
+}) {
+  const customFooterLinks = (settings.footer_links || []).filter((l) => l.visible !== false);
+  const socialEntries = SOCIAL_META.map((item) => {
+    const rawUrl = settings.social_links?.[item.key];
+    const safeUrl = sanitizeSafeUrl(rawUrl || "");
+    return safeUrl ? { ...item, url: safeUrl } : null;
+  }).filter((v): v is { key: keyof NonNullable<SiteSettings["social_links"]>; label: string; url: string } => v !== null);
+
   return (
     <footer className="border-t border-[#e6e5e0] bg-[#fbfbfa] pb-24 lg:pb-10">
       <div className="mx-auto max-w-6xl px-4 pt-10 pb-2 sm:px-6 lg:py-12">
@@ -10,19 +33,35 @@ export function Footer({ settings }: { settings: SiteSettings }) {
           <div className="col-span-2">
             <Logo />
             <p className="mt-4 max-w-md text-sm leading-relaxed text-[#666560]">
-              {settings.association_name}. Sivas ili Yıldızeli ilçesi
-              Büyükakören Köyü sakinleri ve gurbetteki tüm hemşehrilerimiz için
-              şeffaf duyuru, faaliyet ve dayanışma portalı.
+              {settings.footer_description?.trim() ||
+                `${settings.association_name}. Sivas ili Yıldızeli ilçesi Büyükakören Köyü sakinleri ve gurbetteki tüm hemşehrilerimiz için şeffaf duyuru, faaliyet ve dayanışma portalı.`}
             </p>
             <div className="mt-4 space-y-1 text-xs text-[#666560]">
-              <p>Adres: {settings.association_address || "Büyükakören Köyü, Yıldızeli / Sivas"}</p>
-              {settings.show_association_phone && settings.association_phone && (
+              {settings.association_address?.trim() && (
+                <p>Adres: {settings.association_address}</p>
+              )}
+              {settings.show_association_phone && settings.association_phone?.trim() && (
                 <p>Dernek Telefonu: {settings.association_phone}</p>
               )}
-              {settings.association_email && (
+              {settings.association_email?.trim() && (
                 <p>E-posta: {settings.association_email}</p>
               )}
             </div>
+            {socialEntries.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {socialEntries.map((s) => (
+                  <a
+                    key={s.key}
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-1 text-xs font-medium text-[#191919] transition-colors hover:bg-[#f4f3ef]"
+                  >
+                    {s.label}
+                  </a>
+                ))}
+              </div>
+            )}
             <div className="mt-4 flex flex-wrap gap-2 lg:hidden">
               <Link
                 href="/bagis"
@@ -92,6 +131,43 @@ export function Footer({ settings }: { settings: SiteSettings }) {
                   İletişim & Muhtarlık
                 </Link>
               </li>
+              <li>
+                <Link href="/kvkk" className="hover:text-[#191919]">
+                  KVKK Aydınlatma Metni
+                </Link>
+              </li>
+              {extraPages.map((p) => {
+                const href = p.slug.startsWith("/") ? p.slug : `/${p.slug}`;
+                return (
+                  <li key={href}>
+                    <Link href={href} className="hover:text-[#191919]">
+                      {p.menu_label?.trim() || p.title}
+                    </Link>
+                  </li>
+                );
+              })}
+              {customFooterLinks.map((l) => {
+                const safe = sanitizeSafeUrl(l.href);
+                if (!safe) return null;
+                return safe.startsWith("http") || l.is_external ? (
+                  <li key={l.id}>
+                    <a
+                      href={safe}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-[#191919]"
+                    >
+                      {l.label}
+                    </a>
+                  </li>
+                ) : (
+                  <li key={l.id}>
+                    <Link href={safe} className="hover:text-[#191919]">
+                      {l.label}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>

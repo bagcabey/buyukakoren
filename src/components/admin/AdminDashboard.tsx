@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  AlertTriangle,
   ArrowDown,
   ArrowUp,
   CheckCircle2,
@@ -16,8 +17,10 @@ import {
   FileText,
   HeartHandshake,
   Images,
+  LayoutTemplate,
   LogOut,
   Mail,
+  Navigation,
   Phone,
   Pin,
   Plus,
@@ -26,21 +29,36 @@ import {
   Settings,
   Trash2,
   Upload,
+  Users,
 } from "lucide-react";
 import { formatDateTR, getCategoryLabel } from "@/lib/format";
 import {
+  AdminRole,
   BoardMember,
   Condolence,
   ContactMessage,
   GalleryPhoto,
+  PageConfig,
   Post,
   PostCategory,
   ProjectStatus,
+  PublishStatus,
   SiteSettings,
   StoreData,
 } from "@/lib/types";
+import { MenuFooterTab } from "./MenuFooterTab";
+import { PageDesignerTab } from "./PageDesignerTab";
+import { UsersAuditTab } from "./UsersAuditTab";
 
-type TabKey = "posts" | "condolences" | "gallery" | "settings" | "messages";
+type TabKey =
+  | "posts"
+  | "condolences"
+  | "gallery"
+  | "pages"
+  | "menu"
+  | "settings"
+  | "messages"
+  | "users";
 
 const DEFAULT_POST_CATEGORIES = ["duyuru", "haber", "aciklama", "faaliyet"];
 const DEFAULT_GALLERY_ALBUMS = [
@@ -97,9 +115,33 @@ function InlineCategoryCreator({
   );
 }
 
-export function AdminDashboard({ initialData }: { initialData: StoreData }) {
+function toDatetimeLocalValue(iso?: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
+}
+
+export function AdminDashboard({
+  initialData,
+  currentUser = {
+    username: "admin",
+    display_name: "Yönetici",
+    role: "yonetici" as AdminRole,
+  },
+}: {
+  initialData: StoreData;
+  currentUser?: { username: string; display_name: string; role: AdminRole };
+}) {
   const router = useRouter();
+  const isManager = currentUser.role === "yonetici";
   const [data, setData] = useState<StoreData>(initialData);
+  const [storeVersion, setStoreVersion] = useState<number>(
+    initialData.version ?? 1
+  );
   const [tab, setTab] = useState<TabKey>("posts");
   const [mobileFormOpen, setMobileFormOpen] = useState<{
     posts: boolean;
@@ -157,29 +199,54 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
   }, [refreshMessages]);
 
   async function refreshAll() {
-    const [pRes, cRes, gRes, sRes, mRes] = await Promise.all([
+    const [pRes, cRes, gRes, sRes, mRes, pgRes] = await Promise.all([
       fetch("/api/posts", { cache: "no-store" }),
       fetch("/api/condolences", { cache: "no-store" }),
       fetch("/api/gallery", { cache: "no-store" }),
       fetch("/api/settings", { cache: "no-store" }),
       fetch("/api/contact", { cache: "no-store" }),
+      fetch("/api/pages", { cache: "no-store" }),
     ]);
-    const [p, c, g, s, m] = await Promise.all([
+    const [p, c, g, s, m, pg] = await Promise.all([
       pRes.json(),
       cRes.json(),
       gRes.json(),
       sRes.json(),
       mRes.json(),
+      pgRes.json(),
     ]);
+    const nextVersion =
+      typeof pg.version === "number"
+        ? pg.version
+        : typeof p.version === "number"
+        ? p.version
+        : storeVersion;
+    setStoreVersion(nextVersion);
     setData({
+      version: nextVersion,
       posts: p.posts || [],
       condolences: c.condolences || [],
       gallery_photos: g.gallery_photos || [],
       board_members: s.board_members || [],
       site_settings: s.site_settings || initialData.site_settings,
       contact_messages: m.messages || [],
+      pages: pg.pages || data.pages || [],
     });
+    if (s.site_settings) setSettingsForm(s.site_settings);
+    if (Array.isArray(s.board_members)) setBoardForm(s.board_members);
     router.refresh();
+  }
+
+  function handleConflictOrError(res: Response, fallbackMsg: string, errJson?: { error?: string }) {
+    if (res.status === 409) {
+      notify(
+        "Veri başka bir oturumda güncellenmiş (sürüm çakışması). Son veriler yenileniyor...",
+        true
+      );
+      void refreshAll();
+      return;
+    }
+    notify(errJson?.error || fallbackMsg, true);
   }
 
   async function handleLogout() {
@@ -211,10 +278,21 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
   const [postSummary, setPostSummary] = useState("");
   const [postContent, setPostContent] = useState("");
   const [postImage, setPostImage] = useState("");
+  const [postImageAlt, setPostImageAlt] = useState("");
   const [postAttachment, setPostAttachment] = useState("");
   const [postStatus, setPostStatus] = useState<ProjectStatus | "">("");
   const [postPinned, setPostPinned] = useState(false);
   const [postPublished, setPostPublished] = useState(true);
+  const [postPublishStatus, setPostPublishStatus] = useState<PublishStatus>("published");
+  const [postPublishedAt, setPostPublishedAt] = useState("");
+  const [postSeoTitle, setPostSeoTitle] = useState("");
+  const [postSeoDesc, setPostSeoDesc] = useState("");
+
+  function appendPostMarkdown(snippet: string) {
+    setPostContent((prev) =>
+      prev.trim().length > 0 ? `${prev.replace(/\n+$/, "")}\n\n${snippet}` : snippet
+    );
+  }
 
   function loadPostForEdit(p: Post) {
     setEditingId(p.id);
@@ -223,10 +301,15 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
     setPostSummary(p.summary);
     setPostContent(p.content);
     setPostImage(p.image_url || "");
+    setPostImageAlt(p.image_alt || "");
     setPostAttachment(p.attachment_url || "");
     setPostStatus(p.project_status || "");
     setPostPinned(p.is_pinned);
     setPostPublished(p.is_published);
+    setPostPublishStatus(p.status || (p.is_published ? "published" : "draft"));
+    setPostPublishedAt(toDatetimeLocalValue(p.published_at));
+    setPostSeoTitle(p.seo_title || "");
+    setPostSeoDesc(p.seo_description || "");
     setMobileFormOpen((prev) => ({ ...prev, posts: true }));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -240,14 +323,21 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
     setPostSummary("");
     setPostContent("");
     setPostImage("");
+    setPostImageAlt("");
     setPostAttachment("");
     setPostStatus("");
     setPostPinned(false);
     setPostPublished(true);
+    setPostPublishStatus("published");
+    setPostPublishedAt("");
+    setPostSeoTitle("");
+    setPostSeoDesc("");
   }
 
   async function handleSavePost(e: React.FormEvent) {
     e.preventDefault();
+    const effectivePublished =
+      postPublishStatus === "published" && postPublished;
     const res = await fetch("/api/posts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -258,11 +348,23 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
         summary: postSummary,
         content: postContent,
         image_url: postImage || null,
+        image_alt: postImageAlt || null,
         attachment_url: postAttachment || null,
         project_status:
           postCategory === "faaliyet" && postStatus ? postStatus : null,
         is_pinned: postPinned,
-        is_published: postPublished,
+        is_published: effectivePublished,
+        status: effectivePublished
+          ? "published"
+          : postPublishStatus === "archived"
+          ? "archived"
+          : "draft",
+        published_at: postPublishedAt
+          ? new Date(postPublishedAt).toISOString()
+          : undefined,
+        seo_title: postSeoTitle || null,
+        seo_description: postSeoDesc || null,
+        expected_version: storeVersion,
       }),
     });
     if (res.ok) {
@@ -270,7 +372,8 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
       await refreshAll();
       notify("İçerik kaydedildi.");
     } else {
-      notify("Kayıt sırasında hata oluştu.", true);
+      const errJson = (await res.json().catch(() => ({}))) as { error?: string };
+      handleConflictOrError(res, "Kayıt sırasında hata oluştu.", errJson);
     }
   }
 
@@ -284,6 +387,7 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
       body: JSON.stringify({
         ...p,
         [field]: !p[field],
+        expected_version: storeVersion,
       }),
     });
     if (res.ok) {
@@ -297,6 +401,9 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
           ? "İçerik yayına alındı."
           : "İçerik taslağa çekildi."
       );
+    } else {
+      const errJson = (await res.json().catch(() => ({}))) as { error?: string };
+      handleConflictOrError(res, "Güncelleme başarısız.", errJson);
     }
   }
 
@@ -334,6 +441,7 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
   );
   const [relatives, setRelatives] = useState("");
   const [condPublished, setCondPublished] = useState(true);
+  const [familyConsentConfirmed, setFamilyConsentConfirmed] = useState(true);
 
   function loadCondForEdit(c: Condolence) {
     setEditingCondId(c.id);
@@ -344,6 +452,7 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
     setCondMessage(c.message);
     setRelatives(c.relatives || "");
     setCondPublished(c.is_published);
+    setFamilyConsentConfirmed(c.family_consent_confirmed !== false);
     setMobileFormOpen((prev) => ({ ...prev, condolences: true }));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -359,10 +468,15 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
     );
     setRelatives("");
     setCondPublished(true);
+    setFamilyConsentConfirmed(true);
   }
 
   async function handleSaveCondolence(e: React.FormEvent) {
     e.preventDefault();
+    if (condPublished && !familyConsentConfirmed) {
+      notify("Taziye ilanı yayınlamak için yakınların rızası onaylanmalıdır.", true);
+      return;
+    }
     const res = await fetch("/api/condolences", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -375,12 +489,17 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
         message: condMessage,
         relatives,
         is_published: condPublished,
+        family_consent_confirmed: familyConsentConfirmed,
+        expected_version: storeVersion,
       }),
     });
     if (res.ok) {
       resetCondForm();
       await refreshAll();
       notify("Taziye ilanı kaydedildi.");
+    } else {
+      const errJson = (await res.json().catch(() => ({}))) as { error?: string };
+      handleConflictOrError(res, "Taziye ilanı kaydedilemedi.", errJson);
     }
   }
 
@@ -517,12 +636,16 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
         album: galAlbum,
         image_url: galUrl,
         taken_year: galYear,
+        expected_version: storeVersion,
       }),
     });
     if (res.ok) {
       resetGalForm();
       await refreshAll();
       notify("Galeri fotoğrafı kaydedildi.");
+    } else {
+      const errJson = (await res.json().catch(() => ({}))) as { error?: string };
+      handleConflictOrError(res, "Galeri fotoğrafı kaydedilemedi.", errJson);
     }
   }
 
@@ -548,8 +671,8 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
     data.board_members
   );
 
-  async function handleSaveSettings(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSaveSettings(e?: React.FormEvent) {
+    if (e) e.preventDefault();
     const orderedBoard = boardForm.map((m, i) => ({
       ...m,
       display_order: i + 1,
@@ -560,11 +683,15 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
       body: JSON.stringify({
         site_settings: settingsForm,
         board_members: orderedBoard,
+        expected_version: storeVersion,
       }),
     });
     if (res.ok) {
       await refreshAll();
       notify("Site ayarları ve yönetim kurulu güncellendi.");
+    } else {
+      const errJson = (await res.json().catch(() => ({}))) as { error?: string };
+      handleConflictOrError(res, "Ayarlar kaydedilemedi.", errJson);
     }
   }
 
@@ -614,13 +741,42 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
       ? data.contact_messages.filter((m) => !m.is_read)
       : data.contact_messages;
 
+  const missingChecklist: string[] = [];
+  if (
+    !data.site_settings.iban_number?.trim() ||
+    /^TR00/i.test(data.site_settings.iban_number.replace(/\s+/g, ""))
+  ) {
+    missingChecklist.push("Resmî IBAN numarası");
+  }
+  if (
+    !data.site_settings.iban_bank?.trim() ||
+    data.site_settings.iban_bank.toLowerCase().includes("panelden")
+  ) {
+    missingChecklist.push("Banka adı");
+  }
+  if (
+    !data.site_settings.association_email?.trim() ||
+    data.site_settings.association_email.includes("buyukakoren.org")
+  ) {
+    missingChecklist.push("Resmî dernek e-postası");
+  }
+  if (!data.site_settings.mukhtar_phone?.trim()) {
+    missingChecklist.push("Muhtarlık telefonu");
+  }
+  const hasRealBoard = (data.board_members || []).some(
+    (m) => m.full_name?.trim() && !m.full_name.toLowerCase().includes("panelden")
+  );
+  if (!hasRealBoard) {
+    missingChecklist.push("Yönetim kurulu üyeleri");
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e6e5e0] pb-5">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-[#666560]">
-            B.Akören Yönetim
+            B.Akören Yönetim • {currentUser.display_name} ({isManager ? "Tam Yönetici" : "Editör"})
           </p>
           <h1 className="mt-0.5 text-xl font-semibold text-[#191919] sm:text-2xl">
             Yönetici Kontrol Paneli
@@ -709,6 +865,30 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
         </div>
       )}
 
+      {isManager && missingChecklist.length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-xs text-amber-900">
+          <div className="flex items-start gap-2.5">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+            <div>
+              <p className="font-semibold">
+                Teslim Öncesi Eksik Kurumsal Bilgiler ({missingChecklist.length})
+              </p>
+              <p className="mt-0.5 text-amber-800">
+                Şu alanlar henüz tanımlanmadığı için ziyaretçi sayfalarında gizlenir:{" "}
+                {missingChecklist.join(", ")}.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setTab("settings")}
+            className="shrink-0 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+          >
+            Bilgileri Tamamla →
+          </button>
+        </div>
+      )}
+
       {/* Navigation Tabs */}
       <div className="no-scrollbar mt-6 flex flex-nowrap gap-2 overflow-x-auto border-b border-[#e6e5e0] pb-4 sm:flex-wrap sm:overflow-visible">
         <button
@@ -749,16 +929,44 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
         </button>
         <button
           type="button"
-          onClick={() => setTab("settings")}
+          onClick={() => setTab("pages")}
           className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-            tab === "settings"
+            tab === "pages"
               ? "bg-[#191919] text-white"
               : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:text-[#191919]"
           }`}
         >
-          <Settings className="h-3.5 w-3.5" />
-          Ayarlar & Yönetim
+          <LayoutTemplate className="h-3.5 w-3.5" />
+          Sayfa Tasarımcısı ({(data.pages || []).length})
         </button>
+        {isManager && (
+          <button
+            type="button"
+            onClick={() => setTab("menu")}
+            className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+              tab === "menu"
+                ? "bg-[#191919] text-white"
+                : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:text-[#191919]"
+            }`}
+          >
+            <Navigation className="h-3.5 w-3.5" />
+            Menü & Alt Bilgi
+          </button>
+        )}
+        {isManager && (
+          <button
+            type="button"
+            onClick={() => setTab("settings")}
+            className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+              tab === "settings"
+                ? "bg-[#191919] text-white"
+                : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:text-[#191919]"
+            }`}
+          >
+            <Settings className="h-3.5 w-3.5" />
+            Ayarlar & Yönetim
+          </button>
+        )}
         <button
           type="button"
           onClick={() => {
@@ -773,6 +981,18 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
         >
           <Mail className="h-3.5 w-3.5" />
           Gelen Mesajlar {unreadCount > 0 ? `(${unreadCount} yeni)` : ""}
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("users")}
+          className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+            tab === "users"
+              ? "bg-[#191919] text-white"
+              : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:text-[#191919]"
+          }`}
+        >
+          <Users className="h-3.5 w-3.5" />
+          {isManager ? "Kullanıcılar & Kayıtlar" : "Hesabım"}
         </button>
       </div>
 
@@ -916,12 +1136,33 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#191919]">
-                Detaylı İçerik *
-              </label>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label className="block text-xs font-medium text-[#191919]">
+                  Detaylı İçerik *
+                </label>
+                <div className="flex flex-wrap gap-1">
+                  {[
+                    ["H2", "## Alt Başlık"],
+                    ["H3", "### Bölüm"],
+                    ["Kalın", "**kalın metin**"],
+                    ["İtalik", "*vurgu*"],
+                    ["Liste", "- Madde 1\n- Madde 2"],
+                    ["Link", "[Bağlantı Adı](https://...)"],
+                  ].map(([lbl, snip]) => (
+                    <button
+                      key={lbl}
+                      type="button"
+                      onClick={() => appendPostMarkdown(snip)}
+                      className="rounded border border-[#e6e5e0] bg-white px-2 py-0.5 text-[11px] font-medium text-[#191919] hover:bg-[#f4f3ef]"
+                    >
+                      {lbl}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <textarea
                 required
-                rows={5}
+                rows={6}
                 value={postContent}
                 onChange={(e) => setPostContent(e.target.value)}
                 placeholder="Haberin veya açıklamanın tam metni..."
@@ -975,11 +1216,20 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
                 </select>
               )}
               {postImage && (
-                <div className="mt-2 overflow-hidden rounded-lg border border-[#e6e5e0] bg-white p-1">
-                  <img
-                    src={postImage}
-                    alt="Önizleme"
-                    className="h-28 w-full rounded object-cover"
+                <div className="mt-2 space-y-2">
+                  <div className="overflow-hidden rounded-lg border border-[#e6e5e0] bg-white p-1">
+                    <img
+                      src={postImage}
+                      alt={postImageAlt || "Önizleme"}
+                      className="h-28 w-full rounded object-cover"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Görsel Alt Açıklaması (SEO & Erişilebilirlik)"
+                    value={postImageAlt}
+                    onChange={(e) => setPostImageAlt(e.target.value)}
+                    className="w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-1.5 text-xs"
                   />
                 </div>
               )}
@@ -1016,6 +1266,69 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
               </div>
             </div>
 
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="block text-xs font-medium text-[#191919]">
+                  Yayın Durumu
+                </label>
+                <select
+                  value={postPublishStatus}
+                  onChange={(e) => {
+                    const val = e.target.value as PublishStatus;
+                    setPostPublishStatus(val);
+                    setPostPublished(val === "published");
+                  }}
+                  className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
+                >
+                  <option value="published">Yayında</option>
+                  <option value="draft">Taslak</option>
+                  <option value="archived">Arşiv</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#191919]">
+                  Yayın Tarihi (İleri tarihli planlama)
+                </label>
+                <input
+                  type="datetime-local"
+                  value={postPublishedAt}
+                  onChange={(e) => setPostPublishedAt(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-1.5 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2 rounded-lg border border-[#e6e5e0] bg-white p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#666560]">
+                SEO Ayarları (Opsiyonel)
+              </p>
+              <input
+                type="text"
+                placeholder="SEO Başlığı (Boşsa yazı başlığı kullanılır)"
+                value={postSeoTitle}
+                onChange={(e) => setPostSeoTitle(e.target.value)}
+                className="w-full rounded border border-[#e6e5e0] px-2.5 py-1.5 text-xs"
+              />
+              <textarea
+                rows={2}
+                placeholder="SEO Açıklaması (Meta description, 140-155 karakter)"
+                value={postSeoDesc}
+                onChange={(e) => setPostSeoDesc(e.target.value)}
+                className="w-full rounded border border-[#e6e5e0] px-2.5 py-1.5 text-xs"
+              />
+            </div>
+
+            {(!postImage || !postImageAlt || !postSeoDesc) && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2 text-[11px] text-amber-900">
+                <p className="font-semibold">Yayın Öncesi Öneri Listesi:</p>
+                <ul className="mt-1 list-disc space-y-0.5 pl-4">
+                  {!postImage && <li>Kapak görseli seçilmemiş.</li>}
+                  {postImage && !postImageAlt && <li>Görsel alt metni (alt text) boş.</li>}
+                  {!postSeoDesc && <li>Özel SEO açıklaması girilmemiş (kısa özet kullanılır).</li>}
+                </ul>
+              </div>
+            )}
+
             <div className="space-y-2 pt-1">
               <label className="flex items-center gap-2 text-xs font-medium text-[#191919]">
                 <input
@@ -1030,7 +1343,11 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
                 <input
                   type="checkbox"
                   checked={postPublished}
-                  onChange={(e) => setPostPublished(e.target.checked)}
+                  onChange={(e) => {
+                    const chk = e.target.checked;
+                    setPostPublished(chk);
+                    setPostPublishStatus(chk ? "published" : "draft");
+                  }}
                   className="h-4 w-4 rounded border-[#e6e5e0]"
                 />
                 Hemen yayınla (İşaret kaldırılırsa taslak olarak saklanır)
@@ -1320,15 +1637,27 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
                 className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-sm"
               />
             </div>
-            <label className="flex items-center gap-2 text-xs font-medium text-[#191919]">
-              <input
-                type="checkbox"
-                checked={condPublished}
-                onChange={(e) => setCondPublished(e.target.checked)}
-                className="h-4 w-4 rounded border-[#e6e5e0]"
-              />
-              Sitede yayında göster
-            </label>
+            <div className="space-y-2">
+              <label className="flex items-start gap-2 text-xs font-medium text-[#191919]">
+                <input
+                  type="checkbox"
+                  required={condPublished}
+                  checked={familyConsentConfirmed}
+                  onChange={(e) => setFamilyConsentConfirmed(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-[#e6e5e0]"
+                />
+                <span>Merhum/merhume yakınlarının açık rızası alındı (Zorunlu)</span>
+              </label>
+              <label className="flex items-center gap-2 text-xs font-medium text-[#191919]">
+                <input
+                  type="checkbox"
+                  checked={condPublished}
+                  onChange={(e) => setCondPublished(e.target.checked)}
+                  className="h-4 w-4 rounded border-[#e6e5e0]"
+                />
+                Sitede yayında göster
+              </label>
+            </div>
             <button
               type="submit"
               className="w-full rounded-lg bg-[#191919] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#333333]"
@@ -1662,8 +1991,33 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
         </div>
       )}
 
+      {/* TAB: PAGE DESIGNER */}
+      {tab === "pages" && (
+        <PageDesignerTab
+          pages={data.pages || []}
+          galleryPhotos={data.gallery_photos}
+          storeVersion={storeVersion}
+          onPagesUpdated={(nextPages, nextVer) => {
+            setData((prev) => ({ ...prev, pages: nextPages }));
+            if (typeof nextVer === "number") setStoreVersion(nextVer);
+            router.refresh();
+          }}
+          notify={notify}
+          uploadFile={uploadFile}
+        />
+      )}
+
+      {/* TAB: MENU & FOOTER */}
+      {isManager && tab === "menu" && (
+        <MenuFooterTab
+          settings={settingsForm}
+          setSettings={setSettingsForm}
+          onSave={handleSaveSettings}
+        />
+      )}
+
       {/* TAB 4: SETTINGS & BOARD */}
-      {tab === "settings" && (
+      {isManager && tab === "settings" && (
         <form onSubmit={handleSaveSettings} className="mt-8 space-y-8">
           <div className="grid gap-6 lg:grid-cols-2">
             {/* General & Phone Settings */}
@@ -1754,6 +2108,24 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
 
               <div>
                 <label className="block text-xs font-medium text-[#191919]">
+                  Köy Muhtarı Adı Soyadı (İsteğe Bağlı)
+                </label>
+                <input
+                  type="text"
+                  value={settingsForm.mukhtar_name || ""}
+                  onChange={(e) =>
+                    setSettingsForm({
+                      ...settingsForm,
+                      mukhtar_name: e.target.value,
+                    })
+                  }
+                  placeholder="Boş bırakılabilir"
+                  className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-[#191919]">
                   Köy Muhtarlığı İletişim Numarası (İsteğe Bağlı)
                 </label>
                 <input
@@ -1765,9 +2137,60 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
                       mukhtar_phone: e.target.value,
                     })
                   }
-                  placeholder="İstenirse muhtarlık telefonu eklenebilir (isim yazılmaz)"
+                  placeholder="İstenirse muhtarlık telefonu eklenebilir"
                   className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-sm"
                 />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="block text-xs font-medium text-[#191919]">
+                    Kuruluş Yılı
+                  </label>
+                  <input
+                    type="text"
+                    value={settingsForm.founded_year || ""}
+                    onChange={(e) =>
+                      setSettingsForm({
+                        ...settingsForm,
+                        founded_year: e.target.value,
+                      })
+                    }
+                    className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-2 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#191919]">
+                    Dernek Kütük No
+                  </label>
+                  <input
+                    type="text"
+                    value={settingsForm.association_registry_no || ""}
+                    onChange={(e) =>
+                      setSettingsForm({
+                        ...settingsForm,
+                        association_registry_no: e.target.value,
+                      })
+                    }
+                    className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-2 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#191919]">
+                    Vergi Dairesi
+                  </label>
+                  <input
+                    type="text"
+                    value={settingsForm.tax_office || ""}
+                    onChange={(e) =>
+                      setSettingsForm({
+                        ...settingsForm,
+                        tax_office: e.target.value,
+                      })
+                    }
+                    className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-2 text-xs"
+                  />
+                </div>
               </div>
             </div>
 
@@ -2076,6 +2499,11 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
             ))
           )}
         </div>
+      )}
+
+      {/* TAB: USERS & AUDIT LOGS */}
+      {tab === "users" && (
+        <UsersAuditTab currentUser={currentUser} notify={notify} />
       )}
     </div>
   );
