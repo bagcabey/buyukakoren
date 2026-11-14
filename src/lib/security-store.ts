@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { get, put } from "@vercel/blob";
+import { head, put } from "@vercel/blob";
 import {
   decryptServerData,
   encryptServerData,
@@ -63,18 +63,39 @@ function encodeSecurityPayload(state: SecurityStateData): string {
 
 async function readSecurityWithEtag(): Promise<{ state: SecurityStateData; etag?: string }> {
   if (isBlobConfigured()) {
-    const result = await get(SECURITY_BLOB_PATH, {
-      access: "public",
-      useCache: false,
-    });
-    if (!result || result.statusCode !== 200 || !result.stream) {
-      return { state: defaultSecurityState() };
+    let text: string;
+    let etag: string | undefined;
+    try {
+      // @vercel/blob get({ access: "public" }) CDN önbelleğine takıldığı için doğrudan Control API head() + önbellek kırıcılı fetch kullanılır
+      const meta = await head(SECURITY_BLOB_PATH);
+      const sep = meta.url.includes("?") ? "&" : "?";
+      const bustUrl = `${meta.url}${sep}v=${encodeURIComponent(meta.etag || "")}&_t=${Date.now()}`;
+      const res = await fetch(bustUrl, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache, no-store, must-revalidate" },
+      });
+      if (!res.ok) {
+        return { state: defaultSecurityState() };
+      }
+      text = await res.text();
+      etag = meta.etag;
+    } catch (err) {
+      const isNotFound =
+        err instanceof Error &&
+        (err.name === "BlobNotFoundError" ||
+          err.message.toLowerCase().includes("not found") ||
+          err.message.includes("404"));
+      if (isNotFound) {
+        return { state: defaultSecurityState() };
+      }
+      console.error("[security-store] Güvenlik durumu Blob'dan okunamadı:", err);
+      throw new Error("Güvenlik durumu okunamadı.");
     }
-    const text = await new Response(result.stream).text();
+
     try {
       return {
         state: decodeSecurityPayload(text),
-        etag: result.blob.etag,
+        etag,
       };
     } catch (err) {
       console.error("[security-store] Şifreli güvenlik durumu çözümlenemedi:", err);
@@ -102,42 +123,27 @@ export async function readSecurityState(): Promise<SecurityStateData> {
 export async function mutateSecurityState(
   updater: (current: SecurityStateData) => SecurityStateData
 ): Promise<SecurityStateData> {
-  const maxRetries = 3;
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    const { state, etag } = await readSecurityWithEtag();
-    const next = normalizeSecurityState(updater(state));
-    const encoded = encodeSecurityPayload(next);
+  const { state } = await readSecurityWithEtag();
+  const next = normalizeSecurityState(updater(state));
+  const encoded = encodeSecurityPayload(next);
 
-    if (isBlobConfigured()) {
-      try {
-        await put(SECURITY_BLOB_PATH, encoded, {
-          access: "public",
-          contentType: "text/plain; charset=utf-8",
-          addRandomSuffix: false,
-          allowOverwrite: true,
-          cacheControlMaxAge: 0,
-          ...(etag ? { ifMatch: etag } : {}),
-        });
-        return next;
-      } catch (err) {
-        const isPrecondition =
-          err instanceof Error &&
-          (err.name === "BlobPreconditionFailedError" || err.message.includes("precondition"));
-        if (isPrecondition && attempt < maxRetries - 1) {
-          continue;
-        }
-        throw err;
-      }
-    } else {
-      const dir = path.dirname(LOCAL_SECURITY_PATH);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      fs.writeFileSync(LOCAL_SECURITY_PATH, encoded, "utf-8");
-      return next;
-    }
+  if (isBlobConfigured()) {
+    await put(SECURITY_BLOB_PATH, encoded, {
+      access: "public",
+      contentType: "text/plain; charset=utf-8",
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      cacheControlMaxAge: 60,
+    });
+    return next;
   }
-  throw new Error("Güvenlik durumu güncellenemedi (eşzamanlılık çakışması).");
+
+  const dir = path.dirname(LOCAL_SECURITY_PATH);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  fs.writeFileSync(LOCAL_SECURITY_PATH, encoded, "utf-8");
+  return next;
 }
 
 export async function appendAuditLog(entry: Omit<AuditLogEntry, "id" | "timestamp">): Promise<void> {

@@ -210,12 +210,16 @@ export async function authenticateAdminCredentials(
       return { ok: false };
     }
     if (verifyPassword(password, existingUser.password_hash)) {
-      await mutateSecurityState((s) => ({
-        ...s,
-        users: s.users.map((u) =>
-          u.id === existingUser.id ? { ...u, last_login_at: new Date().toISOString() } : u
-        ),
-      }));
+      try {
+        await mutateSecurityState((s) => ({
+          ...s,
+          users: s.users.map((u) =>
+            u.id === existingUser.id ? { ...u, last_login_at: new Date().toISOString() } : u
+          ),
+        }));
+      } catch (err) {
+        console.error("[auth] Son giriş zamanı güncellenemedi:", err);
+      }
       return {
         ok: true,
         user: {
@@ -247,10 +251,14 @@ export async function authenticateAdminCredentials(
         updated_at: now,
         last_login_at: now,
       };
-      await mutateSecurityState((s) => ({
-        ...s,
-        users: s.users.length === 0 ? [bootstrapAdmin] : s.users,
-      }));
+      try {
+        await mutateSecurityState((s) => ({
+          ...s,
+          users: s.users.length === 0 ? [bootstrapAdmin] : s.users,
+        }));
+      } catch (err) {
+        console.error("[auth] İlk yönetici kaydı yazılamadı:", err);
+      }
       return {
         ok: true,
         user: {
