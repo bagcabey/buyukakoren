@@ -19,8 +19,15 @@ const DATA_DIR = path.join(process.cwd(), "data");
 const STORE_PATH = path.join(DATA_DIR, "store.json");
 const TMP_STORE_PATH = path.join(os.tmpdir(), "bakoren-store.json");
 const BLOB_STATE_PREFIX = "store/state-";
+const BLOB_MESSAGE_PREFIX = "store/messages/msg-";
+const MEMORY_MESSAGE_GRACE_MS = 30_000;
 
 let lastBlobTimestamp = 0;
+let memoryStore: StoreData | null = null;
+let memoryStoreUpdatedAt = 0;
+const memoryMessages = new Map<string, ContactMessage>();
+const memoryMessageTimestamps = new Map<string, number>();
+const deletedMessageIds = new Set<string>();
 
 function isSupabaseConfigured(): boolean {
   return Boolean(
@@ -41,33 +48,150 @@ function getSupabaseAdmin() {
   );
 }
 
-async function readBlobStore(): Promise<StoreData> {
-  const { blobs } = await list({ prefix: BLOB_STATE_PREFIX });
-  if (blobs.length === 0) {
-    const initial = structuredClone(INITIAL_STORE_DATA);
-    await writeBlobStore(initial);
-    return initial;
-  }
-
-  const sorted = [...blobs].sort((a, b) =>
-    b.pathname.localeCompare(a.pathname)
+function sortMessagesDesc(messages: ContactMessage[]): ContactMessage[] {
+  return [...messages].sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
-  for (const blob of sorted.slice(0, 3)) {
-    const res = await fetch(blob.url, { cache: "no-store" });
-    if (res.ok) {
-      return (await res.json()) as StoreData;
+}
+
+function extractStateTimestamp(pathname: string): number {
+  if (!pathname.startsWith(BLOB_STATE_PREFIX)) return 0;
+  const part = pathname.slice(BLOB_STATE_PREFIX.length).split("-")[0];
+  const ts = Number(part);
+  return Number.isFinite(ts) ? ts : 0;
+}
+
+async function readBlobMessages(): Promise<ContactMessage[]> {
+  const { blobs } = await list({ prefix: BLOB_MESSAGE_PREFIX });
+  const fetched = await Promise.all(
+    blobs.map(async (b) => {
+      const match = b.pathname.match(/-(msg-[^./]+)\.json$/);
+      const idFromPath = match?.[1];
+      if (idFromPath && deletedMessageIds.has(idFromPath)) {
+        return null;
+      }
+      try {
+        const res = await fetch(b.url, { cache: "no-store" });
+        if (!res.ok) return null;
+        return (await res.json()) as ContactMessage;
+      } catch {
+        return null;
+      }
+    })
+  );
+
+  const now = Date.now();
+  const seenIds = new Set<string>();
+  const merged = new Map<string, ContactMessage>();
+
+  for (const msg of fetched) {
+    if (!msg || !msg.id || deletedMessageIds.has(msg.id)) continue;
+    seenIds.add(msg.id);
+    const cached = memoryMessages.get(msg.id);
+    const combined: ContactMessage = cached
+      ? { ...msg, ...cached, is_read: Boolean(cached.is_read || msg.is_read) }
+      : msg;
+    merged.set(msg.id, combined);
+    memoryMessages.set(msg.id, combined);
+    if (!memoryMessageTimestamps.has(msg.id)) {
+      memoryMessageTimestamps.set(msg.id, now);
     }
   }
 
-  const fallback = structuredClone(INITIAL_STORE_DATA);
-  await writeBlobStore(fallback);
-  return fallback;
+  for (const [id, msg] of memoryMessages.entries()) {
+    if (deletedMessageIds.has(id)) continue;
+    if (seenIds.has(id)) continue;
+    const savedAt = memoryMessageTimestamps.get(id) || 0;
+    if (now - savedAt < MEMORY_MESSAGE_GRACE_MS) {
+      merged.set(id, msg);
+    } else {
+      memoryMessages.delete(id);
+      memoryMessageTimestamps.delete(id);
+    }
+  }
+
+  return sortMessagesDesc(Array.from(merged.values()));
+}
+
+async function mergeBlobMessagesIntoStore(store: StoreData): Promise<StoreData> {
+  const blobMessages = await readBlobMessages();
+  const map = new Map<string, ContactMessage>();
+  for (const m of store.contact_messages || []) {
+    if (m && m.id && !deletedMessageIds.has(m.id)) {
+      map.set(m.id, m);
+    }
+  }
+  for (const m of blobMessages) {
+    if (m && m.id && !deletedMessageIds.has(m.id)) {
+      const prev = map.get(m.id);
+      map.set(
+        m.id,
+        prev
+          ? { ...prev, ...m, is_read: Boolean(prev.is_read || m.is_read) }
+          : m
+      );
+    }
+  }
+  store.contact_messages = sortMessagesDesc(Array.from(map.values()));
+  return store;
+}
+
+async function readBlobStore(): Promise<StoreData> {
+  const { blobs } = await list({ prefix: BLOB_STATE_PREFIX });
+  if (blobs.length === 0) {
+    if (memoryStore) {
+      return mergeBlobMessagesIntoStore(structuredClone(memoryStore));
+    }
+    const initial = structuredClone(INITIAL_STORE_DATA);
+    await writeBlobStore(initial);
+    return mergeBlobMessagesIntoStore(initial);
+  }
+
+  const sorted = [...blobs].sort((a, b) => {
+    const diff =
+      extractStateTimestamp(b.pathname) - extractStateTimestamp(a.pathname);
+    return diff !== 0 ? diff : b.pathname.localeCompare(a.pathname);
+  });
+
+  const topTimestamp = extractStateTimestamp(sorted[0].pathname);
+  if (memoryStore && topTimestamp < memoryStoreUpdatedAt) {
+    return mergeBlobMessagesIntoStore(structuredClone(memoryStore));
+  }
+
+  for (const blob of sorted.slice(0, 10)) {
+    try {
+      const res = await fetch(blob.url, { cache: "no-store" });
+      if (res.ok) {
+        const parsed = (await res.json()) as StoreData;
+        const blobTs = extractStateTimestamp(blob.pathname);
+        if (blobTs >= memoryStoreUpdatedAt) {
+          memoryStore = structuredClone(parsed);
+          memoryStoreUpdatedAt = blobTs || Date.now();
+        }
+        return mergeBlobMessagesIntoStore(parsed);
+      }
+    } catch {
+      // Sonraki yedek blob'u dene
+    }
+  }
+
+  // Blob geçici olarak okunamazsa asla INITIAL_STORE_DATA ile üzerine yazma
+  const fallback = memoryStore
+    ? structuredClone(memoryStore)
+    : structuredClone(INITIAL_STORE_DATA);
+  return mergeBlobMessagesIntoStore(fallback);
 }
 
 async function writeBlobStore(data: StoreData): Promise<void> {
-  const serialized = JSON.stringify(data, null, 2);
+  // Mesajlar bağımsız store/messages/ blob'larında tutulduğu için state snapshot'ı mesajları ezmez ve silinen mesajları diriltmez
+  const cloned = { ...structuredClone(data), contact_messages: [] };
   const ts = Math.max(Date.now(), lastBlobTimestamp + 1);
   lastBlobTimestamp = ts;
+  memoryStore = cloned;
+  memoryStoreUpdatedAt = ts;
+
+  const serialized = JSON.stringify(cloned, null, 2);
   const key = `${BLOB_STATE_PREFIX}${ts}-${crypto.randomUUID().slice(0, 6)}.json`;
 
   await put(key, serialized, {
@@ -78,15 +202,29 @@ async function writeBlobStore(data: StoreData): Promise<void> {
   });
 
   const { blobs } = await list({ prefix: BLOB_STATE_PREFIX });
-  const sorted = [...blobs].sort((a, b) =>
-    b.pathname.localeCompare(a.pathname)
-  );
+  const sorted = [...blobs].sort((a, b) => {
+    const diff =
+      extractStateTimestamp(b.pathname) - extractStateTimestamp(a.pathname);
+    return diff !== 0 ? diff : b.pathname.localeCompare(a.pathname);
+  });
+  const now = Date.now();
   const staleUrls = sorted
-    .slice(2)
-    .filter((b) => b.pathname !== key)
+    .slice(15)
+    .filter((b) => {
+      if (b.pathname === key) return false;
+      const uploadedMs =
+        b.uploadedAt instanceof Date
+          ? b.uploadedAt.getTime()
+          : new Date(b.uploadedAt).getTime();
+      return !Number.isNaN(uploadedMs) && now - uploadedMs > 120_000;
+    })
     .map((b) => b.url);
   if (staleUrls.length > 0) {
-    await del(staleUrls);
+    try {
+      await del(staleUrls);
+    } catch {
+      // Eski state temizliği başarısız olursa ana yazmayı bozma
+    }
   }
 }
 
@@ -410,20 +548,74 @@ export async function saveBoardMembers(
   return members;
 }
 
+export async function updateSettingsAndBoard(
+  siteSettings?: SiteSettings,
+  boardMembers?: BoardMember[]
+): Promise<StoreData> {
+  if (!isSupabaseConfigured()) {
+    const store = await readLocalStore();
+    if (siteSettings) {
+      store.site_settings = siteSettings;
+    }
+    if (boardMembers) {
+      store.board_members = boardMembers;
+    }
+    await writeLocalStore(store);
+    return store;
+  }
+  if (siteSettings) {
+    await updateSiteSettings(siteSettings);
+  }
+  if (boardMembers) {
+    await saveBoardMembers(boardMembers);
+  }
+  return getAllStoreData();
+}
+
 export async function createContactMessage(
   input: Omit<ContactMessage, "id" | "is_read" | "created_at">
 ): Promise<ContactMessage> {
   const now = new Date().toISOString();
   if (!isSupabaseConfigured()) {
-    const store = await readLocalStore();
     const created: ContactMessage = {
       ...input,
       id: `msg-${crypto.randomUUID().slice(0, 8)}`,
       is_read: false,
       created_at: now,
     };
+    memoryMessages.set(created.id, created);
+    memoryMessageTimestamps.set(created.id, Date.now());
+
+    if (isBlobConfigured()) {
+      const msgKey = `${BLOB_MESSAGE_PREFIX}${Date.now()}-${created.id}.json`;
+      await put(msgKey, JSON.stringify(created), {
+        access: "public",
+        addRandomSuffix: false,
+        contentType: "application/json",
+        cacheControlMaxAge: 0,
+      });
+      return created;
+    }
+
+    const store = await readLocalStore();
     store.contact_messages.unshift(created);
     await writeLocalStore(store);
+
+    if (!process.env.VERCEL) {
+      try {
+        await fetch("https://buyukakoren.vercel.app/api/contact", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-forwarded-from-local": "1",
+          },
+          body: JSON.stringify(input),
+          signal: AbortSignal.timeout(5000),
+        });
+      } catch {
+        // Canlıya iletim başarısız olsa bile yerel kayıt korunur
+      }
+    }
     return created;
   }
   const sb = getSupabaseAdmin();
@@ -438,10 +630,60 @@ export async function createContactMessage(
 
 export async function markMessageRead(id: string): Promise<void> {
   if (!isSupabaseConfigured()) {
+    const cached = memoryMessages.get(id);
+    if (cached) {
+      memoryMessages.set(id, { ...cached, is_read: true });
+      memoryMessageTimestamps.set(id, Date.now());
+    }
+
+    if (isBlobConfigured()) {
+      const { blobs } = await list({ prefix: BLOB_MESSAGE_PREFIX });
+      const matching = blobs.filter((b) => b.pathname.endsWith(`-${id}.json`));
+      if (matching.length > 0) {
+        let baseMsg: ContactMessage | null = cached || null;
+        for (const b of matching) {
+          try {
+            const res = await fetch(b.url, { cache: "no-store" });
+            if (res.ok) {
+              baseMsg = (await res.json()) as ContactMessage;
+              break;
+            }
+          } catch {
+            // Sonraki eşleşmeyi dene
+          }
+        }
+        if (baseMsg) {
+          const updated: ContactMessage = { ...baseMsg, is_read: true };
+          memoryMessages.set(id, updated);
+          memoryMessageTimestamps.set(id, Date.now());
+          const newKey = `${BLOB_MESSAGE_PREFIX}${Date.now()}-${id}.json`;
+          await put(newKey, JSON.stringify(updated), {
+            access: "public",
+            addRandomSuffix: false,
+            contentType: "application/json",
+            cacheControlMaxAge: 0,
+          });
+          const oldUrls = matching
+            .filter((b) => b.pathname !== newKey)
+            .map((b) => b.url);
+          if (oldUrls.length > 0) {
+            try {
+              await del(oldUrls);
+            } catch {
+              // Eski blob silme hatasını yoksay
+            }
+          }
+          return;
+        }
+      }
+    }
+
     const store = await readLocalStore();
     const msg = store.contact_messages.find((m) => m.id === id);
-    if (msg) msg.is_read = true;
-    await writeLocalStore(store);
+    if (msg) {
+      msg.is_read = true;
+      await writeLocalStore(store);
+    }
     return;
   }
   const sb = getSupabaseAdmin();
@@ -449,7 +691,31 @@ export async function markMessageRead(id: string): Promise<void> {
 }
 
 export async function deleteContactMessage(id: string): Promise<void> {
+  deletedMessageIds.add(id);
+  memoryMessages.delete(id);
+  memoryMessageTimestamps.delete(id);
+
   if (!isSupabaseConfigured()) {
+    if (isBlobConfigured()) {
+      const { blobs } = await list({ prefix: BLOB_MESSAGE_PREFIX });
+      const matchingUrls = blobs
+        .filter((b) => b.pathname.endsWith(`-${id}.json`))
+        .map((b) => b.url);
+      if (matchingUrls.length > 0) {
+        try {
+          await del(matchingUrls);
+        } catch {
+          // Devam et
+        }
+      }
+      if (memoryStore) {
+        memoryStore.contact_messages = memoryStore.contact_messages.filter(
+          (m) => m.id !== id
+        );
+      }
+      return;
+    }
+
     const store = await readLocalStore();
     store.contact_messages = store.contact_messages.filter((m) => m.id !== id);
     await writeLocalStore(store);

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowDown,
@@ -21,6 +21,7 @@ import {
   Phone,
   Pin,
   Plus,
+  RefreshCw,
   Search,
   Settings,
   Trash2,
@@ -30,6 +31,7 @@ import { formatDateTR, getCategoryLabel } from "@/lib/format";
 import {
   BoardMember,
   Condolence,
+  ContactMessage,
   GalleryPhoto,
   Post,
   PostCategory,
@@ -107,11 +109,52 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
   const [toast, setToast] = useState<{ msg: string; err?: boolean } | null>(
     null
   );
+  const [refreshingMessages, setRefreshingMessages] = useState(false);
 
   function notify(msg: string, err = false) {
     setToast({ msg, err });
     setTimeout(() => setToast(null), 3200);
   }
+
+  const refreshMessages = useCallback(async (showSpinner = false) => {
+    if (showSpinner) setRefreshingMessages(true);
+    try {
+      const res = await fetch("/api/contact", { cache: "no-store" });
+      if (!res.ok) return;
+      const m = (await res.json()) as { messages?: ContactMessage[] };
+      if (Array.isArray(m.messages)) {
+        setData((prev) => ({
+          ...prev,
+          contact_messages: m.messages!,
+        }));
+      }
+    } catch {
+      // Sessiz arka plan yenileme hatasını yoksay
+    } finally {
+      if (showSpinner) setRefreshingMessages(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      void refreshMessages();
+    }, 10000);
+    const handleFocus = () => {
+      void refreshMessages();
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        void refreshMessages();
+      }
+    };
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [refreshMessages]);
 
   async function refreshAll() {
     const [pRes, cRes, gRes, sRes, mRes] = await Promise.all([
@@ -640,7 +683,10 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
         </button>
         <button
           type="button"
-          onClick={() => setTab("messages")}
+          onClick={() => {
+            setTab("messages");
+            void refreshMessages();
+          }}
           className="rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] p-4 text-left transition-colors hover:border-[#cfcec8]"
         >
           <p className="text-xs text-[#666560]">Okunmamış Mesaj</p>
@@ -715,7 +761,10 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
         </button>
         <button
           type="button"
-          onClick={() => setTab("messages")}
+          onClick={() => {
+            setTab("messages");
+            void refreshMessages();
+          }}
           className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
             tab === "messages"
               ? "bg-[#191919] text-white"
@@ -1952,6 +2001,17 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
                 }`}
               >
                 Okunmamış ({unreadCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => void refreshMessages(true)}
+                disabled={refreshingMessages}
+                className="inline-flex items-center gap-1 rounded-md border border-[#e6e5e0] bg-white px-3 py-1 text-xs font-medium text-[#191919] transition-colors hover:bg-[#f4f3ef] disabled:opacity-60"
+              >
+                <RefreshCw
+                  className={`h-3 w-3 ${refreshingMessages ? "animate-spin" : ""}`}
+                />
+                Yenile
               </button>
             </div>
           </div>
