@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { Breadcrumbs } from "./Breadcrumbs";
 import { PageBlocksRenderer } from "./PageBlocksRenderer";
 import { getAllStoreData, getPageBySlug } from "@/lib/store";
 
@@ -22,16 +23,17 @@ export async function LegalPageShell({
 
   const s = storeData.site_settings;
 
+  const labelMap: Record<typeof slug, string> = {
+    "/kvkk": "KVKK Aydınlatma Metni",
+    "/gizlilik": "Gizlilik ve Çerez Politikası",
+    "/kullanim-kosullari": "Kullanım Koşulları",
+    "/kunye": "Kurumsal Künye",
+  };
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-        <Link
-          href="/"
-          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-[#666560] hover:text-[#191919]"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Ana Sayfaya Dön
-        </Link>
+      <Breadcrumbs items={[{ name: labelMap[slug], href: slug }]} />
+      <div className="mb-5 flex flex-wrap items-center justify-end gap-2">
         <nav aria-label="Yasal sayfalar" className="flex flex-wrap gap-2 text-xs">
           {[
             { href: "/kvkk", label: "KVKK" },

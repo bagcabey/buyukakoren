@@ -2,6 +2,7 @@ import { renderSafeRichText } from "@/lib/sanitize";
 import { ContactForm } from "./ContactForm";
 import { CopyIbanButton } from "./CopyIbanButton";
 import { GalleryLightbox } from "./GalleryLightbox";
+import { SmartImage } from "./SmartImage";
 import { formatDateTR, getCategoryLabel, isValidTurkishIban, STATUS_LABELS } from "@/lib/format";
 import { PageBlock, PageConfig, Post, StoreData } from "@/lib/types";
 import Link from "next/link";
@@ -99,11 +100,13 @@ function BlockSection({
         <section className="relative overflow-hidden rounded-2xl border border-[#e6e5e0] bg-[#191919] text-white shadow-sm">
           {imageUrl && (
             <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <SmartImage
                 src={imageUrl}
                 alt={imageAlt}
-                className="absolute inset-0 h-full w-full object-cover opacity-35"
+                fill
+                priority
+                sizes="(max-width: 1200px) 100vw, 1152px"
+                className="object-cover opacity-35"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#191919] via-[#191919]/75 to-[#191919]/50" />
             </>
@@ -245,12 +248,15 @@ function BlockSection({
 
       return (
         <figure className="overflow-hidden rounded-2xl border border-[#e6e5e0] bg-white">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={imageUrl}
-            alt={alt}
-            className="max-h-[540px] w-full object-cover"
-          />
+          <div className="relative aspect-[16/9] max-h-[540px] w-full bg-stone-100">
+            <SmartImage
+              src={imageUrl}
+              alt={alt}
+              fill
+              sizes="(max-width: 1200px) 100vw, 1152px"
+              className="object-cover"
+            />
+          </div>
           {(caption || attribution) && (
             <figcaption className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e6e5e0] px-5 py-3 text-xs text-[#666560]">
               <span>{caption}</span>
@@ -278,15 +284,16 @@ function BlockSection({
           <div className="grid grid-cols-1 lg:grid-cols-12">
             {imageUrl && (
               <div
-                className={`relative min-h-[240px] bg-stone-100 lg:col-span-5 ${
+                className={`relative min-h-[240px] overflow-hidden bg-stone-100 lg:col-span-5 ${
                   imagePosition === "right" ? "lg:order-2" : ""
                 }`}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <SmartImage
                   src={imageUrl}
                   alt={imageAlt}
-                  className="h-full w-full object-cover"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 480px"
+                  className="object-cover"
                 />
               </div>
             )}
@@ -390,12 +397,15 @@ function BlockSection({
                 >
                   <div>
                     {card.image_url && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={card.image_url}
-                        alt={card.title}
-                        className="mb-4 h-40 w-full rounded-lg object-cover"
-                      />
+                      <div className="relative mb-4 h-40 w-full overflow-hidden rounded-lg bg-stone-100">
+                        <SmartImage
+                          src={card.image_url}
+                          alt={card.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 360px"
+                          className="object-cover"
+                        />
+                      </div>
                     )}
                     {card.badge && (
                       <span className="inline-block rounded-md bg-[#f4f3ef] px-2.5 py-1 text-[11px] font-semibold text-[#191919]">
@@ -547,12 +557,13 @@ function BlockSection({
                 >
                   <div>
                     {post.image_url && (
-                      <div className="aspect-[16/9] w-full overflow-hidden bg-stone-100">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-stone-100">
+                        <SmartImage
                           src={post.image_url}
                           alt={post.image_alt || post.title}
-                          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 360px"
+                          className="object-cover transition duration-300 group-hover:scale-105"
                         />
                       </div>
                     )}

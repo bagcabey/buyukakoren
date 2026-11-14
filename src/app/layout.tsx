@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import { getAllStoreData } from "@/lib/store";
 
 const inter = Inter({
@@ -18,21 +19,26 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://buyukakoren.vercel.app"),
-  title: "B.Akören | Büyük Akören Köyü Derneği — Sivas Yıldızeli",
+  metadataBase: new URL(SITE_URL),
+  title: `${SITE_NAME} | Yıldızeli, Sivas`,
   description:
-    "Sivas Yıldızeli Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği resmî duyuru, faaliyet raporu, taziye ve bilgi portalı.",
+    "Sivas Yıldızeli Büyükakören (Büyük Akören) Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği resmî duyuru, faaliyet ve taziye portalı.",
   icons: {
     icon: "/icon.svg",
     shortcut: "/icon.svg",
-    apple: "/icon.svg",
+    apple: "/apple-icon",
+  },
+  openGraph: {
+    siteName: SITE_NAME,
+    locale: "tr_TR",
+    type: "website",
   },
   verification: {
     google: "5cdf4f27709d4a0f",
   },
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 const BUILTIN_EDITABLE_SLUGS = new Set([
   "/",
@@ -40,6 +46,10 @@ const BUILTIN_EDITABLE_SLUGS = new Set([
   "/dernek",
   "/bagis",
   "/iletisim",
+  "/kvkk",
+  "/gizlilik",
+  "/kullanim-kosullari",
+  "/kunye",
 ]);
 
 export default async function RootLayout({

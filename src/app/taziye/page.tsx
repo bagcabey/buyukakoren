@@ -1,10 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Calendar, HeartHandshake, MapPin, MessageSquarePlus } from "lucide-react";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ShareWhatsAppButton } from "@/components/ShareWhatsAppButton";
 import { formatDateTR } from "@/lib/format";
+import { buildPageMetadata } from "@/lib/seo";
 import { getAllStoreData } from "@/lib/store";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Büyükakören Taziye ve Vefat İlanları | B.Akören",
+  description:
+    "Sivas Yıldızeli Büyükakören (Büyük Akören) köyü vefat duyuruları, cenaze namazı saatleri, defin yeri ve taziye ilanları.",
+  path: "/taziye",
+});
 
 export default async function TaziyePage() {
   const data = await getAllStoreData();
@@ -17,6 +27,7 @@ export default async function TaziyePage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-12">
+      <Breadcrumbs items={[{ name: "Taziye İlanları", href: "/taziye" }]} />
       <div className="border-b border-[#e6e5e0] pb-5 sm:pb-6">
         <div className="inline-flex items-center gap-1.5 rounded-full bg-[#191919] px-3 py-1 text-[11px] font-medium tracking-wide text-white uppercase">
           <HeartHandshake className="h-3.5 w-3.5" />

@@ -190,9 +190,9 @@ export function buildDefaultPages(): PageConfig[] {
             eyebrow: "Tarihsel Arka Plan",
             title: "Eski Adlar ve Yerleşim Tarihi",
             content:
-              "## Ağören'den Büyükakören'e\n\nNişanyan Yer Adları Envanteri (Index Anatolicus) kayıtlarına göre köyümüzün adı **1907** yılı belgelerinde **Ağören**, **1928** yılı resmî kayıtlarında ise **Büyük Akviran** olarak geçmektedir. Cumhuriyet dönemi idari düzenlemeleriyle yerleşimimizin adı **Büyükakören** (yaygın kullanımda Büyük Akören) olarak tescil edilmiştir.\n\n## Coğrafya ve Geçim Kaynakları\n\nSivas il merkezinin batısında, Yıldızeli ilçesine bağlı olarak 1.276 metre rakımda yer alan köyümüz 33,8 km² yüzölçümüne sahiptir. Yüksek rakımlı İç Anadolu iklimi nedeniyle bölge halkının geleneksel geçim kaynakları tarım (tahıl ve yem bitkileri) ile küçükbaş ve büyükbaş hayvancılıktır.",
+              "## Ağören'den Büyükakören'e\n\nNişanyan Yer Adları Envanteri (Index Anatolicus) kayıtlarına göre köyümüzün adı **1907** yılı belgelerinde **Ağören**, **1928** yılı resmî kayıtlarında ise **Büyük Akviran** olarak geçmektedir. Cumhuriyet dönemi idari düzenlemeleriyle yerleşimimizin resmî adı **Büyükakören** (yaygın kullanımda **Büyük Akören**) olarak tescil edilmiştir.\n\n## Coğrafya, İklim ve Ulaşım\n\nSivas Yıldızeli köyleri arasında yer alan Büyükakören köyü, Sivas il merkezine **62 km**, Yıldızeli ilçe merkezine ise **49 km** uzaklıktadır. **1.276 metre** rakıma ve **33,8 km²** alana sahip yerleşimimizde karasal İç Anadolu bozkır iklimi görülür. Yaz ayları sıcak ve kurak, kış ayları soğuk ve kar yağışlıdır. Başlıca geçim kaynakları tahıl ve yem bitkileri tarımı ile küçükbaş/büyükbaş hayvancılıktır.\n\nSivas merkezden ve Yıldızeli ilçesinden kara yolu bağlantısıyla ulaşım sağlanmakta olup PTT posta kodu **58502**, telefon alan kodu **0346**'dır.",
             source_note:
-              "Kaynaklar: Sevan Nişanyan Index Anatolicus (1907/1928), Vikipedi Büyükakören Maddesi, Harita Genel Müdürlüğü.",
+              "Kaynaklar: Sevan Nişanyan Index Anatolicus (1907/1928), Vikipedi Büyükakören Maddesi, Harita Genel Müdürlüğü, PTT 58502 kayıtları.",
           },
         },
         {

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageBlocksRenderer } from "@/components/PageBlocksRenderer";
+import { buildPageMetadata } from "@/lib/seo";
 import { getAllStoreData, getPageBySlug } from "@/lib/store";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata({
   params,
@@ -18,11 +18,14 @@ export async function generateMetadata({
   if (!page || page.status !== "published") {
     notFound();
   }
-  return {
+  return buildPageMetadata({
     title: page.seo_title || `${page.title} | Büyük Akören Köyü Derneği`,
-    description: page.seo_description || undefined,
-    openGraph: page.og_image ? { images: [page.og_image] } : undefined,
-  };
+    description:
+      page.seo_description ||
+      `${page.title} — Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği.`,
+    path: normalized,
+    ogImage: page.og_image,
+  });
 }
 
 export default async function CustomCmsPage({
@@ -43,13 +46,7 @@ export default async function CustomCmsPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
-      <Link
-        href="/"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm text-[#666560] hover:text-[#191919]"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Ana Sayfaya Dön
-      </Link>
+      <Breadcrumbs items={[{ name: page.title, href: normalized }]} />
       <PageBlocksRenderer page={page} storeData={storeData} />
     </div>
   );

@@ -1,23 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, HeartHandshake, Pin } from "lucide-react";
+import { JsonLd } from "@/components/JsonLd";
 import { PageBlocksRenderer } from "@/components/PageBlocksRenderer";
 import { formatDateTR } from "@/lib/format";
+import {
+  buildOrganizationJsonLd,
+  buildPageMetadata,
+  buildWebSiteJsonLd,
+} from "@/lib/seo";
 import { getAllStoreData, getPageBySlug, getPublishedPosts } from "@/lib/store";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getPageBySlug("/", false);
-  return {
+  return buildPageMetadata({
     title:
-      page?.seo_title ||
-      "B.Akören | Büyük Akören Köyü Derneği — Sivas Yıldızeli",
+      page?.seo_title || "Büyükakören (Büyük Akören) Köyü Derneği | Yıldızeli, Sivas",
     description:
       page?.seo_description ||
-      "Sivas Yıldızeli Büyükakören (Büyük Akören) Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği resmî duyuru, faaliyet, taziye ve bilgi portalı.",
-    openGraph: page?.og_image ? { images: [page.og_image] } : undefined,
-  };
+      "Sivas Yıldızeli Büyükakören (Büyük Akören) Köyü Derneği resmî portalı. Güncel köy duyuruları, nüfus 449, posta kodu 58502, taziye ve faaliyetler.",
+    path: "/",
+    ogImage: page?.og_image,
+  });
 }
 
 export default async function HomePage() {
@@ -39,6 +45,8 @@ export default async function HomePage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <JsonLd data={buildOrganizationJsonLd(storeData.site_settings)} />
+      <JsonLd data={buildWebSiteJsonLd(storeData.site_settings)} />
       {pinnedPost && (
         <Link
           href={`/duyurular/${pinnedPost.slug}`}

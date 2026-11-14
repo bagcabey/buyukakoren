@@ -9,12 +9,16 @@ import {
   FileDown,
   MessageSquare,
 } from "lucide-react";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { JsonLd } from "@/components/JsonLd";
 import { ShareWhatsAppButton } from "@/components/ShareWhatsAppButton";
+import { SmartImage } from "@/components/SmartImage";
 import { STATUS_LABELS, formatDateTR, getCategoryLabel } from "@/lib/format";
 import { renderSafeRichText, sanitizeSafeUrl } from "@/lib/sanitize";
+import { buildNewsArticleJsonLd, buildPageMetadata } from "@/lib/seo";
 import { getAllStoreData, getPostBySlugWithRedirect } from "@/lib/store";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata({
   params,
@@ -26,15 +30,13 @@ export async function generateMetadata({
   if (!post || !post.is_published) {
     notFound();
   }
-  return {
+  return buildPageMetadata({
     title: `${post.seo_title || post.title} | B.Akören`,
     description: post.seo_description || post.summary,
-    openGraph: {
-      title: post.seo_title || post.title,
-      description: post.seo_description || post.summary,
-      images: post.image_url ? [post.image_url] : undefined,
-    },
-  };
+    path: `/duyurular/${post.slug}`,
+    ogImage: post.image_url,
+    type: "article",
+  });
 }
 
 export default async function PostDetailPage({
@@ -66,6 +68,13 @@ export default async function PostDetailPage({
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-12">
+      <JsonLd data={buildNewsArticleJsonLd(post, storeData.site_settings)} />
+      <Breadcrumbs
+        items={[
+          { name: "Duyuru & Haberler", href: "/duyurular" },
+          { name: post.title, href: `/duyurular/${post.slug}` },
+        ]}
+      />
       <Link
         href="/duyurular"
         className="inline-flex items-center gap-1.5 rounded-lg border border-[#e6e5e0] bg-[#fbfbfa] px-3 py-1.5 text-xs font-medium text-[#191919] transition-colors hover:bg-[#f4f3ef] sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm sm:text-[#666560]"
@@ -119,11 +128,16 @@ export default async function PostDetailPage({
 
       {post.image_url && (
         <figure className="mt-6 overflow-hidden rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] sm:mt-8">
-          <img
-            src={post.image_url}
-            alt={post.image_alt || post.title}
-            className="w-full object-cover"
-          />
+          <div className="relative aspect-[16/10] w-full bg-[#f4f3ef]">
+            <SmartImage
+              src={post.image_url}
+              alt={post.image_alt || post.title}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover"
+            />
+          </div>
           {(post.image_attribution?.license ||
             post.image_attribution?.author ||
             post.image_attribution?.source_url) && (

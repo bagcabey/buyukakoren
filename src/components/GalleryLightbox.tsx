@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, ExternalLink, X, Images } from "lucide-react";
 import { GalleryPhoto } from "@/lib/types";
 import { sanitizeSafeUrl } from "@/lib/sanitize";
+import { SmartImage } from "./SmartImage";
 
 export function GalleryLightbox({ photos }: { photos: GalleryPhoto[] }) {
   const albums = ["Tümü", ...Array.from(new Set(photos.map((p) => p.album)))];
@@ -88,12 +89,13 @@ export function GalleryLightbox({ photos }: { photos: GalleryPhoto[] }) {
               onClick={() => setSelectedIndex(idx)}
               className="group overflow-hidden rounded-xl border border-[#e6e5e0] bg-white text-left transition-colors hover:border-[#cfcec8] hover:bg-[#fbfbfa]"
             >
-              <div className="aspect-[16/10] w-full overflow-hidden bg-[#f4f3ef]">
-                <img
+              <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#f4f3ef]">
+                <SmartImage
                   src={photo.image_url}
                   alt={photo.image_alt || photo.title}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                 />
               </div>
               <div className="p-4">

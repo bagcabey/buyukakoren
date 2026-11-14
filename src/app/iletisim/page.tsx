@@ -1,20 +1,24 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Phone, School, ShieldAlert } from "lucide-react";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { JsonLd } from "@/components/JsonLd";
 import { PageBlocksRenderer } from "@/components/PageBlocksRenderer";
+import { buildContactPageJsonLd, buildPageMetadata } from "@/lib/seo";
 import { getAllStoreData, getPageBySlug } from "@/lib/store";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getPageBySlug("/iletisim", false);
-  return {
+  return buildPageMetadata({
     title: page?.seo_title || "İletişim | Büyük Akören Köyü Derneği",
     description:
       page?.seo_description ||
-      "Büyük Akören Köyü Derneği iletişim formu, konum haritası, Büyük Akören Ortaokulu ve köy acil erişim bilgileri.",
-    openGraph: page?.og_image ? { images: [page.og_image] } : undefined,
-  };
+      "Sivas Yıldızeli Büyükakören Köyü Derneği iletişim formu, konum haritası ve Büyük Akören Ortaokulu resmî erişim bilgileri.",
+    path: "/iletisim",
+    ogImage: page?.og_image,
+  });
 }
 
 export default async function IletisimPage() {
@@ -29,6 +33,8 @@ export default async function IletisimPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <JsonLd data={buildContactPageJsonLd(storeData.site_settings)} />
+      <Breadcrumbs items={[{ name: "İletişim", href: "/iletisim" }]} />
       <PageBlocksRenderer page={page} storeData={storeData} />
 
       <section className="mt-10 grid gap-4 sm:grid-cols-2">

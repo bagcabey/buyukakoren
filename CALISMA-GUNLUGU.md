@@ -41,3 +41,11 @@ Bu dosya, 14 Kasım 2026 teslim öncesi bakım ve geliştirme sürecindeki her a
 - **Kişisel Veri İçeren / Kaynağı Belirsiz Görsellerin Taşınması**: `02_agac_dikim_temiz.jpg`, `03_koy_cocuklari_temizlik.jpg`, `04_tarih_kultur_gezisi_iletisim.jpg`, `05_buyuk_akoren_okulu.jpg` ve `06_koy_kis_manzarasi.jpg` yayından çıkarılıp `gorseller/izin-bekleyen/` klasörüne taşındı; canlı veri ve `seed.ts` üzerinden kırık görsel referansları temizlendi.
 - **Görsel Lisans ve Kaynak Atfı Altyapısı**: `GalleryLightbox.tsx`, `duyurular/[slug]/page.tsx` ve `AdminDashboard.tsx` (yazı + galeri formları) görsel alt metni, yazar, lisans ve kaynak URL alanlarını kaydedip hem kart altında hem de ışık kutusunda gösterecek şekilde güncellendi.
 - **Doğrulama**: `npm run lint` ve `npm run build` 0 hata ile geçti.
+
+
+## Aşama 5: Büyük Akören Odaklı SEO, Yapısal Veri ve Performans — 14.11.2026 05:33
+- **SEO Altyapısı (`src/lib/seo.ts`)**: `NEXT_PUBLIC_SITE_URL` tek merkezden okunacak şekilde yapılandırıldı; tüm sayfalarda `alternates.canonical`, Open Graph ve Twitter kartları ile `Büyükakören` / `Büyük Akören` (Yıldızeli, Sivas, PK 58502) odaklı benzersiz meta başlık ve açıklamalar eklendi.
+- **JSON-LD Yapısal Verileri ve Ekmek Kırıntısı (`Breadcrumbs.tsx`, `JsonLd.tsx`)**: Ana sayfada `NGO` (`Organization`) ve `WebSite`, köy sayfasında `Place` (`39.603056, 36.438056`, PK `58502`), duyuru detayında `NewsArticle`, iletişimde `ContactPage` ve tüm alt sayfalarda görsel + JSON-LD `BreadcrumbList` eklendi; boş telefon/e-posta alanlarının yapısal veriye basılmaması sağlandı.
+- **Teknik SEO ve Statik/ISR Mimarisi**: 1200×630 dinamik `/opengraph-image`, 180×180 `/apple-icon`, `/manifest.webmanifest`, gerçek içerik tarihleriyle güncellenen `/sitemap.xml` (5 dk ISR) ve `/robots.txt` oluşturuldu. Kök `layout.tsx` ve tüm ziyaretçi sayfaları `force-dynamic` yerine `revalidate = 60` (panel kaydında `revalidatePath` ile anlık yenileme) modeline geçirildi.
+- **Görsel Optimizasyonu (`next.config.ts` & `SmartImage.tsx`)**: `images.unoptimized: true` kaldırılıp AVIF/WebP desteği ve `remotePatterns` (`*.public.blob.vercel-storage.com`, `upload.wikimedia.org`) etkinleştirildi; hero ve kart görselleri `next/image` (`sizes`, hero `priority`) ile sunuldu.
+- **Doğrulama**: `npm run lint` ve `npm run build` 0 hata ile tamamlandı.

@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { JsonLd } from "@/components/JsonLd";
 import { PageBlocksRenderer } from "@/components/PageBlocksRenderer";
+import { buildPageMetadata, buildPlaceJsonLd } from "@/lib/seo";
 import { getAllStoreData, getPageBySlug } from "@/lib/store";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getPageBySlug("/koyumuz", false);
-  return {
-    title:
-      page?.seo_title ||
-      "Büyükakören (Büyük Akören) Köyü Tarihçe ve Nüfusu | Yıldızeli",
+  return buildPageMetadata({
+    title: page?.seo_title || "Büyükakören (Büyük Akören) Tarihçe ve Nüfusu",
     description:
       page?.seo_description ||
-      "Sivas Yıldızeli Büyükakören Köyü tarihçesi (1907 Ağören, 1928 Büyük Akviran), coğrafyası (1.276 m rakım, 33,8 km²) ve TÜİK 1990-2025 nüfus verileri.",
-    openGraph: page?.og_image ? { images: [page.og_image] } : undefined,
-  };
+      "Sivas Yıldızeli Büyükakören köyü tarihçesi (1907 Ağören, 1928 Büyük Akviran), posta kodu 58502, Büyükakören nüfusu ve Büyük Akören Ortaokulu.",
+    path: "/koyumuz",
+    ogImage: page?.og_image,
+  });
 }
 
 export default async function KoyumuzPage() {
@@ -30,6 +32,8 @@ export default async function KoyumuzPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <JsonLd data={buildPlaceJsonLd()} />
+      <Breadcrumbs items={[{ name: "Köyümüz & Tarihçe", href: "/koyumuz" }]} />
       <PageBlocksRenderer page={page} storeData={storeData} />
     </div>
   );

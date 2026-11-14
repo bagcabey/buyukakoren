@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Calendar, Pin, Search } from "lucide-react";
 import { formatDateTR, getCategoryLabel } from "@/lib/format";
 import { Post } from "@/lib/types";
+import { SmartImage } from "./SmartImage";
 
 const DEFAULT_FILTERS: { key: string; label: string }[] = [
   { key: "tumu", label: "Tümü" },
@@ -107,11 +108,13 @@ export function PostsExplorer({
               className="group flex flex-col overflow-hidden rounded-xl border border-[#e6e5e0] bg-white transition-colors hover:border-[#cfcec8] hover:bg-[#fbfbfa]"
             >
               {post.image_url && (
-                <div className="aspect-[16/9] w-full overflow-hidden border-b border-[#e6e5e0] bg-[#f4f3ef]">
-                  <img
+                <div className="relative aspect-[16/9] w-full overflow-hidden border-b border-[#e6e5e0] bg-[#f4f3ef]">
+                  <SmartImage
                     src={post.image_url}
-                    alt={post.title}
-                    className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.02]"
+                    alt={post.image_alt || post.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.02]"
                   />
                 </div>
               )}

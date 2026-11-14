@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageBlocksRenderer } from "@/components/PageBlocksRenderer";
+import { buildPageMetadata } from "@/lib/seo";
 import { getAllStoreData, getPageBySlug } from "@/lib/store";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getPageBySlug("/bagis", false);
-  return {
-    title:
-      page?.seo_title || "Bağış ve Aidat Bilgileri | Büyük Akören Köyü Derneği",
+  return buildPageMetadata({
+    title: page?.seo_title || "Bağış ve Aidat | Büyük Akören Köyü Derneği",
     description:
       page?.seo_description ||
-      "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği resmî bağış ve üyelik aidatı bilgilendirme sayfası.",
-    openGraph: page?.og_image ? { images: [page.og_image] } : undefined,
-  };
+      "Büyükakören (Büyük Akören) Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği resmî bağış ve üyelik aidatı bilgilendirme sayfası.",
+    path: "/bagis",
+    ogImage: page?.og_image,
+  });
 }
 
 export default async function BagisPage() {
@@ -29,6 +31,7 @@ export default async function BagisPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+      <Breadcrumbs items={[{ name: "Bağış & Aidat", href: "/bagis" }]} />
       <PageBlocksRenderer page={page} storeData={storeData} isDonatePage />
     </div>
   );

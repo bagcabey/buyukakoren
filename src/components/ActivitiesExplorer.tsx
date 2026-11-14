@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Calendar, CheckCircle2, Clock, FileText } from "lucide-react";
 import { STATUS_LABELS, formatDateTR } from "@/lib/format";
 import { Post } from "@/lib/types";
+import { SmartImage } from "./SmartImage";
 
 export function ActivitiesExplorer({ activities }: { activities: Post[] }) {
   const [statusFilter, setStatusFilter] = useState<string>("tumu");
@@ -92,11 +93,15 @@ export function ActivitiesExplorer({ activities }: { activities: Post[] }) {
               className="group flex flex-col gap-5 rounded-xl border border-[#e6e5e0] bg-white p-5 transition-colors hover:border-[#cfcec8] hover:bg-[#fbfbfa] md:flex-row md:items-center"
             >
               {item.image_url && (
-                <img
-                  src={item.image_url}
-                  alt={item.title}
-                  className="aspect-[16/10] w-full shrink-0 rounded-lg border border-[#e6e5e0] object-cover md:w-64"
-                />
+                <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden rounded-lg border border-[#e6e5e0] bg-[#f4f3ef] md:w-64">
+                  <SmartImage
+                    src={item.image_url}
+                    alt={item.image_alt || item.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 256px"
+                    className="object-cover"
+                  />
+                </div>
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2 text-xs">

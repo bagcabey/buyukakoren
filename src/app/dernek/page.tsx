@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { JsonLd } from "@/components/JsonLd";
 import { PageBlocksRenderer } from "@/components/PageBlocksRenderer";
+import { buildOrganizationJsonLd, buildPageMetadata } from "@/lib/seo";
 import { getAllStoreData, getPageBySlug } from "@/lib/store";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getPageBySlug("/dernek", false);
-  return {
-    title:
-      page?.seo_title ||
-      "Büyük Akören Köyü Derneği | Kurumsal Yapı ve Yönetim Kurulu",
+  return buildPageMetadata({
+    title: page?.seo_title || "Büyükakören Köyü Derneği | Yönetim ve Amaç",
     description:
       page?.seo_description ||
-      "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği tüzük amaçları, çalışma ilkeleri ve yönetim kurulu bilgileri.",
-    openGraph: page?.og_image ? { images: [page.og_image] } : undefined,
-  };
+      "Sivas Yıldızeli Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği kurumsal yapısı, çalışma ilkeleri ve yönetim kurulu.",
+    path: "/dernek",
+    ogImage: page?.og_image,
+  });
 }
 
 export default async function DernekPage() {
@@ -37,6 +39,8 @@ export default async function DernekPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <JsonLd data={buildOrganizationJsonLd(s)} />
+      <Breadcrumbs items={[{ name: "Derneğimiz & Yönetim", href: "/dernek" }]} />
       <PageBlocksRenderer page={page} storeData={storeData} />
 
       {hasOfficialDetails && (
