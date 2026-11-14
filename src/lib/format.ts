@@ -53,3 +53,22 @@ export function slugifyTR(text: string): string {
     .replace(/^-+|-+$/g, "")
     .slice(0, 80);
 }
+
+/**
+ * Validates Turkish IBAN format (TR + 24 digits = 26 chars) and ISO 7064 Mod 97-10 checksum.
+ */
+export function isValidTurkishIban(rawIban: string): boolean {
+  const cleaned = rawIban.replace(/\s+/g, "").toUpperCase();
+  if (!/^TR\d{24}$/.test(cleaned)) {
+    return false;
+  }
+  // Move first 4 chars to end, T=29, R=27
+  const rearranged = `${cleaned.slice(4)}2927${cleaned.slice(2, 4)}`;
+  let remainder = 0;
+  for (let i = 0; i < rearranged.length; i++) {
+    const ch = rearranged.charCodeAt(i);
+    if (ch < 48 || ch > 57) return false;
+    remainder = (remainder * 10 + (ch - 48)) % 97;
+  }
+  return remainder === 1;
+}

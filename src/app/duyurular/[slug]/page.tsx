@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, Calendar, Clock, FileDown, MessageSquare } from "lucide-react";
+import { notFound, permanentRedirect } from "next/navigation";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Calendar,
+  Clock,
+  FileDown,
+  MessageSquare,
+} from "lucide-react";
 import { ShareWhatsAppButton } from "@/components/ShareWhatsAppButton";
 import { STATUS_LABELS, formatDateTR, getCategoryLabel } from "@/lib/format";
-import { getAllStoreData, getPostBySlug } from "@/lib/store";
+import { getAllStoreData, getPostBySlugWithRedirect } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
@@ -14,16 +21,16 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
-  if (!post) {
-    return { title: "İçerik Bulunamadı | B.Akören" };
+  const { post } = await getPostBySlugWithRedirect(slug, false);
+  if (!post || !post.is_published) {
+    notFound();
   }
   return {
-    title: `${post.title} | B.Akören`,
-    description: post.summary,
+    title: `${post.seo_title || post.title} | B.Akören`,
+    description: post.seo_description || post.summary,
     openGraph: {
-      title: post.title,
-      description: post.summary,
+      title: post.seo_title || post.title,
+      description: post.seo_description || post.summary,
       images: post.image_url ? [post.image_url] : undefined,
     },
   };
@@ -35,10 +42,14 @@ export default async function PostDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [post, storeData] = await Promise.all([
-    getPostBySlug(slug),
-    getAllStoreData(),
+  const [{ post, redirectToSlug }, storeData] = await Promise.all([
+    getPostBySlugWithRedirect(slug, false),
+    getAllStoreData(false),
   ]);
+
+  if (redirectToSlug) {
+    permanentRedirect(`/duyurular/${redirectToSlug}`);
+  }
 
   if (!post || !post.is_published) {
     notFound();
@@ -89,7 +100,7 @@ export default async function PostDetailPage({
           {post.summary}
         </p>
 
-        <div className="mt-5 flex flex-wrap items-center gap-2.5 sm:gap-3">
+        <div className="no-print mt-5 flex flex-wrap items-center gap-2.5 sm:gap-3">
           <ShareWhatsAppButton title={post.title} />
           {post.attachment_url && (
             <a
@@ -99,20 +110,26 @@ export default async function PostDetailPage({
               className="inline-flex items-center gap-1.5 rounded-md border border-[#e6e5e0] bg-white px-3 py-1.5 text-xs font-medium text-[#191919] hover:bg-[#fbfbfa]"
             >
               <FileDown className="h-3.5 w-3.5 text-[#666560]" />
-              Ekli Belgeyi İndir
+              {post.attachment_name || "Ekli Belgeyi İndir"}
             </a>
           )}
         </div>
       </header>
 
       {post.image_url && (
-        <div className="mt-6 overflow-hidden rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] sm:mt-8">
+        <figure className="mt-6 overflow-hidden rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] sm:mt-8">
           <img
             src={post.image_url}
-            alt={post.title}
+            alt={post.image_alt || post.title}
             className="w-full object-cover"
           />
-        </div>
+          {post.image_attribution?.license && (
+            <figcaption className="border-t border-[#e6e5e0] px-4 py-2 text-[11px] text-[#666560]">
+              Görsel Kaynağı: {post.image_attribution.author || "Arşiv"} •{" "}
+              {post.image_attribution.license}
+            </figcaption>
+          )}
+        </figure>
       )}
 
       <div className="mt-6 space-y-4 whitespace-pre-line text-[15px] leading-[1.75] text-[#191919] sm:mt-8 sm:text-base sm:leading-relaxed">
@@ -120,13 +137,14 @@ export default async function PostDetailPage({
       </div>
 
       {/* Share & Contact Box */}
-      <div className="mt-10 flex flex-col gap-4 rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="no-print mt-10 flex flex-col gap-4 rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-[#191919]">
             Görüş, Soru veya Katkı Bildirimi
           </p>
           <p className="mt-1 text-xs leading-relaxed text-[#666560]">
-            {storeData.site_settings.association_name} duyuruları hakkında bilgi almak için iletişim kanalımızı kullanabilirsiniz.
+            {storeData.site_settings.association_name} duyuruları hakkında bilgi
+            almak için iletişim kanalımızı kullanabilirsiniz.
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -143,7 +161,7 @@ export default async function PostDetailPage({
 
       {/* Related Posts */}
       {relatedPosts.length > 0 && (
-        <section className="mt-10 border-t border-[#e6e5e0] pt-8">
+        <section className="no-print mt-10 border-t border-[#e6e5e0] pt-8">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-lg font-semibold text-[#191919]">
               Diğer Güncel Duyuru ve Haberler

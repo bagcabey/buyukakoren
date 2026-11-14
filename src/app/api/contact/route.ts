@@ -1,10 +1,13 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
-import { isAdminAuthenticated } from "@/lib/auth";
+import { requireAdminAuth } from "@/lib/auth";
+import { hashIpAddress } from "@/lib/crypto";
+import { checkAndRecordContactRateLimit, getClientIp } from "@/lib/rate-limit";
+import { appendAuditLog } from "@/lib/security-store";
 import {
   createContactMessage,
   deleteContactMessage,
-  getAllStoreData,
+  getContactMessages,
   markMessageRead,
 } from "@/lib/store";
 
@@ -15,45 +18,134 @@ const NO_STORE_HEADERS = {
 };
 
 export async function GET() {
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json(
-      { error: "Yetkisiz erişim." },
-      { status: 401, headers: NO_STORE_HEADERS }
-    );
-  }
-  const data = await getAllStoreData();
-  return NextResponse.json(
-    { messages: data.contact_messages },
-    { headers: NO_STORE_HEADERS }
-  );
+  const auth = await requireAdminAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
+  const messages = await getContactMessages();
+  return NextResponse.json({ messages }, { headers: NO_STORE_HEADERS });
 }
 
 export async function POST(req: Request) {
+  const ip = getClientIp(req);
+  const ipHash = hashIpAddress(ip);
+
   try {
-    const body = (await req.json()) as {
-      sender_name: string;
-      sender_phone?: string;
-      subject: string;
-      message: string;
+    const body = (await req.json().catch(() => ({}))) as {
+      sender_name?: unknown;
+      sender_phone?: unknown;
+      full_name?: unknown;
+      phone?: unknown;
+      subject?: unknown;
+      message?: unknown;
+      kvkk_consent?: unknown;
+      website?: unknown;
+      formRenderedAt?: unknown;
     };
-    if (!body.sender_name?.trim() || !body.message?.trim()) {
+
+    // 1. Görünmez honeypot kontrolü
+    if (typeof body.website === "string" && body.website.trim().length > 0) {
       return NextResponse.json(
-        { error: "Ad soyad ve mesaj alanları zorunludur." },
+        { error: "Form doğrulaması başarısız." },
         { status: 400, headers: NO_STORE_HEADERS }
       );
     }
+
+    // 2. Çok hızlı bot gönderimi koruması
+    if (typeof body.formRenderedAt === "number") {
+      const elapsed = Date.now() - body.formRenderedAt;
+      if (elapsed >= 0 && elapsed < 1500) {
+        return NextResponse.json(
+          { error: "Lütfen formu göndermeden önce birkaç saniye bekleyin." },
+          { status: 400, headers: NO_STORE_HEADERS }
+        );
+      }
+    }
+
+    // 3. IP hız sınırı
+    const limit = await checkAndRecordContactRateLimit(ip);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        {
+          error:
+            "Kısa sürede çok fazla mesaj gönderildi. Lütfen biraz bekleyip tekrar deneyin.",
+        },
+        {
+          status: 429,
+          headers: {
+            ...NO_STORE_HEADERS,
+            "Retry-After": String(limit.retryAfterSec),
+          },
+        }
+      );
+    }
+
+    // 4. Alan uzunluk ve KVKK doğrulaması
+    const rawName = body.sender_name ?? body.full_name;
+    const rawPhone = body.sender_phone ?? body.phone;
+
+    const senderName = typeof rawName === "string" ? rawName.trim() : "";
+    const senderPhone = typeof rawPhone === "string" ? rawPhone.trim() : "";
+    const subject =
+      typeof body.subject === "string" && body.subject.trim()
+        ? body.subject.trim()
+        : "Genel Talep / Öneri";
+    const message =
+      typeof body.message === "string" ? body.message.trim() : "";
+
+    if (senderName.length < 2 || senderName.length > 100) {
+      return NextResponse.json(
+        { error: "Ad soyad 2 ile 100 karakter arasında olmalıdır." },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
+
+    if (senderPhone && (senderPhone.length < 7 || senderPhone.length > 30)) {
+      return NextResponse.json(
+        { error: "Telefon numarası 7 ile 30 karakter arasında olmalıdır." },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
+
+    if (subject.length < 2 || subject.length > 120) {
+      return NextResponse.json(
+        { error: "Konu başlığı 2 ile 120 karakter arasında olmalıdır." },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
+
+    if (message.length < 10 || message.length > 2000) {
+      return NextResponse.json(
+        { error: "Mesajınız 10 ile 2000 karakter arasında olmalıdır." },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
+
+    if (body.kvkk_consent !== true) {
+      return NextResponse.json(
+        {
+          error:
+            "Mesaj gönderebilmek için KVKK Aydınlatma Metni onay kutusunu işaretlemeniz gerekir.",
+        },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
+
     const created = await createContactMessage({
-      sender_name: body.sender_name.trim(),
-      sender_phone: body.sender_phone?.trim() || null,
-      subject: body.subject?.trim() || "Genel Talep / Öneri",
-      message: body.message.trim(),
+      sender_name: senderName,
+      sender_phone: senderPhone || null,
+      subject,
+      message,
+      kvkk_consent: true,
+      ip_hash: ipHash,
     });
+
     revalidatePath("/admin");
     return NextResponse.json(
       { message: created },
-      { headers: NO_STORE_HEADERS }
+      { status: 201, headers: NO_STORE_HEADERS }
     );
-  } catch {
+  } catch (err) {
+    console.error("[contact/post] Mesaj kaydedilemedi:", err);
     return NextResponse.json(
       { error: "Mesaj gönderilemedi." },
       { status: 500, headers: NO_STORE_HEADERS }
@@ -62,32 +154,45 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json(
-      { error: "Yetkisiz erişim." },
-      { status: 401, headers: NO_STORE_HEADERS }
-    );
-  }
+  const auth = await requireAdminAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   const { searchParams } = new URL(req.url);
-  const id = searchParams.get("id");
+  let id = searchParams.get("id");
+  let isRead = true;
+
+  if (!id) {
+    const body = (await req.json().catch(() => ({}))) as {
+      id?: string;
+      is_read?: boolean;
+    };
+    id = body.id || null;
+    if (typeof body.is_read === "boolean") isRead = body.is_read;
+  }
+
   if (!id) {
     return NextResponse.json(
       { error: "ID gerekli." },
       { status: 400, headers: NO_STORE_HEADERS }
     );
   }
-  await markMessageRead(id);
+
+  await markMessageRead(id, isRead);
+  await appendAuditLog({
+    username: auth.session.sub,
+    role: auth.session.role,
+    action: "message.mark_read",
+    target: id,
+  });
+
   revalidatePath("/admin");
   return NextResponse.json({ ok: true }, { headers: NO_STORE_HEADERS });
 }
 
 export async function DELETE(req: Request) {
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json(
-      { error: "Yetkisiz erişim." },
-      { status: 401, headers: NO_STORE_HEADERS }
-    );
-  }
+  const auth = await requireAdminAuth();
+  if (auth.errorResponse) return auth.errorResponse;
+
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
   if (!id) {
@@ -96,7 +201,15 @@ export async function DELETE(req: Request) {
       { status: 400, headers: NO_STORE_HEADERS }
     );
   }
+
   await deleteContactMessage(id);
+  await appendAuditLog({
+    username: auth.session.sub,
+    role: auth.session.role,
+    action: "message.delete",
+    target: id,
+  });
+
   revalidatePath("/admin");
   return NextResponse.json({ ok: true }, { headers: NO_STORE_HEADERS });
 }

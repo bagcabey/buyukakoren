@@ -10,3 +10,5 @@ public/uploads/*
 !public/uploads/.gitkeep
 gorseller/
 .vercel/
+data/*.enc.json
+*.bak

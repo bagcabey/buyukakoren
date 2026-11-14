@@ -1,31 +1,37 @@
-# B.Akören — Büyük Akören Köyü Derneği Web Portalı
+# Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği Web Portalı
 
-Sivas Yıldızeli Büyük Akören (Büyükakören) Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği için **Next.js (App Router)**, **TypeScript**, **Tailwind CSS** ve **Supabase** uyumlu kurumsal web sitesi ve yönetici paneli.
+Bu proje, Sivas ili Yıldızeli ilçesine bağlı Büyükakören (Büyük Akören) Köyü ve derneği için geliştirilmiş resmî kurumsal bilgi, duyuru, faaliyet, galeri, taziye ve iletişim portalıdır.
 
-## Yerel Kurulum ve Çalıştırma
+## Kurulum ve Geliştirme
 
 ```bash
 npm install
 npm run dev
 ```
 
-Tarayıcıda `http://localhost:3000` adresini açın.
+Tarayıcıdan `http://localhost:3000` adresini açın.
 
-### Yönetici Paneli
-- Adres: `http://localhost:3000/admin`
-- Varsayılan Şifre (yerel): `Bakoren2026!`
-- Üretim ortamında `.env.local` veya Vercel Environment Variables üzerinden `ADMIN_PASSWORD` ve `ADMIN_SESSION_SECRET` değerlerini mutlaka değiştirin.
+## Ortam Değişkenleri
 
-## Vercel + Supabase ile Canlı Yayın
+Yerel geliştirme için `.env.example` dosyasını `.env.local` olarak kopyalayıp kendi güçlü gizli değerlerinizi girin:
 
-1. Projeyi GitHub/GitLab deposuna pushlayın.
-2. Vercel üzerinde projeyi import edin.
-3. Kalıcı bulut veritabanı için [Supabase](https://supabase.com) projesi oluşturup `supabase/schema.sql` dosyasını SQL Editor'de çalıştırın.
-4. Vercel Environment Variables kısmına şunları ekleyin:
-   - `ADMIN_PASSWORD`
-   - `ADMIN_SESSION_SECRET`
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
+```env
+ADMIN_PASSWORD=<en-az-12-karakter-guclu-sifre>
+ADMIN_SESSION_SECRET=<en-az-32-karakter-rastgele-anahtar>
+BLOB_READ_WRITE_TOKEN=<vercel-blob-token>
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
 
-> Not: Supabase değişkenleri tanımlanmadığında uygulama otomatik olarak yerel `data/store.json` dosyasını kullanır.
+> **Güvenlik Notu:** Üretim ortamında (`Vercel → Project Settings → Environment Variables`) `ADMIN_PASSWORD` ve `ADMIN_SESSION_SECRET` değerlerini mutlaka tanımlayın. Varsayılan veya zayıf şifreler sistem tarafından kabul edilmez.
+
+## Kalıcı Veri Depolama
+
+- Üretimde Vercel Blob (`BLOB_READ_WRITE_TOKEN`) üzerinden atomik sürüm kontrollü CMS verisi (`store/state-v2.json`) ve AES-256-GCM ile şifrelenmiş özel veri depoları (`store/private/`) kullanılır.
+- Yerel geliştirme ortamında veriler `data/store.json` ve şifreli `data/security.enc.json` / `data/messages.enc.json` dosyalarında saklanır.
+- İstenirse `supabase/schema.sql` ile Satır Düzeyi Güvenlik (RLS) etkin Supabase PostgreSQL altyapısı da kullanılabilir.
+
+## Komutlar
+
+- `npm run lint`: TypeScript tür denetimi (`tsc --noEmit`)
+- `npm run build`: Üretim derlemesi
+- `npm run start`: Üretim sunucusu
