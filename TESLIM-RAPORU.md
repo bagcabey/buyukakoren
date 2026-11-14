@@ -70,10 +70,10 @@ Temel metrikler:
 
 Tüm ayrıntılı kontrol listesi [TESLIM-ONCESI-EKSIKLER.md](./TESLIM-ONCESI-EKSIKLER.md) ve Google tanıtım adımları [GOOGLE-TANITIM-REHBERI.md](./GOOGLE-TANITIM-REHBERI.md) dosyalarındadır. Özetle:
 
-1. **Vercel Ortam Değişkenleri:** `ADMIN_PASSWORD` (en az 12 karakter, güçlü) ve `ADMIN_SESSION_SECRET` (32+ karakter) Vercel Dashboard → Project Settings → Environment Variables bölümüne eklenmelidir *(yerel Vercel CLI oturumu kapalı olduğu için uzaktan eklenmemiştir)*.
-2. **Gerçek Dernek Kurum ve İletişim Verileri:** Resmî banka hesap adı + 26 haneli `TR` IBAN, resmî dernek telefonu/e-postası, DERBİS kütük numarası, vergi dairesi, kuruluş yılı, güncel dönem köy muhtarı adı/telefonu, Dernek Başkanı **Mustafa Tanju Çetiner** görevi ile yönetim kurulu listesi, sosyal medya hesapları ve varsa doğrulanan mahalle/cami sayısı dernek yönetimi tarafından teyit edilip `/admin` üzerinden girilmelidir *(boş bırakılan alanlar sitede otomatik gizlidir)*. Footer'daki site yazılımcısı portfolyo adresi ve soyadı yazımı teslim öncesi son kez kontrol edilmelidir.
-3. **Doğrudan Köy İçi Fotoğrafları:** Yüzü tanınabilir/izni belirsiz eski fotoğraflar silinmeden [gorseller/izin-bekleyen/](./gorseller/izin-bekleyen/) klasörüne ayrılmıştır; dernekten açık yayın izniyle yüksek çözünürlüklü okul, cami, çeşme, mahalle ve etkinlik fotoğrafları alındığında `/admin` → **Galeri** üzerinden eklenmelidir.
-4. **Google Search Console ve Google İşletme Profili:** Google hesap oturumu gerektirdiği için Search Console'da `sitemap.xml` gönderimi/URL denetimi ve `business.google.com` doğrulaması yetkili Google hesabıyla tamamlanmalıdır.
+1. **Yönetici Hesabı ve İsteğe Bağlı Ortam Değişkenleri:** Canlı yönetici hesabı (`yönetmenbgc`) AES-256-GCM şifreli Vercel Blob güvenlik deposu (`store/private/security-v2.enc`) üzerinde aktiftir ve `/yonetmenbgc` veya `/admin` üzerinden kullanılabilir. Oturum imzası mevcut durumda `BLOB_READ_WRITE_TOKEN` üzerinden güvenli şekilde türetilmektedir; istenirse Vercel Dashboard → Project Settings → Environment Variables bölümünden bağımsız `ADMIN_SESSION_SECRET` (32+ karakter) tanımlanabilir.
+2. **Gerçek Dernek Kurum ve İletişim Verileri:** Resmî banka hesap adı + 26 haneli `TR` IBAN, resmî dernek telefonu/e-postası, DERBİS kütük numarası, vergi dairesi, kuruluş yılı, güncel dönem köy muhtarı adı/telefonu, Dernek Başkanı **Mustafa Tanju Çetiner** görevi ile yönetim kurulu listesi, sosyal medya hesapları ve varsa doğrulanan mahalle/cami sayısı dernek yönetimi tarafından teyit edilip `/yonetmenbgc` (veya `/admin`) üzerinden girilmelidir *(boş bırakılan alanlar sitede otomatik gizlidir)*. Footer'daki site yazılımcısı portfolyo adresi ve soyadı yazımı teslim öncesi son kez kontrol edilmelidir.
+3. **Doğrudan Köy İçi Fotoğrafları:** Yüzü tanınabilir/izni belirsiz eski fotoğraflar silinmeden [gorseller/izin-bekleyen/](./gorseller/izin-bekleyen/) klasörüne ayrılmıştır; dernekten açık yayın izniyle yüksek çözünürlüklü okul, cami, çeşme, mahalle ve etkinlik fotoğrafları alındığında `/yonetmenbgc` (veya `/admin`) → **Galeri** üzerinden eklenmelidir.
+4. **Google Search Console ve Google İşletme Profili:** Google Search Console'da `sitemap.xml` (`19` sayfa) gönderimi tamamlanıp doğrulanmıştır; yalnızca `business.google.com` Google İşletme Profili doğrulaması dernek yetkilisi tarafından tamamlanmalıdır.
 
 ---
 
@@ -81,9 +81,9 @@ Tüm ayrıntılı kontrol listesi [TESLIM-ONCESI-EKSIKLER.md](./TESLIM-ONCESI-EK
 
 Bu bölüm teknik bilgisi olmayan dernek yöneticilerinin siteyi güvenle yönetebilmesi için hazırlanmıştır.
 
-### 4.1. Yönetim Paneline Giriş (`/admin`)
-1. Tarayıcıda `https://buyukakoren.vercel.app/admin` adresine gidin.
-2. Kullanıcı adınızı (varsayılan ilk kurulumda `admin` veya tanımlanan editör kullanıcı adı) ve dernek yöneticisi şifrenizi girip **Giriş Yap** düğmesine basın.
+### 4.1. Yönetim Paneline Giriş (`/yonetmenbgc` veya `/admin`)
+1. Tarayıcıda `https://buyukakoren.vercel.app/yonetmenbgc` (veya `/admin`) adresine gidin.
+2. Kullanıcı adınızı (varsayılan ilk kurulumda `yönetmenbgc` veya tanımlanan editör kullanıcı adı; `yonetmenbgc` ve `admin` takma adları da kabul edilir) ve dernek yöneticisi şifrenizi girip **Giriş Yap** düğmesine basın.
 3. **Güvenlik Notu:** Arka arkaya 5 kez hatalı şifre girilirse hesap güvenliği için sistem 15 dakika bekleme uygular. İşiniz bittiğinde mutlaka sağ üstteki **Çıkış Yap** düğmesine basın.
 
 ### 4.2. Duyuru, Haber ve Faaliyet Ekleme / Düzenleme
@@ -115,7 +115,7 @@ Ana sayfa (`/`), Köyümüz (`/koyumuz`), Derneğimiz (`/dernek`), Bağış (`/b
 4. Hatalı bir düzenleme yaptıysanız sol alt bölümdeki **Son Revizyonlar** listesinden eski bir kaydın yanındaki **Geri Yükle** düğmesiyle önceki sürüme dönebilirsiniz.
 
 ### 4.6. Menü, Üst Atatürk Kuşağı, Genel Ayarlar ve IBAN
-- **Menü & Alt Bilgi (Yönetici rolü):** Üst menü linklerinin sırasını ve görünürlüğünü, sayfanın en üstündeki kırmızı Atatürk/Türk Bayrağı kuşağının metnini ve görünürlüğünü, footer açıklamasını ve sosyal medya linklerini düzenleyin.
+- **Menü & Alt Bilgi (Yönetici rolü):** Üst menü linklerinin sırasını ve görünürlüğünü, sayfanın en üstündeki kırmızı Atatürk/Türk Bayrağı kuşağının slogan metnini (kuşak kalıcı ve zorunludur, kapatılamaz; varsayılan slogan `Sonsuza Dek`), footer açıklamasını ve sosyal medya linklerini düzenleyin.
 - **Ayarlar & Yönetim (Yönetici rolü):**
   - Resmî telefon, e-posta, muhtar bilgisi, banka adı, hesap sahibi ve **TR IBAN** bilgisini buradan girin.
   - Sistem 26 haneli `TR` IBAN üzerinde matematiksel doğrulama (Mod-97) yapar; hatalı rakam girilirse kaydetmeyi durdurup sizi uyarır.

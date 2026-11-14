@@ -5,7 +5,7 @@ Bu dosya, dernek yönetimi ve site sorumlusu Ömer Bağçabaşı tarafından can
 ---
 
 ## 1. Sunucu / Vercel Ortam Değişkenleri ve Yönetici Hesabı
-- [x] **İlk Yönetici Hesabı (`admin`) Etkinleştirildi**: Yerel `.env.local` dosyasında tanımlı güçlü yönetici şifresinin tek yönlü `scrypt` karması ile ilk `admin` hesabı (`Baş Yönetici`, `yonetici` rolü) canlı üretimde AES-256-GCM şifreli Vercel Blob güvenlik deposuna (`store/private/security-v2.enc`) aktarıldı. Ömer `/admin` → **Kullanıcılar & İşlem Kaydı** sekmesinden dilediği zaman şifreyi güncelleyebilir veya yeni yöneticiler ekleyebilir.
+- [x] **İlk Yönetici Hesabı (`yönetmenbgc`) Etkinleştirildi**: Yerel `.env.local` dosyasında tanımlı güçlü yönetici şifresinin tek yönlü `scrypt` karması ile ilk `yönetmenbgc` hesabı (`Baş Yönetici`, `yonetici` rolü; `yonetmenbgc` ve `admin` giriş takma adlarıyla da uyumlu) canlı üretimde AES-256-GCM şifreli Vercel Blob güvenlik deposuna (`store/private/security-v2.enc`) aktarıldı. Ömer `/yonetmenbgc` (veya `/admin`) → **Kullanıcılar & İşlem Kaydı** sekmesinden dilediği zaman şifreyi güncelleyebilir veya yeni yöneticiler ekleyebilir.
 - [ ] **İsteğe Bağlı Vercel Ortam Değişkenleri (`ADMIN_SESSION_SECRET`)**: Üretimde oturum imza anahtarı halihazırda `BLOB_READ_WRITE_TOKEN` üzerinden güvenli şekilde türetilmektedir; istenirse Vercel Dashboard → `buyukakoren` → Settings → Environment Variables altından bağımsız `ADMIN_SESSION_SECRET` (32+ karakter) tanımlanarak oturum imzası Blob token'ından ayrılabilir.
 
 ## 2. Dernekten Alınacak Gerçek Kurumsal Bilgiler (`/admin` → Genel Ayarlar & Bağış)
@@ -24,5 +24,5 @@ Bu dosya, dernek yönetimi ve site sorumlusu Ömer Bağçabaşı tarafından can
 
 
 ## 4. Google Search Console ve Google İşletme Profili Onayı (Oturum Gerektirir)
-- [ ] **Google Search Console (`https://search.google.com/search-console`)**: Ömer Bağçabaşı veya dernek Google hesabıyla oturum açarak mülkü (`https://buyukakoren.vercel.app`) seçin, `sitemap.xml` haritasını gönderin ve ana sayfalar için *Dizine Eklenmesini İste* işlemini başlatın. *(Site sahiplik doğrulaması `google5cdf4f27709d4a0f.html` ile hazırdır; ancak tarayıcıda açık Google oturumu olmadığı için bu adım otomatikleştirilmemiştir.)*
+- [x] **Google Search Console (`https://search.google.com/search-console`)**: Mülk (`https://buyukakoren.vercel.app`) `google5cdf4f27709d4a0f.html` ile doğrulanmış ve `sitemap.xml` (`19` keşfedilen sayfa, durum: *Başarılı*) Google Search Console'a gönderilmiştir. İstenirse yeni duyuru eklendikten sonra Search Console üzerinden tekil URL denetimi / dizine ekleme talebi yapılabilir (yazı yayımlandığında IndexNow otomatik tetiklenir).
 - [ ] **Google İşletme Profili (`https://business.google.com`)**: `GOOGLE-TANITIM-REHBERI.md` içindeki 722 karakterlik hazır tanıtım metni, kategori ve bölge önerileriyle dernek yetkilisi adına işletme profilini açıp Google doğrulama kodunu/videosunu tamamlayın.
