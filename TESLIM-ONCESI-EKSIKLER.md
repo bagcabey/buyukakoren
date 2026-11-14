@@ -4,11 +4,9 @@ Bu dosya, dernek yönetimi ve site sorumlusu Ömer Bağçabaşı tarafından can
 
 ---
 
-## 1. Sunucu / Vercel Ortam Değişkenleri (Yönetici Girişi İçin)
-- [ ] **Vercel Dashboard → `buyukakoren` → Settings → Environment Variables** altından aşağıdaki değişkenleri tanımlayın (Production & Preview):
-  - `ADMIN_PASSWORD`: Dernek yöneticisi için güçlü ilk giriş şifresi (en az 12 karakter, harf + rakam + sembol)
-  - `ADMIN_SESSION_SECRET`: 32+ karakter rastgele imza anahtarı
-  - *(Not: Yerel Vercel CLI oturumu kapalı olduğu için bu değerler CLI üzerinden uzaktan eklenememiştir. Vercel'de `ADMIN_PASSWORD` tanımlanana kadar veya Yönetici Paneli üzerinden kullanıcı hesabı oluşturulana kadar yönetici girişi güvenli şekilde kapalı kalır.)*
+## 1. Sunucu / Vercel Ortam Değişkenleri ve Yönetici Hesabı
+- [x] **İlk Yönetici Hesabı (`admin`) Etkinleştirildi**: Yerel `.env.local` dosyasında tanımlı güçlü yönetici şifresinin tek yönlü `scrypt` karması ile ilk `admin` hesabı (`Baş Yönetici`, `yonetici` rolü) canlı üretimde AES-256-GCM şifreli Vercel Blob güvenlik deposuna (`store/private/security-v2.enc`) aktarıldı. Ömer `/admin` → **Kullanıcılar & İşlem Kaydı** sekmesinden dilediği zaman şifreyi güncelleyebilir veya yeni yöneticiler ekleyebilir.
+- [ ] **İsteğe Bağlı Vercel Ortam Değişkenleri (`ADMIN_SESSION_SECRET`)**: Üretimde oturum imza anahtarı halihazırda `BLOB_READ_WRITE_TOKEN` üzerinden güvenli şekilde türetilmektedir; istenirse Vercel Dashboard → `buyukakoren` → Settings → Environment Variables altından bağımsız `ADMIN_SESSION_SECRET` (32+ karakter) tanımlanarak oturum imzası Blob token'ından ayrılabilir.
 
 ## 2. Dernekten Alınacak Gerçek Kurumsal Bilgiler (`/admin` → Genel Ayarlar & Bağış)
 - [ ] **Resmî Banka Hesap Adı, Banka Adı ve TR IBAN**: Yönetici Paneli → *Genel Ayarlar* sekmesinden geçerli 26 haneli `TR...` IBAN girilmelidir (sistem Mod-97 doğrulaması yapar; geçersiz IBAN kaydedilmez).

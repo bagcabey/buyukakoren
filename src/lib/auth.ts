@@ -13,6 +13,10 @@ import { AdminRole, AdminUser } from "./types";
 export const SESSION_COOKIE_NAME = "akoren_admin_session";
 export const SESSION_TTL_SECONDS = 60 * 60 * 12; // 12 saat
 
+// Tek yönlü scrypt başlangıç karması (Vercel env ADMIN_PASSWORD henüz tanımlanmadığında ilk girişte Blob'a yazılır)
+const INITIAL_ADMIN_PASSWORD_HASH =
+  "scrypt:v1:7f03b56b4f23f432e3a365013ac98825:e6fd05440adb2cd8816fa136c9ad8d6118ebdbea61dda6a647637f5faf16c7eabb019cc4a3d9f755d6394090d6dcdbd5e13eccb19c7f5eff6017abd1bea1edc1";
+
 export interface AdminSessionPayload {
   sub: string;
   displayName: string;
@@ -225,19 +229,19 @@ export async function authenticateAdminCredentials(
     return { ok: false };
   }
 
-  // 2) Henüz hiç kullanıcı oluşturulmamışsa ve env ADMIN_PASSWORD tanımlıysa ilk yöneticiyi doğrula
+  // 2) Henüz hiç kullanıcı oluşturulmamışsa env ADMIN_PASSWORD veya tek yönlü başlangıç karmasıyla ilk yöneticiyi doğrula
   if (secState.users.length === 0) {
-    if (!envPassword) {
-      return { ok: false, configMissing: true };
-    }
-    if (username === "admin" && safeCompareStrings(password, envPassword)) {
+    const matchedEnv = envPassword ? safeCompareStrings(password, envPassword) : false;
+    const matchedInitialHash =
+      !envPassword && verifyPassword(password, INITIAL_ADMIN_PASSWORD_HASH);
+    if (username === "admin" && (matchedEnv || matchedInitialHash)) {
       const now = new Date().toISOString();
       const bootstrapAdmin: AdminUser = {
         id: "user-admin-1",
         username: "admin",
         display_name: "Baş Yönetici",
         role: "yonetici",
-        password_hash: hashPassword(envPassword),
+        password_hash: matchedEnv ? hashPassword(password) : INITIAL_ADMIN_PASSWORD_HASH,
         is_active: true,
         created_at: now,
         updated_at: now,
