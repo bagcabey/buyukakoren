@@ -64,7 +64,13 @@ export function Navbar() {
     <header className="sticky top-0 z-40 border-b border-[#e6e5e0] bg-white/95 backdrop-blur-md">
       {/* Kırmızı Üst Kuşak */}
       <div className="border-b border-[#9a0715] bg-gradient-to-r from-[#b5091a] via-[#e30a17] to-[#b5091a] px-3 py-1 text-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-center gap-2 text-center sm:gap-3">
+        <div className="mx-auto flex max-w-6xl items-center justify-center gap-2 text-center sm:gap-2.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/ataturk.jpg"
+            alt="Gazi Mustafa Kemal Atatürk"
+            className="h-5 w-5 shrink-0 rounded-full object-cover object-top shadow-xs ring-1 ring-white/90 sm:h-6 sm:w-6"
+          />
           <TurkishFlagSvg className="h-3 w-[18px] ring-white/30 sm:h-3.5 sm:w-[21px]" />
           <p className="flex flex-wrap items-center justify-center gap-x-1.5 text-[10px] font-semibold tracking-[0.1em] uppercase sm:gap-x-2 sm:text-[11px]">
             <span>Gazi Mustafa Kemal Atatürk</span>
