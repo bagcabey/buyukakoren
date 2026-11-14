@@ -19,7 +19,9 @@ const BOTTOM_ITEMS = [
 ];
 
 export function MobileBottomNav() {
-  const pathname = usePathname();
+  const rawPathname = usePathname() || "/";
+  const pathname =
+    rawPathname === "/index" || rawPathname === "" ? "/" : rawPathname;
 
   return (
     <nav

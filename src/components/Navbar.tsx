@@ -73,7 +73,9 @@ export function Navbar({
   settings?: SiteSettings;
   extraPages?: NavbarExtraPage[];
 }) {
-  const pathname = usePathname();
+  const rawPathname = usePathname() || "/";
+  const pathname =
+    rawPathname === "/index" || rawPathname === "" ? "/" : rawPathname;
   const [open, setOpen] = useState(false);
 
   useEffect(() => {

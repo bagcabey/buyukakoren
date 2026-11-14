@@ -1212,7 +1212,7 @@ export function AdminDashboard({
                   type="text"
                   value={postImage}
                   onChange={(e) => setPostImage(e.target.value)}
-                  placeholder="/images/koy/01_koy_panoramik.jpg"
+                  placeholder="/images/katalog/01-koy-ve-cevre/01_yildizeli_koy_manzarasi.webp"
                   className="flex-1 rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
                 />
                 <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs font-medium hover:bg-[#f4f3ef]">

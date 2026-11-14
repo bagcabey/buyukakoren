@@ -23,6 +23,7 @@ export function formatDateTR(iso: string): string {
       day: "numeric",
       month: "long",
       year: "numeric",
+      timeZone: "Europe/Istanbul",
     }).format(new Date(iso));
   } catch {
     return iso;
