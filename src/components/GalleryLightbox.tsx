@@ -203,6 +203,26 @@ export function GalleryLightbox({ photos }: { photos: GalleryPhoto[] }) {
                       {[current.attribution_author, current.attribution_license]
                         .filter(Boolean)
                         .join(" • ")}
+                      {(() => {
+                        const safeLic = sanitizeSafeUrl(
+                          current.attribution_url || ""
+                        );
+                        if (!safeLic || safeLic === current.source_url) return null;
+                        return (
+                          <>
+                            {" "}
+                            •{" "}
+                            <a
+                              href={safeLic}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline hover:text-white"
+                            >
+                              Lisans
+                            </a>
+                          </>
+                        );
+                      })()}
                     </p>
                   )}
                 </div>

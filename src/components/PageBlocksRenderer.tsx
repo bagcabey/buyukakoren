@@ -1,4 +1,4 @@
-import { renderSafeRichText } from "@/lib/sanitize";
+import { renderSafeRichText, sanitizeSafeUrl } from "@/lib/sanitize";
 import { ContactForm } from "./ContactForm";
 import { CopyIbanButton } from "./CopyIbanButton";
 import { GalleryLightbox } from "./GalleryLightbox";
@@ -91,6 +91,8 @@ function BlockSection({
       const subtitle = asString(d.subtitle);
       const imageUrl = asString(d.image_url);
       const imageAlt = asString(d.image_alt, title);
+      const attribution = asString(d.attribution);
+      const attributionUrl = sanitizeSafeUrl(asString(d.attribution_url));
       const primaryLabel = asString(d.primary_label);
       const primaryHref = asString(d.primary_href);
       const secondaryLabel = asString(d.secondary_label);
@@ -146,6 +148,22 @@ function BlockSection({
                   </Link>
                 )}
               </div>
+            )}
+            {attribution && (
+              <p className="mt-6 text-[11px] text-stone-300/80">
+                {attributionUrl ? (
+                  <a
+                    href={attributionUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline decoration-stone-400/50 underline-offset-2 hover:text-white"
+                  >
+                    {attribution}
+                  </a>
+                ) : (
+                  attribution
+                )}
+              </p>
             )}
           </div>
         </section>
@@ -273,6 +291,10 @@ function BlockSection({
       const text = asString(d.text);
       const imageUrl = asString(d.image_url);
       const imageAlt = asString(d.image_alt, title);
+      const imageAttribution = asString(d.image_attribution);
+      const imageAttributionUrl = sanitizeSafeUrl(
+        asString(d.image_attribution_url)
+      );
       const imagePosition = asString(d.image_position, "left");
       const bullets = asStringArray(d.bullets);
       const ctaLabel = asString(d.cta_label);
@@ -295,6 +317,22 @@ function BlockSection({
                   sizes="(max-width: 1024px) 100vw, 480px"
                   className="object-cover"
                 />
+                {imageAttribution && (
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-3.5 py-2 text-[11px] text-white/90">
+                    {imageAttributionUrl ? (
+                      <a
+                        href={imageAttributionUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline decoration-white/50 underline-offset-2 hover:text-white"
+                      >
+                        {imageAttribution}
+                      </a>
+                    ) : (
+                      imageAttribution
+                    )}
+                  </div>
+                )}
               </div>
             )}
             <div
@@ -357,6 +395,8 @@ function BlockSection({
         title: string;
         description?: string;
         image_url?: string;
+        attribution?: string;
+        attribution_url?: string;
         link_label?: string;
         link_href?: string;
       }>(d.cards);
@@ -397,14 +437,32 @@ function BlockSection({
                 >
                   <div>
                     {card.image_url && (
-                      <div className="relative mb-4 h-40 w-full overflow-hidden rounded-lg bg-stone-100">
-                        <SmartImage
-                          src={card.image_url}
-                          alt={card.title}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 360px"
-                          className="object-cover"
-                        />
+                      <div className="mb-4">
+                        <div className="relative h-44 w-full overflow-hidden rounded-lg bg-stone-100">
+                          <SmartImage
+                            src={card.image_url}
+                            alt={card.title}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 360px"
+                            className="object-cover"
+                          />
+                        </div>
+                        {card.attribution && (
+                          <p className="mt-1.5 text-[11px] text-[#666560]">
+                            {sanitizeSafeUrl(card.attribution_url || "") ? (
+                              <a
+                                href={sanitizeSafeUrl(card.attribution_url || "")}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline hover:text-[#191919]"
+                              >
+                                {card.attribution}
+                              </a>
+                            ) : (
+                              card.attribution
+                            )}
+                          </p>
+                        )}
                       </div>
                     )}
                     {card.badge && (

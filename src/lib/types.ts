@@ -10,6 +10,16 @@ export interface ImageAttribution {
   source_url?: string;
 }
 
+export interface PostExtraImage {
+  image_url: string;
+  title: string;
+  description?: string;
+  author?: string;
+  license?: string;
+  license_url?: string;
+  source_url?: string;
+}
+
 export interface Post {
   id: string;
   slug: string;
@@ -21,6 +31,7 @@ export interface Post {
   image_url?: string | null;
   image_alt?: string | null;
   image_attribution?: ImageAttribution | null;
+  extra_images?: PostExtraImage[] | null;
   attachment_url?: string | null;
   attachment_name?: string | null;
   project_status?: ProjectStatus | null;

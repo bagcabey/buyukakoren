@@ -177,6 +177,71 @@ export default async function PostDetailPage({
         dangerouslySetInnerHTML={{ __html: renderSafeRichText(post.content) }}
       />
 
+      {Array.isArray(post.extra_images) && post.extra_images.length > 0 && (
+        <section className="mt-8 border-t border-[#e6e5e0] pt-6 sm:mt-10">
+          <h2 className="text-base font-semibold text-[#191919] sm:text-lg">
+            İlgili Görsel Seçkisi
+          </h2>
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {post.extra_images.map((item, idx) => {
+              const safeSrc = sanitizeSafeUrl(item.source_url || "");
+              const safeLic = sanitizeSafeUrl(item.license_url || "");
+              return (
+                <figure
+                  key={`${item.image_url}-${idx}`}
+                  className="overflow-hidden rounded-xl border border-[#e6e5e0] bg-white"
+                >
+                  <div className="relative aspect-[16/10] w-full bg-[#f4f3ef]">
+                    <SmartImage
+                      src={item.image_url}
+                      alt={item.title}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 384px"
+                      className="object-cover"
+                    />
+                  </div>
+                  <figcaption className="p-3.5 text-xs">
+                    <p className="font-semibold text-[#191919]">{item.title}</p>
+                    {item.description && (
+                      <p className="mt-1 leading-relaxed text-[#666560]">
+                        {item.description}
+                      </p>
+                    )}
+                    {(item.author || item.license || safeSrc) && (
+                      <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-[#f0efe9] pt-2 text-[11px] text-[#666560]">
+                        <span>
+                          {[item.author, item.license].filter(Boolean).join(" • ")}
+                        </span>
+                        {safeLic && (
+                          <a
+                            href={safeLic}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline hover:text-[#191919]"
+                          >
+                            Lisans
+                          </a>
+                        )}
+                        {safeSrc && (
+                          <a
+                            href={safeSrc}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline hover:text-[#191919]"
+                          >
+                            Kaynak
+                          </a>
+                        )}
+                      </p>
+                    )}
+                  </figcaption>
+                </figure>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* Share & Contact Box */}
       <div className="no-print mt-10 flex flex-col gap-4 rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>

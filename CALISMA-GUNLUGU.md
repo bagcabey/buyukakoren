@@ -49,3 +49,12 @@ Bu dosya, 14 Kasım 2026 teslim öncesi bakım ve geliştirme sürecindeki her a
 - **Teknik SEO ve Statik/ISR Mimarisi**: 1200×630 dinamik `/opengraph-image`, 180×180 `/apple-icon`, `/manifest.webmanifest`, gerçek içerik tarihleriyle güncellenen `/sitemap.xml` (5 dk ISR) ve `/robots.txt` oluşturuldu. Kök `layout.tsx` ve tüm ziyaretçi sayfaları `force-dynamic` yerine `revalidate = 60` (panel kaydında `revalidatePath` ile anlık yenileme) modeline geçirildi.
 - **Görsel Optimizasyonu (`next.config.ts` & `SmartImage.tsx`)**: `images.unoptimized: true` kaldırılıp AVIF/WebP desteği ve `remotePatterns` (`*.public.blob.vercel-storage.com`, `upload.wikimedia.org`) etkinleştirildi; hero ve kart görselleri `next/image` (`sizes`, hero `priority`) ile sunuldu.
 - **Doğrulama**: `npm run lint` ve `npm run build` 0 hata ile tamamlandı.
+
+
+
+## Aşama 6: Wikimedia Commons Görsel Kataloğu ve Lisans Atıfları — 14.11.2026 05:40
+- **31 Görselin WebP Dönüşümü ve Yüksek Çözünürlüklü Atatürk Portresi**: `gorsel-katalog/` içindeki 31 serbest lisanslı Wikimedia Commons fotoğrafı `sharp` ile en uzun kenar ≤ 2000 px olacak şekilde `public/images/katalog/` altına WebP formatında işlendi; üst kırmızı kuşaktaki 250 px portre `05-ataturk-ve-milli/01_ataturk_portre_yuksek_cozunurluk.jpg` dosyasından üretilen keskin 240×240 `public/images/ataturk.jpg` ile yenilendi. Düşük çözünürlüklü `01_koy_panoramik.jpg` silinmeden `gorseller/izin-bekleyen/` klasörüne taşındı.
+- **Galeri, Yazılar ve Köy Sayfası Entegrasyonu (`src/lib/katalog.ts`, `seed.ts`, `store.ts`, `default-pages.ts`)**: 31 görsel `"Yıldızeli ve Çevresi"`, `"Sivas Tarih ve Kültür"`, `"Kırsal Yaşam"` ve `"Millî Miras ve Atatürk"` albümleriyle hem tohum verisine (`seed.ts`, `data/store.json`) hem de canlı Blob göçüne (`sanitizeLegacyPlaceholders` & `sanitizePageBlocks`) eklendi. Sivas kültür gezisi yazısı ve 4 Eylül Sivas Kongresi duyurusu ilgili tarihî mekân görsel seçkileri (`extra_images`) ile donatıldı.
+- **Dürüst Etiketleme ve Tam Atıf**: Çevre fotoğraflarında "Büyükakören içi" yerine `"Yıldızeli bölgesi (Kaleköy–Kıvşak arası)"`, `"Direkli, Yıldızeli"`, `"Sivas kırsalı"` gibi doğrulanabilir ifadeler kullanıldı; `PageBlocksRenderer.tsx`, `GalleryLightbox.tsx` ve `duyurular/[slug]/page.tsx` üzerinde her görselde yazar, lisans ve Wikimedia Commons kaynak bağlantısı gösterildi, `/galeri` sayfasına `"Köyümüzden Fotoğraf Gönderin"` çağrısı eklendi.
+
+- **Doğrulama**: `npm run lint` ve `npm run build` 0 hata ile tamamlandı.

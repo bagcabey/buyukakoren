@@ -9,6 +9,7 @@ import {
   isEncryptionConfigured,
 } from "./crypto";
 import { isValidTurkishIban, slugifyTR } from "./format";
+import { CATALOG_GALLERY_PHOTOS } from "./katalog";
 import { DEFAULT_NAV_ITEMS, INITIAL_STORE_DATA } from "./seed";
 import {
   BoardMember,
@@ -71,17 +72,73 @@ function cloneInitial(): StoreData {
   return JSON.parse(JSON.stringify(INITIAL_STORE_DATA)) as StoreData;
 }
 
-function mergeDefaultPages(rawPages: PageConfig[] | undefined, defaultPages: PageConfig[]): PageConfig[] {
+function sanitizePageBlocks(
+  rawBlocks: PageBlock[],
+  defaultBlocks: PageBlock[],
+  needsCatalogMigration: boolean
+): PageBlock[] {
+  const legacyKoyRe = /\/images\/koy\//i;
+  const defById = new Map(defaultBlocks.map((b) => [b.id, b]));
+  const updated = rawBlocks.map((blk) => {
+    const d = blk.data || {};
+    const imgUrl = typeof d.image_url === "string" ? d.image_url : "";
+    if (imgUrl && legacyKoyRe.test(imgUrl)) {
+      const defMatch = defById.get(blk.id);
+      if (defMatch) {
+        return { ...blk, data: { ...defMatch.data } };
+      }
+      return {
+        ...blk,
+        data: {
+          ...d,
+          image_url:
+            "/images/katalog/01-koy-cevresi/01_kalekoy_kivsak_arasi_manzara.webp",
+          image_attribution:
+            "Fotoğraf: cankurtaran • CC BY 3.0 (Wikimedia Commons — Yıldızeli bölgesi)",
+          image_attribution_url:
+            "https://commons.wikimedia.org/wiki/File:Kalek%C3%B6y_k%C4%B1vsak_aras%C4%B1_-_panoramio.jpg",
+        },
+      };
+    }
+    return blk;
+  });
+
+  if (needsCatalogMigration) {
+    const existingIds = new Set(updated.map((b) => b.id));
+    for (const defBlk of defaultBlocks) {
+      if (
+        (defBlk.id === "koy-agri-split" ||
+          defBlk.id === "koy-regional-showcase") &&
+        !existingIds.has(defBlk.id)
+      ) {
+        updated.push(defBlk);
+      }
+    }
+  }
+
+  return updated;
+}
+
+function mergeDefaultPages(
+  rawPages: PageConfig[] | undefined,
+  defaultPages: PageConfig[],
+  needsCatalogMigration = false
+): PageConfig[] {
   if (!Array.isArray(rawPages) || rawPages.length === 0) {
     return defaultPages;
   }
+  const defBySlug = new Map(defaultPages.map((dp) => [dp.slug, dp]));
   const bySlug = new Map<string, PageConfig>();
   for (const dp of defaultPages) {
     bySlug.set(dp.slug, dp);
   }
   for (const rp of rawPages) {
     if (rp && typeof rp.slug === "string") {
-      bySlug.set(rp.slug, rp);
+      const defPage = defBySlug.get(rp.slug);
+      const blocks = Array.isArray(rp.blocks)
+        ? sanitizePageBlocks(rp.blocks, defPage?.blocks || [], needsCatalogMigration)
+        : defPage?.blocks || [];
+      bySlug.set(rp.slug, { ...rp, blocks });
     }
   }
   return Array.from(bySlug.values());
@@ -99,6 +156,7 @@ function sanitizeLegacyPlaceholders(
   boardMembers: BoardMember[];
   galleryPhotos: GalleryPhoto[];
   settings: SiteSettings;
+  needsCatalogMigration: boolean;
 } {
   const cleanIbanRaw = (settings.iban_number || "").trim();
   const ibanClean =
@@ -131,7 +189,13 @@ function sanitizeLegacyPlaceholders(
       !/panelden|örnek/i.test(m.full_name || "")
   );
 
-  const movedPendingRe = /\/images\/koy\/0[2-6]_/i;
+  const legacyKoyRe = /\/images\/koy\//i;
+  const needsCatalogMigration = !galleryPhotos.some((g) =>
+    (g.id || "").startsWith("gal-kat-")
+  );
+  const seedPostMap = new Map(
+    INITIAL_STORE_DATA.posts.map((sp) => [sp.id, sp])
+  );
 
   const cleanPosts = posts
     .filter(
@@ -140,15 +204,43 @@ function sanitizeLegacyPlaceholders(
           `${p.title || ""} ${p.summary || ""} ${p.content || ""}`
         )
     )
-    .map((p) =>
-      p.image_url && movedPendingRe.test(p.image_url)
-        ? { ...p, image_url: null }
-        : p
-    );
+    .map((p) => {
+      const seedMatch = seedPostMap.get(p.id);
+      const hasLegacyImg = Boolean(p.image_url && legacyKoyRe.test(p.image_url));
+      if (hasLegacyImg || (!p.image_url && seedMatch?.image_url)) {
+        return {
+          ...p,
+          image_url: seedMatch?.image_url ?? null,
+          image_alt: p.image_alt || seedMatch?.image_alt || null,
+          image_attribution:
+            p.image_attribution || seedMatch?.image_attribution || null,
+          extra_images: p.extra_images || seedMatch?.extra_images || null,
+        };
+      }
+      if (!p.extra_images && seedMatch?.extra_images) {
+        return { ...p, extra_images: seedMatch.extra_images };
+      }
+      return p;
+    });
 
-  const cleanGallery = galleryPhotos.filter(
-    (g) => !movedPendingRe.test(g.image_url || "")
+  if (needsCatalogMigration) {
+    const seedPost6 = seedPostMap.get("post-6");
+    if (
+      seedPost6 &&
+      !cleanPosts.some(
+        (p) => p.id === seedPost6.id || p.slug === seedPost6.slug
+      )
+    ) {
+      cleanPosts.push(seedPost6);
+    }
+  }
+
+  const filteredGallery = galleryPhotos.filter(
+    (g) => !legacyKoyRe.test(g.image_url || "")
   );
+  const cleanGallery = needsCatalogMigration
+    ? [...filteredGallery, ...CATALOG_GALLERY_PHOTOS]
+    : filteredGallery;
 
   return {
     posts: cleanPosts,
@@ -162,6 +254,7 @@ function sanitizeLegacyPlaceholders(
       association_email: emailClean,
       donation_note: noteClean,
     },
+    needsCatalogMigration,
   };
 }
 
@@ -213,7 +306,11 @@ function normalizeStore(raw: Partial<StoreData> | null | undefined): StoreData {
     board_members: cleaned.boardMembers,
     site_settings: cleaned.settings,
     contact_messages: [], // PII asla genel state blob'unda saklanmaz
-    pages: mergeDefaultPages(raw.pages, defaults.pages || []),
+    pages: mergeDefaultPages(
+      raw.pages,
+      defaults.pages || [],
+      cleaned.needsCatalogMigration
+    ),
   };
 }
 
