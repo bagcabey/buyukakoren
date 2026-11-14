@@ -97,7 +97,21 @@ export function Footer({ settings }: { settings: SiteSettings }) {
         </div>
 
         <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-[#e6e5e0] pt-6 text-xs text-[#666560] sm:flex-row sm:items-center">
-          <p>© {new Date().getFullYear()} B.Akören Köyü Derneği. Tüm hakları saklıdır.</p>
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2.5">
+            <p>© {new Date().getFullYear()} B.Akören Köyü Derneği. Tüm hakları saklıdır.</p>
+            <span className="hidden text-[#d5d3cc] sm:inline">•</span>
+            <p className="text-[11px] text-[#8a8882]">
+              Site Yazılımcısı:{" "}
+              <a
+                href="https://omer-bahcebasi-protfolio-phi-silk-yuvqondwda.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-[#5c5a54] underline decoration-[#d5d3cc] underline-offset-2 transition-colors hover:text-[#1f4d36] hover:decoration-[#1f4d36]"
+              >
+                Ömer Bağçabaşı
+              </a>
+            </p>
+          </div>
           <Link href="/admin" className="hover:text-[#191919]">
             Yönetici Girişi →
           </Link>
