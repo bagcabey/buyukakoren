@@ -15,8 +15,86 @@ import {
   Mail,
   MapPin,
   Phone,
+  ShieldCheck,
   Users,
 } from "lucide-react";
+
+interface HeroTheme {
+  sectionPill: string;
+  pillClass: string;
+  containerClass: string;
+  chipBorder: string;
+  primaryBtnClass: string;
+  secondaryBtnClass: string;
+}
+
+const HERO_THEMES: Record<string, HeroTheme> = {
+  "/": {
+    sectionPill: "Ana Sayfa • Resmî Portal",
+    pillClass: "bg-[#b5091a] text-white",
+    containerClass:
+      "border-[#e6dfd5] border-t-4 border-t-[#b5091a] bg-gradient-to-br from-[#fffaf8] via-white to-[#f6f2ea]",
+    chipBorder: "border-[#e5ddd2]",
+    primaryBtnClass: "bg-[#b5091a] text-white hover:bg-[#991b1b]",
+    secondaryBtnClass:
+      "border border-[#d8d3c8] bg-white text-[#191919] hover:bg-[#f7f4ee]",
+  },
+  "/koyumuz": {
+    sectionPill: "Bölüm • Köyümüz & Tarihçe",
+    pillClass: "bg-emerald-800 text-white",
+    containerClass:
+      "border-emerald-200/90 border-l-4 border-l-emerald-700 bg-gradient-to-br from-[#f2fbf6] via-white to-[#eaf6ef]",
+    chipBorder: "border-emerald-200",
+    primaryBtnClass: "bg-emerald-800 text-white hover:bg-emerald-900",
+    secondaryBtnClass:
+      "border border-emerald-200 bg-white text-emerald-950 hover:bg-emerald-50",
+  },
+  "/dernek": {
+    sectionPill: "Bölüm • Derneğimiz & Yönetim",
+    pillClass: "bg-[#991b1b] text-white",
+    containerClass:
+      "border-red-200/90 border-l-4 border-l-[#991b1b] bg-gradient-to-br from-[#fdf5f5] via-white to-[#faecec]",
+    chipBorder: "border-red-200",
+    primaryBtnClass: "bg-[#991b1b] text-white hover:bg-[#7f1d1d]",
+    secondaryBtnClass:
+      "border border-red-200 bg-white text-[#191919] hover:bg-red-50/60",
+  },
+  "/bagis": {
+    sectionPill: "Bölüm • Bağış & Üyelik Aidatı",
+    pillClass: "bg-amber-700 text-white",
+    containerClass:
+      "border-amber-200/90 border-l-4 border-l-amber-600 bg-gradient-to-br from-[#fefaf0] via-white to-[#fbf3df]",
+    chipBorder: "border-amber-200",
+    primaryBtnClass: "bg-amber-700 text-white hover:bg-amber-800",
+    secondaryBtnClass:
+      "border border-amber-200 bg-white text-amber-950 hover:bg-amber-50",
+  },
+  "/iletisim": {
+    sectionPill: "Bölüm • İletişim & Konum",
+    pillClass: "bg-sky-800 text-white",
+    containerClass:
+      "border-sky-200/90 border-l-4 border-l-sky-700 bg-gradient-to-br from-[#f1f8fe] via-white to-[#e8f3fc]",
+    chipBorder: "border-sky-200",
+    primaryBtnClass: "bg-sky-800 text-white hover:bg-sky-900",
+    secondaryBtnClass:
+      "border border-sky-200 bg-white text-sky-950 hover:bg-sky-50",
+  },
+};
+
+function getHeroTheme(pageSlug: string, pageTitle: string): HeroTheme {
+  return (
+    HERO_THEMES[pageSlug] || {
+      sectionPill: `Bölüm • ${pageTitle}`,
+      pillClass: "bg-[#191919] text-white",
+      containerClass:
+        "border-[#e6e5e0] border-l-4 border-l-[#191919] bg-gradient-to-br from-[#fbfbfa] via-white to-[#f4f3ef]",
+      chipBorder: "border-[#e6e5e0]",
+      primaryBtnClass: "bg-[#191919] text-white hover:bg-[#333333]",
+      secondaryBtnClass:
+        "border border-[#d8d6cf] bg-white text-[#191919] hover:bg-[#f4f3ef]",
+    }
+  );
+}
 
 interface PageBlocksRendererProps {
   page: PageConfig;
@@ -59,6 +137,8 @@ export function PageBlocksRenderer({
         <BlockSection
           key={block.id}
           block={block}
+          pageSlug={page.slug}
+          pageTitle={page.title}
           storeData={storeData}
           settings={settings}
           boardMembers={boardMembers}
@@ -71,12 +151,16 @@ export function PageBlocksRenderer({
 
 function BlockSection({
   block,
+  pageSlug,
+  pageTitle,
   storeData,
   settings,
   boardMembers,
   isDonatePage,
 }: {
   block: PageBlock;
+  pageSlug: string;
+  pageTitle: string;
   storeData: StoreData;
   settings: StoreData["site_settings"];
   boardMembers: StoreData["board_members"];
@@ -97,74 +181,219 @@ function BlockSection({
       const primaryHref = asString(d.primary_href);
       const secondaryLabel = asString(d.secondary_label);
       const secondaryHref = asString(d.secondary_href);
+      const theme = getHeroTheme(pageSlug, pageTitle);
+
+      const quickChips =
+        pageSlug === "/"
+          ? ["2025 Nüfus: 449", "Rakım: 1.276 m", "Posta Kodu: 58502"]
+          : pageSlug === "/koyumuz"
+            ? ["Sivas: 62 km", "Yıldızeli: 49 km", "1907 Ağören"]
+            : [];
+
+      const president = boardMembers.find((m) =>
+        m.role.toLowerCase().includes("başkan")
+      );
 
       return (
-        <section className="relative overflow-hidden rounded-2xl border border-[#e6e5e0] bg-[#191919] text-white shadow-sm">
-          {imageUrl && (
-            <>
-              <SmartImage
-                src={imageUrl}
-                alt={imageAlt}
-                fill
-                priority
-                sizes="(max-width: 1200px) 100vw, 1152px"
-                className="object-cover opacity-45"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#191919]/90 via-[#191919]/65 to-[#191919]/35" />
-            </>
-          )}
-          <div className="relative z-10 px-6 py-12 sm:px-10 sm:py-16 lg:px-14 lg:py-20">
-            {badge && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-stone-100 backdrop-blur-sm">
-                <MapPin className="h-3.5 w-3.5 text-red-400" />
-                {badge}
-              </span>
-            )}
-            <h1 className="mt-4 max-w-3xl text-2xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
-              {title}
-            </h1>
-            {subtitle && (
-              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-stone-200 sm:text-base">
-                {subtitle}
-              </p>
-            )}
-            {(primaryLabel || secondaryLabel) && (
-              <div className="mt-7 flex flex-wrap gap-3">
-                {primaryLabel && primaryHref && (
-                  <Link
-                    href={primaryHref}
-                    className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-red-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-800"
+        <section
+          className={`overflow-hidden rounded-2xl border p-5 shadow-xs sm:p-8 lg:p-10 ${theme.containerClass}`}
+        >
+          <div className="grid items-center gap-6 lg:grid-cols-12 lg:gap-8">
+            <div className="lg:col-span-7">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/icon-48.png"
+                  alt="Büyük Akören Köyü Derneği Amblemi"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 shrink-0 rounded-lg shadow-xs ring-1 ring-black/10"
+                />
+                <span
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold tracking-wide uppercase ${theme.pillClass}`}
+                >
+                  {theme.sectionPill}
+                </span>
+                {badge && (
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full border bg-white px-2.5 py-1 text-xs font-medium text-[#44433f] ${theme.chipBorder}`}
                   >
-                    {primaryLabel}
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                )}
-                {secondaryLabel && secondaryHref && (
-                  <Link
-                    href={secondaryHref}
-                    className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-5 py-2.5 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-white/20"
-                  >
-                    {secondaryLabel}
-                  </Link>
+                    <MapPin className="h-3.5 w-3.5 text-[#b5091a]" />
+                    {badge}
+                  </span>
                 )}
               </div>
-            )}
-            {attribution && (
-              <p className="mt-6 text-[11px] text-stone-300/80">
-                {attributionUrl ? (
-                  <a
-                    href={attributionUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline decoration-stone-400/50 underline-offset-2 hover:text-white"
-                  >
-                    {attribution}
-                  </a>
-                ) : (
-                  attribution
-                )}
-              </p>
-            )}
+
+              <h1 className="mt-4 text-2xl font-bold tracking-tight text-[#191919] sm:text-4xl lg:text-[2.5rem] lg:leading-[1.15]">
+                {title}
+              </h1>
+              {subtitle && (
+                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#44433f] sm:text-base">
+                  {subtitle}
+                </p>
+              )}
+
+              {quickChips.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {quickChips.map((chip) => (
+                    <span
+                      key={chip}
+                      className={`rounded-lg border bg-white px-2.5 py-1 text-xs font-semibold text-[#191919] shadow-2xs ${theme.chipBorder}`}
+                    >
+                      {chip}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {(primaryLabel || secondaryLabel) && (
+                <div className="mt-6 flex flex-wrap gap-3">
+                  {primaryLabel && primaryHref && (
+                    <Link
+                      href={primaryHref}
+                      className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold shadow-2xs transition ${theme.primaryBtnClass}`}
+                    >
+                      {primaryLabel}
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  )}
+                  {secondaryLabel && secondaryHref && (
+                    <Link
+                      href={secondaryHref}
+                      className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition ${theme.secondaryBtnClass}`}
+                    >
+                      {secondaryLabel}
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="lg:col-span-5">
+              {imageUrl ? (
+                <figure
+                  className={`overflow-hidden rounded-xl border bg-white p-1.5 shadow-sm ${theme.chipBorder}`}
+                >
+                  <div className="relative aspect-[16/10] w-full overflow-hidden rounded-lg bg-[#f4f3ef]">
+                    <SmartImage
+                      src={imageUrl}
+                      alt={imageAlt}
+                      fill
+                      priority
+                      sizes="(max-width: 1024px) 100vw, 460px"
+                      className="object-cover"
+                    />
+                  </div>
+                  {attribution && (
+                    <figcaption className="px-2 pt-2 pb-1 text-[11px] leading-snug text-[#666560]">
+                      {attributionUrl ? (
+                        <a
+                          href={attributionUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline decoration-[#cfcec8] underline-offset-2 hover:text-[#191919]"
+                        >
+                          {attribution}
+                        </a>
+                      ) : (
+                        attribution
+                      )}
+                    </figcaption>
+                  )}
+                </figure>
+              ) : (
+                <div
+                  className={`rounded-xl border bg-white/95 p-5 shadow-xs ${theme.chipBorder}`}
+                >
+                  <div className="flex items-center gap-3 border-b border-[#efeee9] pb-3.5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/icon-96.png"
+                      alt="Büyük Akören Köyü Derneği"
+                      width={44}
+                      height={44}
+                      className="h-11 w-11 shrink-0 rounded-xl shadow-xs ring-1 ring-black/10"
+                    />
+                    <div>
+                      <p className="text-[11px] font-semibold tracking-wider text-[#666560] uppercase">
+                        {pageSlug === "/bagis"
+                          ? "Resmî Mali Şeffaflık"
+                          : pageSlug === "/iletisim"
+                            ? "Güvenli İletişim Kanalı"
+                            : "Kurumsal Kimlik"}
+                      </p>
+                      <p className="text-sm font-bold text-[#191919]">
+                        {settings.association_name || "Büyük Akören Köyü Derneği"}
+                      </p>
+                    </div>
+                  </div>
+                  <dl className="mt-3.5 space-y-2 text-xs text-[#44433f]">
+                    {pageSlug === "/dernek" && (
+                      <>
+                        {president && (
+                          <div className="flex items-center justify-between gap-2">
+                            <dt className="text-[#666560]">Dernek Başkanı:</dt>
+                            <dd className="font-semibold text-[#191919]">
+                              {president.full_name}
+                            </dd>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between gap-2">
+                          <dt className="text-[#666560]">Merkez:</dt>
+                          <dd className="font-medium text-[#191919]">
+                            Büyükakören, Yıldızeli / Sivas
+                          </dd>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <dt className="text-[#666560]">İlkeler:</dt>
+                          <dd className="font-medium text-[#191919]">
+                            Dayanışma • Eğitim • Şeffaflık
+                          </dd>
+                        </div>
+                      </>
+                    )}
+                    {pageSlug === "/bagis" && (
+                      <>
+                        <div className="flex items-center gap-2 font-medium text-[#191919]">
+                          <Landmark className="h-4 w-4 shrink-0 text-amber-700" />
+                          <span>5253 Sayılı Dernekler Kanunu Kapsamında Takip</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-700" />
+                          <span>
+                            {settings.iban_number
+                              ? "Resmî TR IBAN bilgisi aşağıda aktiftir."
+                              : "Resmî IBAN doğrulandığında bu sayfada yayımlanır."}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                    {pageSlug === "/iletisim" && (
+                      <>
+                        <div className="flex items-center gap-2 font-medium text-[#191919]">
+                          <ShieldCheck className="h-4 w-4 shrink-0 text-sky-700" />
+                          <span>AES-256-GCM Şifreli & KVKK Onaylı İletişim</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <dt className="text-[#666560]">Posta / Alan Kodu:</dt>
+                          <dd className="font-semibold text-[#191919]">
+                            58502 / 0346
+                          </dd>
+                        </div>
+                      </>
+                    )}
+                    {pageSlug !== "/dernek" &&
+                      pageSlug !== "/bagis" &&
+                      pageSlug !== "/iletisim" && (
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="h-4 w-4 shrink-0 text-[#191919]" />
+                          <span>Sivas Yıldızeli Büyükakören Köyü Resmî Bilgi Sayfası</span>
+                        </div>
+                      )}
+                  </dl>
+                </div>
+              )}
+            </div>
           </div>
         </section>
       );

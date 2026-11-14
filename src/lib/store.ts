@@ -82,7 +82,13 @@ function sanitizePageBlocks(
   const updated = rawBlocks.map((blk) => {
     const d = blk.data || {};
     const imgUrl = typeof d.image_url === "string" ? d.image_url : "";
-    if (imgUrl && legacyKoyRe.test(imgUrl)) {
+    if (
+      (imgUrl && legacyKoyRe.test(imgUrl)) ||
+      (blk.id === "home-hero" &&
+        imgUrl === "/images/katalog/04-kirsal-yasam-tarim/04_sivas_daglar.webp") ||
+      (blk.id === "koy-hero" &&
+        imgUrl === "/images/katalog/04-kirsal-yasam-tarim/07_geminbeli_manzara.webp")
+    ) {
       const defMatch = defById.get(blk.id);
       if (defMatch) {
         return { ...blk, data: { ...defMatch.data } };

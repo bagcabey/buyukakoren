@@ -106,7 +106,13 @@ export function buildOrganizationJsonLd(
     name: settings.association_name || SITE_NAME,
     alternateName: ["B.Akören Derneği", "Büyükakören Köyü Derneği"],
     url: SITE_URL,
-    logo: `${SITE_URL}/icon.svg`,
+    logo: {
+      "@type": "ImageObject",
+      url: `${SITE_URL}/icon-512.png`,
+      width: 512,
+      height: 512,
+    },
+    image: `${SITE_URL}/icon-512.png`,
     areaServed: {
       "@type": "AdministrativeArea",
       name: "Büyükakören, Yıldızeli, Sivas",
@@ -145,7 +151,12 @@ export function buildWebSiteJsonLd(
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: settings.association_name || SITE_NAME,
-    alternateName: "B.Akören Köyü Portalı",
+    alternateName: [
+      "B.Akören",
+      "Büyükakören Köyü Derneği",
+      "B.Akören Köyü Portalı",
+      "buyukakoren.vercel.app",
+    ],
     url: SITE_URL,
     inLanguage: "tr-TR",
   };

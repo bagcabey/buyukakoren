@@ -36,15 +36,15 @@ export default async function TaziyePage() {
         </p>
       </div>
       <Breadcrumbs items={[{ name: "Taziye İlanları", href: "/taziye" }]} />
-      <div className="border-b border-[#e6e5e0] pb-5 sm:pb-6">
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-[#191919] px-3 py-1 text-[11px] font-medium tracking-wide text-white uppercase">
+      <div className="rounded-2xl border border-stone-300/80 border-l-4 border-l-stone-700 bg-gradient-to-r from-stone-100/80 via-white to-[#faf9f7] p-5 sm:p-7">
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-stone-800 px-3 py-1 text-[11px] font-bold tracking-wide text-white uppercase">
           <HeartHandshake className="h-3.5 w-3.5" />
-          Vefat & Başsağlığı İlanları
+          Bölüm • Taziye & Vefat İlanları
         </div>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-[#191919] sm:text-3xl">
+        <h1 className="mt-3 text-2xl font-bold tracking-tight text-[#191919] sm:text-3xl">
           Taziye Alanı
         </h1>
-        <p className="mt-2 text-sm text-[#666560]">
+        <p className="mt-2 text-sm text-[#44433f]">
           Köyümüzden ve gurbetteki hemşehrilerimizden vefat haberleri, cenaze
           vakitleri ve taziye duyuruları.
         </p>
