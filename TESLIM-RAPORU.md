@@ -81,8 +81,8 @@ Tüm ayrıntılı kontrol listesi [TESLIM-ONCESI-EKSIKLER.md](./TESLIM-ONCESI-EK
 
 Bu bölüm teknik bilgisi olmayan dernek yöneticilerinin siteyi güvenle yönetebilmesi için hazırlanmıştır.
 
-### 4.1. Yönetim Paneline Giriş (`/yonetmenbgc` veya `/admin`)
-1. Tarayıcıda `https://buyukakoren.vercel.app/yonetmenbgc` (veya `/admin`) adresine gidin.
+### 4.1. Yönetim Paneline Giriş (`/admin` veya `/yonetmenbgc`)
+1. Güvenlik ve sade ziyaretçi deneyimi gereği web sitesinin menülerinde veya alt bilgisinde yönetici giriş düğmesi/bağlantısı yer almaz. Yalnızca tarayıcı adres çubuğuna doğrudan `https://buyukakoren.vercel.app/admin` (veya `https://buyukakoren.vercel.app/yonetmenbgc`) yazarak giriş ekranına ulaşabilirsiniz.
 2. Kullanıcı adınızı (varsayılan ilk kurulumda `yönetmenbgc` veya tanımlanan editör kullanıcı adı; `yonetmenbgc` ve `admin` takma adları da kabul edilir) ve dernek yöneticisi şifrenizi girip **Giriş Yap** düğmesine basın.
 3. **Güvenlik Notu:** Arka arkaya 5 kez hatalı şifre girilirse hesap güvenliği için sistem 15 dakika bekleme uygular. İşiniz bittiğinde mutlaka sağ üstteki **Çıkış Yap** düğmesine basın.
 

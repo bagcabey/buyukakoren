@@ -14,7 +14,6 @@ import {
   Megaphone,
   Menu,
   Phone,
-  ShieldCheck,
   X,
 } from "lucide-react";
 import { Logo, TurkishFlagSvg } from "./Logo";
@@ -103,7 +102,12 @@ export function Navbar({
         order: typeof p.menu_order === "number" ? p.menu_order : 50 + idx,
       }))
       .filter((p) => !existingHrefs.has(p.href)),
-  ].sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+  ]
+    .filter((i) => {
+      const href = normalizeHref(i.href);
+      return href !== "/admin" && href !== "/yonetmenbgc";
+    })
+    .sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
 
   const ribbonText = settings?.ataturk_ribbon_text?.trim() || "Sonsuza Dek";
 
@@ -178,14 +182,6 @@ export function Navbar({
           >
             <Landmark className="h-3.5 w-3.5 text-[#666560]" />
             <span>Bağış</span>
-          </Link>
-
-          <Link
-            href="/admin"
-            className="hidden min-h-[40px] items-center gap-1.5 rounded-md border border-[#e6e5e0] bg-[#fbfbfa] px-3 py-1.5 text-xs font-medium text-[#191919] transition-colors hover:bg-[#f4f3ef] sm:inline-flex"
-          >
-            <ShieldCheck className="h-3.5 w-3.5 text-[#666560]" />
-            Yönetici
           </Link>
 
           <button
@@ -272,22 +268,14 @@ export function Navbar({
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-2 border-t border-[#e6e5e0] pt-4">
+            <div className="border-t border-[#e6e5e0] pt-4">
               <Link
                 href="/bagis"
                 onClick={() => setOpen(false)}
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[#191919] px-3 py-2.5 text-xs font-medium text-white"
+                className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[#191919] px-3 py-2.5 text-xs font-medium text-white"
               >
                 <Landmark className="h-4 w-4" />
                 Bağış & IBAN
-              </Link>
-              <Link
-                href="/admin"
-                onClick={() => setOpen(false)}
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] px-3 py-2.5 text-xs font-medium text-[#191919]"
-              >
-                <ShieldCheck className="h-4 w-4 text-[#666560]" />
-                Yönetici Paneli
               </Link>
             </div>
           </div>

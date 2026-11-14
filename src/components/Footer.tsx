@@ -19,7 +19,11 @@ export function Footer({
   settings: SiteSettings;
   extraPages?: NavbarExtraPage[];
 }) {
-  const customFooterLinks = (settings.footer_links || []).filter((l) => l.visible !== false);
+  const customFooterLinks = (settings.footer_links || []).filter((l) => {
+    if (l.visible === false) return false;
+    const norm = (l.href || "").trim().toLowerCase();
+    return norm !== "/admin" && norm !== "/yonetmenbgc";
+  });
   const socialEntries = SOCIAL_META.map((item) => {
     const rawUrl = settings.social_links?.[item.key];
     const safeUrl = sanitizeSafeUrl(rawUrl || "");
@@ -68,12 +72,6 @@ export function Footer({
                 className="inline-flex items-center rounded-lg border border-[#e6e5e0] bg-white px-3 py-1.5 text-xs font-medium text-[#191919]"
               >
                 Bağış & IBAN →
-              </Link>
-              <Link
-                href="/admin"
-                className="inline-flex items-center rounded-lg border border-[#e6e5e0] bg-white px-3 py-1.5 text-xs font-medium text-[#666560]"
-              >
-                Yönetici Girişi
               </Link>
             </div>
           </div>
@@ -217,9 +215,6 @@ export function Footer({
             >
               Site Haritası
             </a>
-            <Link href="/admin" className="hover:text-[#191919]">
-              Yönetici Girişi →
-            </Link>
           </div>
         </div>
       </div>

@@ -79,7 +79,7 @@ export async function PUT(req: Request) {
             .toLowerCase()
             .replace(/[^a-z0-9/-]+/g, "-")}`;
 
-    const reservedPrefixes = ["/admin", "/api", "/duyurular", "/faaliyetler", "/galeri", "/taziye"];
+    const reservedPrefixes = ["/admin", "/yonetmenbgc", "/api", "/duyurular", "/faaliyetler", "/galeri", "/taziye"];
     if (
       cleanSlug !== "/" &&
       reservedPrefixes.some((p) => cleanSlug === p || cleanSlug.startsWith(`${p}/`))

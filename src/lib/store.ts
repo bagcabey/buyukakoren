@@ -80,7 +80,23 @@ function sanitizePageBlocks(
   const legacyKoyRe = /\/images\/koy\//i;
   const defById = new Map(defaultBlocks.map((b) => [b.id, b]));
   const updated = rawBlocks.map((blk) => {
-    const d = blk.data || {};
+    const rawData = blk.data || {};
+    const d =
+      typeof rawData.content === "string" &&
+      /\[Yönetici Girişi\]\(\/(?:admin|yonetmenbgc)\)/i.test(rawData.content)
+        ? {
+            ...rawData,
+            content: rawData.content
+              .replace(
+                /\[Yönetici Girişi\]\(\/(?:admin|yonetmenbgc)\)\s+sayfasından/gi,
+                "yönetici panelinden"
+              )
+              .replace(
+                /\[Yönetici Girişi\]\(\/(?:admin|yonetmenbgc)\)/gi,
+                "yönetici paneli"
+              ),
+          }
+        : rawData;
     const imgUrl = typeof d.image_url === "string" ? d.image_url : "";
     if (
       (imgUrl && legacyKoyRe.test(imgUrl)) ||
@@ -106,7 +122,7 @@ function sanitizePageBlocks(
         },
       };
     }
-    return blk;
+    return d === rawData ? blk : { ...blk, data: d };
   });
 
   if (needsCatalogMigration) {
