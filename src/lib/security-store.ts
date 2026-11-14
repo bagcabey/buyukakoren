@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { head, put } from "@vercel/blob";
+import { get, put } from "@vercel/blob";
 import {
   decryptServerData,
   encryptServerData,
@@ -63,39 +63,18 @@ function encodeSecurityPayload(state: SecurityStateData): string {
 
 async function readSecurityWithEtag(): Promise<{ state: SecurityStateData; etag?: string }> {
   if (isBlobConfigured()) {
-    let text: string;
-    let etag: string | undefined;
-    try {
-      // @vercel/blob get({ access: "public" }) CDN önbelleğine takıldığı için doğrudan Control API head() + önbellek kırıcılı fetch kullanılır
-      const meta = await head(SECURITY_BLOB_PATH);
-      const sep = meta.url.includes("?") ? "&" : "?";
-      const bustUrl = `${meta.url}${sep}v=${encodeURIComponent(meta.etag || "")}&_t=${Date.now()}`;
-      const res = await fetch(bustUrl, {
-        cache: "no-store",
-        headers: { "Cache-Control": "no-cache, no-store, must-revalidate" },
-      });
-      if (!res.ok) {
-        return { state: defaultSecurityState() };
-      }
-      text = await res.text();
-      etag = meta.etag;
-    } catch (err) {
-      const isNotFound =
-        err instanceof Error &&
-        (err.name === "BlobNotFoundError" ||
-          err.message.toLowerCase().includes("not found") ||
-          err.message.includes("404"));
-      if (isNotFound) {
-        return { state: defaultSecurityState() };
-      }
-      console.error("[security-store] Güvenlik durumu Blob'dan okunamadı:", err);
-      throw new Error("Güvenlik durumu okunamadı.");
+    const result = await get(SECURITY_BLOB_PATH, {
+      access: "public",
+      useCache: false,
+    });
+    if (!result || result.statusCode !== 200 || !result.stream) {
+      return { state: defaultSecurityState() };
     }
-
+    const text = await new Response(result.stream).text();
     try {
       return {
         state: decodeSecurityPayload(text),
-        etag,
+        etag: result.blob.etag,
       };
     } catch (err) {
       console.error("[security-store] Şifreli güvenlik durumu çözümlenemedi:", err);
@@ -133,7 +112,7 @@ export async function mutateSecurityState(
       contentType: "text/plain; charset=utf-8",
       addRandomSuffix: false,
       allowOverwrite: true,
-      cacheControlMaxAge: 60,
+      cacheControlMaxAge: 0,
     });
     return next;
   }

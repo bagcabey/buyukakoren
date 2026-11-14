@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { del, head, list, put } from "@vercel/blob";
+import { del, get, list, put } from "@vercel/blob";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import {
   decryptServerData,
@@ -428,53 +428,26 @@ async function migrateLegacyMessagesFromBlobsAndState(
   }
 }
 
-async function readPublicBlobTextUncached(
-  blobPath: string
-): Promise<{ text: string; etag?: string } | null> {
-  try {
-    // Public Blob get() CDN'den eski ETag/içerik dönebildiği için Control API head() + cache-buster kullanılır
-    const meta = await head(blobPath);
-    const sep = meta.url.includes("?") ? "&" : "?";
-    const bustUrl = `${meta.url}${sep}v=${encodeURIComponent(meta.etag || "")}&_t=${Date.now()}`;
-    const res = await fetch(bustUrl, {
-      cache: "no-store",
-      headers: { "Cache-Control": "no-cache, no-store, must-revalidate" },
-    });
-    if (!res.ok) return null;
-    return { text: await res.text(), etag: meta.etag };
-  } catch (err) {
-    const isNotFound =
-      err instanceof Error &&
-      (err.name === "BlobNotFoundError" ||
-        err.message.toLowerCase().includes("not found") ||
-        err.message.includes("404"));
-    if (isNotFound) return null;
-    throw err;
-  }
-}
-
 async function readStateFromBlobWithMeta(): Promise<{
   state: StoreData;
   etag?: string;
 }> {
-  let v2: { text: string; etag?: string } | null = null;
-  try {
-    v2 = await readPublicBlobTextUncached(STATE_V2_BLOB_PATH);
-  } catch (err) {
-    console.error("[store] Canlı Blob meta/veri okunamadı:", err);
-    throw new StoreReadError("Canlı veri dosyası okunamadı.");
-  }
+  const v2 = await get(STATE_V2_BLOB_PATH, {
+    access: "public",
+    useCache: false,
+  });
 
-  if (v2) {
+  if (v2 && v2.statusCode === 200 && v2.stream) {
+    const text = await new Response(v2.stream).text();
     let parsed: Partial<StoreData>;
     try {
-      parsed = JSON.parse(v2.text) as Partial<StoreData>;
+      parsed = JSON.parse(text) as Partial<StoreData>;
     } catch {
       throw new StoreReadError("Canlı veri dosyası JSON olarak okunamadı.");
     }
     return {
       state: normalizeStore(parsed),
-      etag: v2.etag,
+      etag: v2.blob.etag,
     };
   }
 
@@ -1328,9 +1301,9 @@ export async function markMessageRead(
 
   if (isBlobConfigured()) {
     const blobPath = `${PRIVATE_MSG_PREFIX}${id}.enc`;
-    const existing = await readPublicBlobTextUncached(blobPath);
-    if (existing) {
-      const msg = decodeMessage(existing.text);
+    const existing = await get(blobPath, { access: "public", useCache: false });
+    if (existing && existing.statusCode === 200 && existing.stream) {
+      const msg = decodeMessage(await new Response(existing.stream).text());
       if (msg) {
         msg.is_read = isRead;
         await persistEncryptedBlobMessage(msg);
