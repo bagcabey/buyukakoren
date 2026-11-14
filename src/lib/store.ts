@@ -8,7 +8,7 @@ import {
   isEncryptedPayload,
   isEncryptionConfigured,
 } from "./crypto";
-import { slugifyTR } from "./format";
+import { isValidTurkishIban, slugifyTR } from "./format";
 import { DEFAULT_NAV_ITEMS, INITIAL_STORE_DATA } from "./seed";
 import {
   BoardMember,
@@ -87,6 +87,69 @@ function mergeDefaultPages(rawPages: PageConfig[] | undefined, defaultPages: Pag
   return Array.from(bySlug.values());
 }
 
+function sanitizeLegacyPlaceholders(
+  posts: Post[],
+  condolences: Condolence[],
+  boardMembers: BoardMember[],
+  settings: SiteSettings
+): {
+  posts: Post[];
+  condolences: Condolence[];
+  boardMembers: BoardMember[];
+  settings: SiteSettings;
+} {
+  const cleanIbanRaw = (settings.iban_number || "").trim();
+  const ibanClean =
+    cleanIbanRaw &&
+    !/^TR00/i.test(cleanIbanRaw.replace(/\s+/g, "")) &&
+    isValidTurkishIban(cleanIbanRaw)
+      ? cleanIbanRaw
+      : "";
+
+  const bankRaw = (settings.iban_bank || "").trim();
+  const bankClean = /panelden|banka adı giriniz|örnek/i.test(bankRaw)
+    ? ""
+    : bankRaw;
+
+  const emailRaw = (settings.association_email || "").trim();
+  const emailClean = /buyukakoren\.org|örnek/i.test(emailRaw) ? "" : emailRaw;
+
+  const noteRaw = (settings.donation_note || "").trim();
+  const noteClean = /yönetici panelinden güncellenebilir/i.test(noteRaw)
+    ? ""
+    : noteRaw;
+
+  const cleanCondolences = condolences.filter(
+    (c) => !/örnek|panelden/i.test(c.deceased_name || "")
+  );
+
+  const cleanBoard = boardMembers.filter(
+    (m) =>
+      Boolean(m.full_name?.trim()) &&
+      !/panelden|örnek/i.test(m.full_name || "")
+  );
+
+  const cleanPosts = posts.filter(
+    (p) =>
+      !/lorem implus|bu bir deneme|örnek posttur|sistem denemesi|gizli taslak test/i.test(
+        `${p.title || ""} ${p.summary || ""} ${p.content || ""}`
+      )
+  );
+
+  return {
+    posts: cleanPosts,
+    condolences: cleanCondolences,
+    boardMembers: cleanBoard,
+    settings: {
+      ...settings,
+      iban_number: ibanClean,
+      iban_bank: bankClean,
+      association_email: emailClean,
+      donation_note: noteClean,
+    },
+  };
+}
+
 function normalizeStore(raw: Partial<StoreData> | null | undefined): StoreData {
   const defaults = cloneInitial();
   if (!raw || typeof raw !== "object") {
@@ -104,32 +167,37 @@ function normalizeStore(raw: Partial<StoreData> | null | undefined): StoreData {
       ? rawSettings.nav_items
       : defaults.site_settings.nav_items || DEFAULT_NAV_ITEMS;
 
+  const mergedSettings: SiteSettings = {
+    ...defaults.site_settings,
+    ...rawSettings,
+    nav_items: navItems,
+    ataturk_ribbon_visible:
+      typeof rawSettings.ataturk_ribbon_visible === "boolean"
+        ? rawSettings.ataturk_ribbon_visible
+        : true,
+    ataturk_ribbon_text:
+      typeof rawSettings.ataturk_ribbon_text === "string"
+        ? rawSettings.ataturk_ribbon_text
+        : defaults.site_settings.ataturk_ribbon_text || "Sonsuza Dek",
+  };
+
+  const cleaned = sanitizeLegacyPlaceholders(
+    Array.isArray(raw.posts) ? raw.posts : defaults.posts,
+    Array.isArray(raw.condolences) ? raw.condolences : defaults.condolences,
+    Array.isArray(raw.board_members) ? raw.board_members : defaults.board_members,
+    mergedSettings
+  );
+
   return {
     version: typeof raw.version === "number" && raw.version >= 1 ? raw.version : 1,
     updated_at: raw.updated_at || new Date().toISOString(),
-    posts: Array.isArray(raw.posts) ? raw.posts : defaults.posts,
-    condolences: Array.isArray(raw.condolences)
-      ? raw.condolences
-      : defaults.condolences,
+    posts: cleaned.posts,
+    condolences: cleaned.condolences,
     gallery_photos: Array.isArray(raw.gallery_photos)
       ? raw.gallery_photos
       : defaults.gallery_photos,
-    board_members: Array.isArray(raw.board_members)
-      ? raw.board_members
-      : defaults.board_members,
-    site_settings: {
-      ...defaults.site_settings,
-      ...rawSettings,
-      nav_items: navItems,
-      ataturk_ribbon_visible:
-        typeof rawSettings.ataturk_ribbon_visible === "boolean"
-          ? rawSettings.ataturk_ribbon_visible
-          : true,
-      ataturk_ribbon_text:
-        typeof rawSettings.ataturk_ribbon_text === "string"
-          ? rawSettings.ataturk_ribbon_text
-          : defaults.site_settings.ataturk_ribbon_text || "Sonsuza Dek",
-    },
+    board_members: cleaned.boardMembers,
+    site_settings: cleaned.settings,
     contact_messages: [], // PII asla genel state blob'unda saklanmaz
     pages: mergeDefaultPages(raw.pages, defaults.pages || []),
   };

@@ -8,7 +8,12 @@ export const dynamic = "force-dynamic";
 
 export default async function TaziyePage() {
   const data = await getAllStoreData();
-  const condolences = data.condolences.filter((c) => c.is_published);
+  const condolences = data.condolences.filter(
+    (c) =>
+      c.is_published &&
+      c.status !== "archived" &&
+      !/örnek|panelden/i.test(c.deceased_name || "")
+  );
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-12">

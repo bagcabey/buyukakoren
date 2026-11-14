@@ -1587,7 +1587,7 @@ export function AdminDashboard({
                 type="text"
                 value={ageOrNote}
                 onChange={(e) => setAgeOrNote(e.target.value)}
-                placeholder="Örn. Yukarı Mahalle sakinlerinden"
+                placeholder="Örn. Büyükakören Köyü sakinlerinden"
                 className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-sm"
               />
             </div>

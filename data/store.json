@@ -1,100 +1,7 @@
 {
-  "version": 8,
-  "updated_at": "2026-11-14T02:04:57.484Z",
+  "version": 1,
+  "updated_at": "2026-11-14T02:20:00.000Z",
   "posts": [
-    {
-      "id": "post-1794621799575",
-      "slug": "gizli-taslak-test-basligi-2",
-      "category": "duyuru",
-      "title": "Gizli Taslak Test Basligi",
-      "summary": "Taslak özet",
-      "content": "Taslak içerik metni",
-      "image_url": null,
-      "image_alt": null,
-      "image_attribution": null,
-      "attachment_url": null,
-      "attachment_name": null,
-      "project_status": null,
-      "is_pinned": false,
-      "is_published": false,
-      "status": "draft",
-      "published_at": "2026-11-14T02:03:19.574Z",
-      "author_name": "Baş Yönetici",
-      "seo_title": null,
-      "seo_description": null,
-      "previous_slugs": [],
-      "updated_at": "2026-11-14T02:03:19.574Z",
-      "created_at": "2026-11-14T02:03:19.574Z"
-    },
-    {
-      "id": "post-1794621764894",
-      "slug": "gizli-taslak-test-basligi",
-      "category": "duyuru",
-      "title": "Gizli Taslak Test Basligi",
-      "summary": "Taslak özet",
-      "content": "Taslak içerik metni",
-      "image_url": null,
-      "image_alt": null,
-      "image_attribution": null,
-      "attachment_url": null,
-      "attachment_name": null,
-      "project_status": null,
-      "is_pinned": false,
-      "is_published": false,
-      "status": "draft",
-      "published_at": "2026-11-14T02:02:44.892Z",
-      "author_name": "Baş Yönetici",
-      "seo_title": null,
-      "seo_description": null,
-      "previous_slugs": [],
-      "updated_at": "2026-11-14T02:02:44.893Z",
-      "created_at": "2026-11-14T02:02:44.893Z"
-    },
-    {
-      "id": "post-46facd2b",
-      "slug": "koyumuz-sakinlerine-duyrulur-9022",
-      "category": "aciklama",
-      "title": "köyümüz sakinlerine duyrulur",
-      "summary": "bu bir deneme içeriktir",
-      "content": "lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne",
-      "image_url": "/uploads/1794615136381-821ba8.jpg",
-      "attachment_url": null,
-      "project_status": null,
-      "is_pinned": false,
-      "is_published": true,
-      "published_at": "2026-11-14T00:12:19.022Z",
-      "created_at": "2026-11-14T00:12:19.022Z"
-    },
-    {
-      "id": "post-df21f94e",
-      "slug": "bu-bir-deneme-haber-yayinidir-7762",
-      "category": "haber",
-      "title": "bu bir deneme haber yayınıdır",
-      "summary": "yapılacka deneme metni tamamen kurgusaldır",
-      "content": "lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne",
-      "image_url": "/uploads/1794615103651-601b41.png",
-      "attachment_url": null,
-      "project_status": null,
-      "is_pinned": false,
-      "is_published": true,
-      "published_at": "2026-11-14T00:11:47.762Z",
-      "created_at": "2026-11-14T00:11:47.763Z"
-    },
-    {
-      "id": "post-5e73cb8f",
-      "slug": "koyumuzde-yapilacak-yol-calismasi-2953",
-      "category": "duyuru",
-      "title": "köyümüzde yapılacak yol çalışması",
-      "summary": "bu bir örnek posttur , sistem denemesi",
-      "content": "lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne lorem implus color sit norne",
-      "image_url": "/uploads/1794615038233-08f703.jpg",
-      "attachment_url": "/uploads/1794615059656-dbec04.pdf",
-      "project_status": null,
-      "is_pinned": false,
-      "is_published": true,
-      "published_at": "2026-11-14T00:11:02.953Z",
-      "created_at": "2026-11-14T00:11:02.953Z"
-    },
     {
       "id": "post-1",
       "slug": "dernek-web-portali-ve-seffaf-raporlama-duyurusu",
@@ -146,7 +53,7 @@
       "category": "haber",
       "title": "Köy Mezarlığı ve Çevresinde İmece Usulü Temizlik Çalışması",
       "summary": "Köyümüzün gençleri ve çocukları el birliğiyle köy mezarlığı ve ortak kullanım alanlarında kapsamlı temizlik çalışması yaptı.",
-      "content": "Köyümüzün değerlerine sahip çıkma bilinciyle bir araya gelen gençlerimiz ve çocuklarımız, köy mezarlığımız başta olmak üzere ortak alanlarda çevre temizliği gerçekleştirdi.\n\nBu örnek dayanışmada emeği geçen tüm evlatlarımıza ve destek veren köy sakinlerimize teşekkür ediyoruz.",
+      "content": "Köyümüzün değerlerine sahip çıkma bilinciyle bir araya gelen gençlerimiz ve çocuklarımız, köy mezarlığımız başta olmak üzere ortak alanlarda çevre temizliği gerçekleştirdi.\n\nBu imece dayanışmada emeği geçen tüm evlatlarımıza ve destek veren köy sakinlerimize teşekkür ediyoruz.",
       "image_url": "/images/koy/03_koy_cocuklari_temizlik.jpg",
       "attachment_url": null,
       "project_status": "tamamlandi",
@@ -171,19 +78,7 @@
       "created_at": "2026-10-25T14:00:00.000Z"
     }
   ],
-  "condolences": [
-    {
-      "id": "cond-1",
-      "deceased_name": "Örnek Taziye İlanı (Yönetici Panelinden Düzenlenebilir)",
-      "age_or_note": "Büyük Akören Köyü sakinlerinden",
-      "funeral_date": "Öğle namazına müteakip",
-      "burial_place": "Büyük Akören Köyü Mezarlığı",
-      "message": "Vefat eden hemşehrilerimize Allah'tan rahmet, kederli ailelerine ve tüm köy halkımıza başsağlığı dileriz. Gerçek taziye ilanlarını Yönetici Paneli üzerinden ekleyebilir veya bu örnek kaydı silebilirsiniz.",
-      "relatives": "Dernek Yönetimi",
-      "is_published": true,
-      "created_at": "2026-11-01T08:00:00.000Z"
-    }
-  ],
+  "condolences": [],
   "gallery_photos": [
     {
       "id": "gal-1",
@@ -241,20 +136,6 @@
       "role": "Dernek Başkanı",
       "bio": "Köyümüzün sosyal dayanışması, eğitim gezileri ve çevre projelerinin koordinasyonundan sorumlu.",
       "display_order": 1
-    },
-    {
-      "id": "bm-2",
-      "full_name": "Yönetim Kurulu Üyesi (Panelden Düzenleyin)",
-      "role": "Başkan Yardımcısı",
-      "bio": "Üye ilişkileri ve köy içi projelerin takibi.",
-      "display_order": 2
-    },
-    {
-      "id": "bm-3",
-      "full_name": "Yönetim Kurulu Üyesi (Panelden Düzenleyin)",
-      "role": "Genel Sekreter & Sayman",
-      "bio": "Duyuru, faaliyet raporlaması ve mali şeffaflık kayıtları.",
-      "display_order": 3
     }
   ],
   "site_settings": {
@@ -263,13 +144,20 @@
     "hero_subtitle": "Köyümüzün duyurularını, yapılan faaliyet raporlarını, taziye ilanlarını ve kültürel mirasını şeffaf bir çatı altında buluşturuyoruz.",
     "association_phone": "",
     "show_association_phone": false,
-    "association_email": "bilgi@buyukakoren.org",
-    "association_address": "Büyükakören Köyü, Yıldızeli / Sivas",
-    "iban_bank": "Yönetici Panelinden Banka Adı Giriniz",
-    "iban_account_name": "Büyük Akören Köyü Yardımlaşma ve Kalkınma Derneği",
-    "iban_number": "TR00 0000 0000 0000 0000 0000 07",
-    "donation_note": "Bağış ve aidat gönderimlerinde açıklama kısmına ad-soyad ve 'Köy Derneği Aidat/Bağış' yazmanız rica olunur. Resmî IBAN bilgisi yönetici panelinden güncellenebilir.",
-    "mukhtar_phone": ""
+    "association_email": "",
+    "association_address": "Büyükakören Köyü, Yıldızeli / Sivas (Posta Kodu: 58502)",
+    "iban_bank": "",
+    "iban_account_name": "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği",
+    "iban_number": "",
+    "donation_note": "Bağış ve aidat gönderimlerinde açıklama kısmına ad-soyad ve katkı amacını yazmanız rica olunur.",
+    "mukhtar_name": "",
+    "mukhtar_phone": "",
+    "founded_year": "",
+    "association_registry_no": "",
+    "tax_office": "",
+    "footer_description": "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği. Sivas ili Yıldızeli ilçesi Büyükakören Köyü sakinleri ve gurbetteki tüm hemşehrilerimiz için şeffaf duyuru, faaliyet ve dayanışma portalı.",
+    "ataturk_ribbon_visible": true,
+    "ataturk_ribbon_text": "Sonsuza Dek"
   },
   "contact_messages": [],
   "pages": []

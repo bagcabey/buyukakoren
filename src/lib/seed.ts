@@ -74,7 +74,7 @@ export const INITIAL_STORE_DATA: StoreData = {
       summary:
         "Köyümüzün gençleri ve çocukları el birliğiyle köy mezarlığı ve ortak kullanım alanlarında kapsamlı temizlik çalışması yaptı.",
       content:
-        "Köyümüzün değerlerine sahip çıkma bilinciyle bir araya gelen gençlerimiz ve çocuklarımız, köy mezarlığımız başta olmak üzere ortak alanlarda çevre temizliği gerçekleştirdi.\n\nBu örnek dayanışmada emeği geçen tüm evlatlarımıza ve destek veren köy sakinlerimize teşekkür ediyoruz.",
+        "Köyümüzün değerlerine sahip çıkma bilinciyle bir araya gelen gençlerimiz ve çocuklarımız, köy mezarlığımız başta olmak üzere ortak alanlarda çevre temizliği gerçekleştirdi.\n\nBu imece dayanışmada emeği geçen tüm evlatlarımıza ve destek veren köy sakinlerimize teşekkür ediyoruz.",
       image_url: "/images/koy/03_koy_cocuklari_temizlik.jpg",
       attachment_url: null,
       project_status: "tamamlandi",
@@ -101,20 +101,7 @@ export const INITIAL_STORE_DATA: StoreData = {
       created_at: "2026-10-25T14:00:00.000Z",
     },
   ],
-  condolences: [
-    {
-      id: "cond-1",
-      deceased_name: "Örnek Taziye İlanı (Yönetici Panelinden Düzenlenebilir)",
-      age_or_note: "Büyük Akören Köyü sakinlerinden",
-      funeral_date: "Öğle namazına müteakip",
-      burial_place: "Büyük Akören Köyü Mezarlığı",
-      message:
-        "Vefat eden hemşehrilerimize Allah'tan rahmet, kederli ailelerine ve tüm köy halkımıza başsağlığı dileriz. Gerçek taziye ilanlarını Yönetici Paneli üzerinden ekleyebilir veya bu örnek kaydı silebilirsiniz.",
-      relatives: "Dernek Yönetimi",
-      is_published: true,
-      created_at: "2026-11-01T08:00:00.000Z",
-    },
-  ],
+  condolences: [],
   gallery_photos: [
     {
       id: "gal-1",
@@ -173,20 +160,6 @@ export const INITIAL_STORE_DATA: StoreData = {
       bio: "Köyümüzün sosyal dayanışması, eğitim gezileri ve çevre projelerinin koordinasyonundan sorumlu.",
       display_order: 1,
     },
-    {
-      id: "bm-2",
-      full_name: "Yönetim Kurulu Üyesi (Panelden Düzenleyin)",
-      role: "Başkan Yardımcısı",
-      bio: "Üye ilişkileri ve köy içi projelerin takibi.",
-      display_order: 2,
-    },
-    {
-      id: "bm-3",
-      full_name: "Yönetim Kurulu Üyesi (Panelden Düzenleyin)",
-      role: "Genel Sekreter & Sayman",
-      bio: "Duyuru, faaliyet raporlaması ve mali şeffaflık kayıtları.",
-      display_order: 3,
-    },
   ],
   site_settings: {
     association_name: "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği",
@@ -195,14 +168,18 @@ export const INITIAL_STORE_DATA: StoreData = {
       "Köyümüzün duyurularını, yapılan faaliyet raporlarını, taziye ilanlarını ve kültürel mirasını şeffaf bir çatı altında buluşturuyoruz.",
     association_phone: "",
     show_association_phone: false,
-    association_email: "bilgi@buyukakoren.org",
-    association_address: "Büyükakören Köyü, Yıldızeli / Sivas",
-    iban_bank: "Yönetici Panelinden Banka Adı Giriniz",
-    iban_account_name: "Büyük Akören Köyü Yardımlaşma ve Kalkınma Derneği",
-    iban_number: "TR00 0000 0000 0000 0000 0000 00",
+    association_email: "",
+    association_address: "Büyükakören Köyü, Yıldızeli / Sivas (Posta Kodu: 58502)",
+    iban_bank: "",
+    iban_account_name: "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği",
+    iban_number: "",
     donation_note:
-      "Bağış ve aidat gönderimlerinde açıklama kısmına ad-soyad ve 'Köy Derneği Aidat/Bağış' yazmanız rica olunur. Resmî IBAN bilgisi yönetici panelinden güncellenebilir.",
+      "Bağış ve aidat gönderimlerinde açıklama kısmına ad-soyad ve katkı amacını yazmanız rica olunur.",
+    mukhtar_name: "",
     mukhtar_phone: "",
+    founded_year: "",
+    association_registry_no: "",
+    tax_office: "",
     nav_items: DEFAULT_NAV_ITEMS,
     footer_description:
       "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği. Sivas ili Yıldızeli ilçesi Büyükakören Köyü sakinleri ve gurbetteki tüm hemşehrilerimiz için şeffaf duyuru, faaliyet ve dayanışma portalı.",

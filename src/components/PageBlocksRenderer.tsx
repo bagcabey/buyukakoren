@@ -964,22 +964,50 @@ function BlockSection({
                   </div>
                 )}
 
-                {(mukhtarName || mukhtarPhone) && (
-                  <div className="flex items-start gap-3">
-                    <Users className="mt-0.5 h-4 w-4 shrink-0 text-red-800" />
-                    <div>
-                      <p className="font-semibold text-[#191919]">
-                        Köy Muhtarlığı
+                <div className="flex items-start gap-3">
+                  <Users className="mt-0.5 h-4 w-4 shrink-0 text-red-800" />
+                  <div>
+                    <p className="font-semibold text-[#191919]">
+                      Köy Muhtarlığı
+                    </p>
+                    <p className="text-[#666560]">
+                      Büyükakören Köyü Muhtarlığı — Yıldızeli / Sivas
+                    </p>
+                    {mukhtarName && (
+                      <p className="mt-0.5 font-medium text-[#191919]">
+                        Muhtar: {mukhtarName}
                       </p>
-                      {mukhtarName && (
-                        <p className="text-[#666560]">{mukhtarName}</p>
-                      )}
-                      {mukhtarPhone && (
-                        <p className="text-[#666560]">{mukhtarPhone}</p>
-                      )}
+                    )}
+                    {mukhtarPhone && (
+                      <a
+                        href={`tel:${mukhtarPhone.replace(/[^+\d]/g, "")}`}
+                        className="mt-0.5 inline-block text-[#191919] hover:underline"
+                      >
+                        {mukhtarPhone}
+                      </a>
+                    )}
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                      <a
+                        href="https://www.yildizeli.gov.tr"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded border border-[#e6e5e0] bg-[#fbfbfa] px-2.5 py-1 font-medium text-[#191919] hover:bg-[#f4f3ef]"
+                      >
+                        Yıldızeli Kaymakamlığı
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                      <a
+                        href="https://www.sivas.gov.tr"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded border border-[#e6e5e0] bg-[#fbfbfa] px-2.5 py-1 font-medium text-[#191919] hover:bg-[#f4f3ef]"
+                      >
+                        Sivas Valiliği
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>

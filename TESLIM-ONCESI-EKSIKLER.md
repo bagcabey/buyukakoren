@@ -14,9 +14,11 @@ Bu dosya, dernek yönetimi ve site sorumlusu Ömer Bağçabaşı tarafından can
 - [ ] **Resmî Banka Hesap Adı, Banka Adı ve TR IBAN**: Yönetici Paneli → *Genel Ayarlar* sekmesinden geçerli 26 haneli `TR...` IBAN girilmelidir (sistem Mod-97 doğrulaması yapar; geçersiz IBAN kaydedilmez).
 - [ ] **Resmî Dernek Telefonu ve E-posta Adresi**: Boş bırakıldığı sürece sitede telefon/e-posta kutusu ve telefon bağlantıları gizlenir.
 - [ ] **Dernek Kütük Numarası (DERBİS), Vergi Dairesi ve Kuruluş Yılı**: Yönetici Paneli → *Genel Ayarlar* üzerinden girildiğinde Künye (`/kunye`) ve Dernek (`/dernek`) sayfalarında otomatik görünür.
-- [ ] **Yönetim Kurulu Üyeleri ve Görev Dağılımı**: Başkan, Başkan Yardımcısı, Sayman, Sekreter ve Denetim kurulu isimleri Yönetici Paneli üzerinden eklenmelidir (boşken ziyaretçilere gizlenir).
-- [ ] **Köy Muhtarı Adı ve İletişim Bilgisi**: Yıldızeli Büyükakören Köyü Muhtarlığı güncel bilgisi (boşken gizlenir).
+- [ ] **Dernek Başkanı ve Yönetim Kurulu Onayı**: Mevcut kayıtta Dernek Başkanı olarak **Mustafa Tanju Çetiner** yer almaktadır (dernek yönetimiyle güncel görev teyidi yapılmalıdır). Başkan Yardımcısı, Sayman, Sekreter ve Denetim Kurulu üyeleri Yönetici Paneli üzerinden eklenmelidir (boşken ziyaretçilere gizlenir).
+- [ ] **Güncel Köy Muhtarı Bilgisi**: Tarihsel kayıtlarda 2024 öncesi dönemlere ait isimler (*Hasan Özüdoğru*, *Yaşar Kavaklı*) geçmekle birlikte 31 Mart 2024 sonrası güncel muhtar bilgisi doğrulanamadığı için sitede yayınlanmamıştır. Yıldızeli Büyükakören Köyü Muhtarlığı güncel adı ve telefonu teyit edilip panelden girilmelidir.
+- [ ] **Doğrulanmamış Köy Yapı Bilgileri (Mahalle / Cami Sayısı)**: Eski metinlerde yer alan `"3 Mahalle • 3 Cami"` ifadesi resmî bir kaynakla doğrulanamadığı için siteden kaldırılmıştır; dernek yönetimi tarafından doğrulanırsa Sayfa Tasarımcısı → `/koyumuz` üzerinden eklenebilir.
 - [ ] **Sosyal Medya Bağlantıları (Facebook, Instagram, YouTube, WhatsApp Grubu)**: Varsa resmi hesap adresleri Yönetici Paneli → *Menü ve Alt Bilgi / Sosyal Medya* alanından eklenmelidir.
+- [ ] **Alt Bilgi (Footer) Site Yazılımcısı Bağlantısı Kontrolü**: Alt bilgide `Ömer Bağçabaşı` adına tanımlı portfolyo URL'si (`https://omer-bahcebasi-protfolio-phi-silk-yuvqondwda.vercel.app`) geliştirici talebi gereği korunmuştur; soyadı ve portfolyo adresinin yazım doğruluğu teslim öncesi son kez onaylanmalıdır.
 
 ## 3. Görsel ve İzin Eksikleri
 - [ ] **Köye Ait Doğrudan Saha Fotoğrafları**: `gorseller/izin-bekleyen/` klasörüne taşınan çocuklu veya kaynağı belirsiz görseller için veli/kişi açık rızası alındıktan sonra Yönetici Paneli → *Galeri* bölümünden yüklenmelidir. Mevcut galerideki tüm fotoğraflar Wikimedia Commons lisanslı Yıldızeli/Sivas bölge arşividir ve gerçek yeriyle etiketlenmiştir.
