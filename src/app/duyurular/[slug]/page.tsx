@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
-import { ShareWhatsAppButton } from "@/components/ShareWhatsAppButton";
+import { ShareButtons } from "@/components/ShareButtons";
 import { SmartImage } from "@/components/SmartImage";
 import { STATUS_LABELS, formatDateTR, getCategoryLabel } from "@/lib/format";
 import { renderSafeRichText, sanitizeSafeUrl } from "@/lib/sanitize";
@@ -77,11 +77,20 @@ export default async function PostDetailPage({
       />
       <Link
         href="/duyurular"
-        className="inline-flex items-center gap-1.5 rounded-lg border border-[#e6e5e0] bg-[#fbfbfa] px-3 py-1.5 text-xs font-medium text-[#191919] transition-colors hover:bg-[#f4f3ef] sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm sm:text-[#666560]"
+        className="no-print inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-[#e6e5e0] bg-[#fbfbfa] px-3 py-1.5 text-xs font-medium text-[#191919] transition-colors hover:bg-[#f4f3ef] sm:min-h-0 sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm sm:text-[#666560]"
       >
         <ArrowLeft className="h-4 w-4" />
         Tüm Duyuru ve Haberlere Dön
       </Link>
+
+      <div className="mb-5 hidden border-b border-black pb-3 print:block">
+        <p className="text-sm font-bold uppercase tracking-wide">
+          {storeData.site_settings.association_name}
+        </p>
+        <p className="text-xs text-stone-700">
+          Resmî Duyuru / Faaliyet Kaydı — buyukakoren.vercel.app
+        </p>
+      </div>
 
       <header className="mt-5 border-b border-[#e6e5e0] pb-6 sm:mt-6">
         <div className="flex flex-wrap items-center gap-2 text-xs text-[#666560]">
@@ -111,7 +120,11 @@ export default async function PostDetailPage({
         </p>
 
         <div className="no-print mt-5 flex flex-wrap items-center gap-2.5 sm:gap-3">
-          <ShareWhatsAppButton title={post.title} />
+          <ShareButtons
+            title={post.title}
+            path={`/duyurular/${post.slug}`}
+            showPrint
+          />
           {post.attachment_url && (
             <a
               href={post.attachment_url}
@@ -253,11 +266,11 @@ export default async function PostDetailPage({
             almak için iletişim kanalımızı kullanabilirsiniz.
           </p>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
-          <ShareWhatsAppButton title={post.title} />
+        <div className="flex flex-wrap items-center gap-2">
+          <ShareButtons title={post.title} path={`/duyurular/${post.slug}`} />
           <Link
             href="/iletisim"
-            className="inline-flex items-center gap-1.5 rounded-md bg-[#191919] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#333333]"
+            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-lg bg-[#191919] px-3.5 py-2 text-xs font-medium text-white hover:bg-[#333333] sm:min-h-[36px] sm:py-1.5"
           >
             <MessageSquare className="h-3.5 w-3.5" />
             Derneğe Ulaşın

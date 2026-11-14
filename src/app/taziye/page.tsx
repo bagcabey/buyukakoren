@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Calendar, HeartHandshake, MapPin, MessageSquarePlus } from "lucide-react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { ShareWhatsAppButton } from "@/components/ShareWhatsAppButton";
+import { ShareButtons } from "@/components/ShareButtons";
 import { formatDateTR } from "@/lib/format";
 import { buildPageMetadata } from "@/lib/seo";
 import { getAllStoreData } from "@/lib/store";
@@ -27,6 +27,14 @@ export default async function TaziyePage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-12">
+      <div className="mb-6 hidden border-b border-black pb-3 print:block">
+        <p className="text-sm font-bold uppercase tracking-wide">
+          {data.site_settings.association_name}
+        </p>
+        <p className="text-xs text-stone-700">
+          Resmî Taziye ve Başsağlığı İlanı — buyukakoren.vercel.app/taziye
+        </p>
+      </div>
       <Breadcrumbs items={[{ name: "Taziye İlanları", href: "/taziye" }]} />
       <div className="border-b border-[#e6e5e0] pb-5 sm:pb-6">
         <div className="inline-flex items-center gap-1.5 rounded-full bg-[#191919] px-3 py-1 text-[11px] font-medium tracking-wide text-white uppercase">
@@ -98,8 +106,10 @@ export default async function TaziyePage() {
                     Başsağlığı dileriz
                   </span>
                 )}
-                <ShareWhatsAppButton
+                <ShareButtons
                   title={`Vefat & Taziye: ${item.deceased_name} (${item.funeral_date} - ${item.burial_place})`}
+                  path="/taziye"
+                  showPrint
                 />
               </div>
             </div>
@@ -108,7 +118,7 @@ export default async function TaziyePage() {
       </div>
 
       {/* Taziye Notification Prompt */}
-      <div className="mt-8 flex flex-col gap-4 rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="no-print mt-8 flex flex-col gap-4 rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-[#191919]">
             Yeni Taziye Bildirimi İletmek İster misiniz?

@@ -196,6 +196,9 @@ function sanitizeLegacyPlaceholders(
   const seedPostMap = new Map(
     INITIAL_STORE_DATA.posts.map((sp) => [sp.id, sp])
   );
+  const seedPostByTitle = new Map(
+    INITIAL_STORE_DATA.posts.map((sp) => [sp.title.trim().toLowerCase(), sp])
+  );
 
   const cleanPosts = posts
     .filter(
@@ -205,7 +208,9 @@ function sanitizeLegacyPlaceholders(
         )
     )
     .map((p) => {
-      const seedMatch = seedPostMap.get(p.id);
+      const seedMatch =
+        seedPostMap.get(p.id) ||
+        seedPostByTitle.get((p.title || "").trim().toLowerCase());
       const hasLegacyImg = Boolean(p.image_url && legacyKoyRe.test(p.image_url));
       if (hasLegacyImg || (!p.image_url && seedMatch?.image_url)) {
         return {

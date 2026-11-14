@@ -107,7 +107,7 @@ export function Navbar({
   const ribbonText = settings?.ataturk_ribbon_text?.trim() || "Sonsuza Dek";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#e6e5e0] bg-white/95 backdrop-blur-md">
+    <header className="no-print sticky top-0 z-40 border-b border-[#e6e5e0] bg-white/95 backdrop-blur-md">
       {/* Kırmızı Üst Kuşak */}
       {showRibbon && (
         <div className="border-b border-[#9a0715] bg-gradient-to-r from-[#b5091a] via-[#e30a17] to-[#b5091a] px-3 py-1 text-white">
@@ -175,7 +175,7 @@ export function Navbar({
         <div className="flex items-center gap-2">
           <Link
             href="/bagis"
-            className="inline-flex items-center gap-1.5 rounded-full border border-[#e6e5e0] bg-[#fbfbfa] px-2.5 py-1.5 text-xs font-medium text-[#191919] transition-colors hover:bg-[#f4f3ef] lg:hidden"
+            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#e6e5e0] bg-[#fbfbfa] px-3 py-1.5 text-xs font-medium text-[#191919] transition-colors hover:bg-[#f4f3ef] lg:hidden"
           >
             <Landmark className="h-3.5 w-3.5 text-[#666560]" />
             <span>Bağış</span>
@@ -183,7 +183,7 @@ export function Navbar({
 
           <Link
             href="/admin"
-            className="hidden items-center gap-1.5 rounded-md border border-[#e6e5e0] bg-[#fbfbfa] px-3 py-1.5 text-xs font-medium text-[#191919] transition-colors hover:bg-[#f4f3ef] sm:inline-flex"
+            className="hidden min-h-[40px] items-center gap-1.5 rounded-md border border-[#e6e5e0] bg-[#fbfbfa] px-3 py-1.5 text-xs font-medium text-[#191919] transition-colors hover:bg-[#f4f3ef] sm:inline-flex"
           >
             <ShieldCheck className="h-3.5 w-3.5 text-[#666560]" />
             Yönetici
@@ -192,7 +192,7 @@ export function Navbar({
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#e6e5e0] bg-[#fbfbfa] text-[#191919] transition-colors hover:bg-[#f4f3ef] lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-[#e6e5e0] bg-[#fbfbfa] text-[#191919] transition-colors hover:bg-[#f4f3ef] lg:hidden"
             aria-label="Menüyü Aç/Kapat"
             aria-expanded={open}
           >

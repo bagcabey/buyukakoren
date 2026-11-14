@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated, requireAdminAuth } from "@/lib/auth";
 import { slugifyTR } from "@/lib/format";
+import { notifyIndexNow } from "@/lib/indexnow";
 import { appendAuditLog } from "@/lib/security-store";
 import {
   createOrUpdatePost,
@@ -138,6 +139,16 @@ export async function POST(req: Request) {
     revalidatePath("/duyurular");
     revalidatePath("/faaliyetler");
     revalidatePath(`/duyurular/${saved.slug}`);
+
+    if (saved.is_published && saved.status !== "draft") {
+      void notifyIndexNow([
+        "/",
+        "/duyurular",
+        "/faaliyetler",
+        `/duyurular/${saved.slug}`,
+        "/sitemap.xml",
+      ]);
+    }
 
     return NextResponse.json({ post: saved, version: saved._version });
   } catch (err) {

@@ -108,9 +108,9 @@ function BlockSection({
                 fill
                 priority
                 sizes="(max-width: 1200px) 100vw, 1152px"
-                className="object-cover opacity-35"
+                className="object-cover opacity-45"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#191919] via-[#191919]/75 to-[#191919]/50" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#191919]/90 via-[#191919]/65 to-[#191919]/35" />
             </>
           )}
           <div className="relative z-10 px-6 py-12 sm:px-10 sm:py-16 lg:px-14 lg:py-20">

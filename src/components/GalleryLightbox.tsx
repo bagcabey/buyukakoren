@@ -53,7 +53,7 @@ export function GalleryLightbox({ photos }: { photos: GalleryPhoto[] }) {
                 setActiveAlbum(album);
                 setSelectedIndex(null);
               }}
-              className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors sm:py-1.5 ${
+              className={`inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors sm:min-h-[36px] sm:py-1.5 ${
                 active
                   ? "border-[#191919] bg-[#191919] text-white"
                   : "border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:text-[#191919]"

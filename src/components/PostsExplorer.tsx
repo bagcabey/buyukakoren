@@ -62,7 +62,7 @@ export function PostsExplorer({
                 key={f.key}
                 type="button"
                 onClick={() => setCategory(f.key)}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors sm:py-1.5 ${
+                className={`inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors sm:min-h-[36px] sm:py-1.5 ${
                   active
                     ? "border-[#191919] bg-[#191919] text-white"
                     : "border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:text-[#191919]"
@@ -84,13 +84,13 @@ export function PostsExplorer({
         </div>
 
         <div className="relative w-full sm:w-64">
-          <Search className="absolute top-2.5 left-3 h-4 w-4 text-[#666560]" />
+          <Search className="absolute top-3.5 left-3 h-4 w-4 text-[#666560] sm:top-2.5" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Duyuru veya haber ara..."
-            className="w-full rounded-lg border border-[#e6e5e0] bg-white py-2 pr-3 pl-9 text-xs text-[#191919] outline-none focus:border-[#191919]"
+            className="min-h-[44px] w-full rounded-lg border border-[#e6e5e0] bg-white py-2 pr-3 pl-9 text-xs text-[#191919] outline-none focus:border-[#191919] sm:min-h-[38px]"
           />
         </div>
       </div>

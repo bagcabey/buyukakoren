@@ -27,7 +27,7 @@ export function Footer({
   }).filter((v): v is { key: keyof NonNullable<SiteSettings["social_links"]>; label: string; url: string } => v !== null);
 
   return (
-    <footer className="border-t border-[#e6e5e0] bg-[#fbfbfa] pb-24 lg:pb-10">
+    <footer className="no-print border-t border-[#e6e5e0] bg-[#fbfbfa] pb-24 lg:pb-10">
       <div className="mx-auto max-w-6xl px-4 pt-10 pb-2 sm:px-6 lg:py-12">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-10">
           <div className="col-span-2">

@@ -24,7 +24,7 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="Mobil Alt Navigasyon"
-      className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-[#e6e5e0] bg-white/95 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] backdrop-blur-md lg:hidden"
+      className="no-print pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-[#e6e5e0] bg-white/95 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] backdrop-blur-md lg:hidden"
     >
       <div className="mx-auto grid h-16 max-w-lg grid-cols-5 px-1">
         {BOTTOM_ITEMS.map((item) => {

@@ -58,3 +58,17 @@ Bu dosya, 14 Kasım 2026 teslim öncesi bakım ve geliştirme sürecindeki her a
 - **Dürüst Etiketleme ve Tam Atıf**: Çevre fotoğraflarında "Büyükakören içi" yerine `"Yıldızeli bölgesi (Kaleköy–Kıvşak arası)"`, `"Direkli, Yıldızeli"`, `"Sivas kırsalı"` gibi doğrulanabilir ifadeler kullanıldı; `PageBlocksRenderer.tsx`, `GalleryLightbox.tsx` ve `duyurular/[slug]/page.tsx` üzerinde her görselde yazar, lisans ve Wikimedia Commons kaynak bağlantısı gösterildi, `/galeri` sayfasına `"Köyümüzden Fotoğraf Gönderin"` çağrısı eklendi.
 
 - **Doğrulama**: `npm run lint` ve `npm run build` 0 hata ile tamamlandı.
+
+
+## Aşama 7: Tasarım Tutarlılığı, Mobil Uyumluluk, Baskı ve Erişilebilirlik — 14.11.2026 05:47
+- **Başlık Eşleştirme Düzeltmesi (`src/lib/store.ts`)**: Önceki panel düzenlemeleri nedeniyle slug sonuna kısa kod eklenmiş tohum yazıların (`koyumuz-ogrencilerine-sivas-tarih-ve-kultur-gezisi-duzenlendi-3142` vb.) da canlıda katalog kapak görsellerini ve Sivas seçki fotoğraflarını alması için `seedPostByTitle` eşleştirmesi eklendi.
+- **Erişilebilirlik ve Dokunma Alanları (`globals.css`, `Navbar.tsx`, `PostsExplorer.tsx`, `GalleryLightbox.tsx`, `Footer.tsx`, `MobileBottomNav.tsx`)**: Tüm etkileşimli elemanlara `:focus-visible` kırmızı (`#991b1b`) odak halkası eklendi; mobil hamburger menü düğmesi 44×44 px (`h-11 w-11`), Bağış düğmesi ve filtre sekme düğmeleri `min-h-[44px]` dokunma hedefine yükseltildi. Hero arka plan kontrastı (`opacity-45`) ve `loading.tsx` / `not-found.tsx` kurumsal yükleme ile 404 sayfaları tamamlandı.
+- **Yazdırma Görünümü (`@media print`)**: Duyuru detay (`/duyurular/[slug]`) ve Taziye (`/taziye`) sayfalarına yazdırırken beliren dernek üst başlığı eklendi; `Navbar`, `Footer`, `MobileBottomNav`, iframe ve paylaşım çubukları baskıda otomatik gizlenecek şekilde ayarlandı.
+- **Doğrulama (390 / 768 / 1024 / 1440 px)**: Yerel üretim sunucusunda Python Playwright ile 10 sayfa × 4 genişlik (40 görünüm) test edildi: `0` yatay taşma (`scrollWidth <= innerWidth`), `0` kırık görsel, `0` konsol hatası; ekran görüntüleri `teslim-raporu/ekran-goruntuleri/` altında incelendi. `npm run lint` ve `npm run build` 0 hata ile geçti.
+
+
+## Aşama 8: Google Tanıtımı, IndexNow ve Sosyal Paylaşım — 14.11.2026 05:49
+- **IndexNow Entegrasyonu (`public/b8a58502buyukakoren2026indexnow.txt`, `src/lib/indexnow.ts`, `api/posts/route.ts`)**: Bing, Yandex ve IndexNow destekli arama motorları için doğrulama anahtarı köke yerleştirildi ve yönetici panelinden yazı yayımlandığında/güncellendiğinde yeni URL ile site haritasını arka planda anlık bildiren `notifyIndexNow` bağlantısı eklendi.
+- **Çoklu Sosyal Paylaşım ve Baskı (`src/components/ShareButtons.tsx`)**: Duyuru detay ve Taziye sayfalarına `WhatsApp`, `Facebook`, `X / Paylaş`, `Bağlantıyı Kopyala` ve `Yazdır` düğmeleri eklendi.
+- **Tanıtım Rehberi (`GOOGLE-TANITIM-REHBERI.md`)**: Google Search Console sitemap/URL denetimi adımları, Bing Webmaster Tools entegrasyonu, Google İşletme Profili (722 karakter hazır açıklama, kategori, fotoğraf ve doğrulama adımları) ve ilk 30 günlük içerik planı yazıldı; açık Google oturumu gerektiren manuel GSC/Profil adımları `TESLIM-ONCESI-EKSIKLER.md` dosyasına işlendi.
+- **Doğrulama**: `npm run lint` ve `npm run build` ile doğrulanıp canlıya gönderilecek.
