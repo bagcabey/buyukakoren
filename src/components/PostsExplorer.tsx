@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Calendar, Pin, Search } from "lucide-react";
-import { CATEGORY_LABELS, formatDateTR } from "@/lib/format";
-import { Post, PostCategory } from "@/lib/types";
+import { formatDateTR, getCategoryLabel } from "@/lib/format";
+import { Post } from "@/lib/types";
 
-const FILTERS: { key: string; label: string }[] = [
+const DEFAULT_FILTERS: { key: string; label: string }[] = [
   { key: "tumu", label: "Tümü" },
   { key: "duyuru", label: "Duyurular" },
   { key: "haber", label: "Haberler" },
@@ -24,9 +24,20 @@ export function PostsExplorer({
   const [category, setCategory] = useState(initialCategory);
   const [query, setQuery] = useState("");
 
+  const customKeys = Array.from(
+    new Set(
+      posts
+        .map((p) => p.category)
+        .filter((c) => !["duyuru", "haber", "aciklama", "faaliyet"].includes(c))
+    )
+  );
+  const filters = [
+    ...DEFAULT_FILTERS,
+    ...customKeys.map((k) => ({ key: k, label: getCategoryLabel(k) })),
+  ];
+
   const filtered = posts.filter((p) => {
-    const catOk =
-      category === "tumu" || p.category === (category as PostCategory);
+    const catOk = category === "tumu" || p.category === category;
     const q = query.trim().toLowerCase();
     const qOk =
       !q ||
@@ -39,7 +50,7 @@ export function PostsExplorer({
     <div>
       <div className="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="no-scrollbar flex flex-nowrap gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
-          {FILTERS.map((f) => {
+          {filters.map((f) => {
             const active = category === f.key;
             const count =
               f.key === "tumu"
@@ -108,7 +119,7 @@ export function PostsExplorer({
                 <div className="flex items-center justify-between gap-2 text-xs text-[#666560]">
                   <div className="flex items-center gap-1.5">
                     <span className="rounded bg-[#f4f3ef] px-2 py-0.5 font-medium text-[#191919]">
-                      {CATEGORY_LABELS[post.category]}
+                      {getCategoryLabel(post.category)}
                     </span>
                     {post.is_pinned && (
                       <span className="inline-flex items-center gap-0.5 rounded bg-[#191919] px-1.5 py-0.5 text-[11px] font-medium text-white">

@@ -13,7 +13,7 @@ import {
   Pin,
 } from "lucide-react";
 import { CopyIbanButton } from "@/components/CopyIbanButton";
-import { CATEGORY_LABELS, STATUS_LABELS, formatDateTR } from "@/lib/format";
+import { STATUS_LABELS, formatDateTR, getCategoryLabel } from "@/lib/format";
 import { getAllStoreData, getPublishedPosts } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -324,7 +324,7 @@ export default async function HomePage() {
               <div className="flex flex-1 flex-col p-4 sm:p-5">
                 <div className="flex items-center justify-between gap-2 text-xs text-[#666560]">
                   <span className="rounded-md bg-[#f4f3ef] px-2 py-0.5 font-medium text-[#191919]">
-                    {CATEGORY_LABELS[post.category]}
+                    {getCategoryLabel(post.category)}
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <Calendar className="h-3 w-3" />

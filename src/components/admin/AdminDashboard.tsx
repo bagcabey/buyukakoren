@@ -26,7 +26,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import { CATEGORY_LABELS, formatDateTR } from "@/lib/format";
+import { formatDateTR, getCategoryLabel } from "@/lib/format";
 import {
   BoardMember,
   Condolence,
@@ -39,6 +39,61 @@ import {
 } from "@/lib/types";
 
 type TabKey = "posts" | "condolences" | "gallery" | "settings" | "messages";
+
+const DEFAULT_POST_CATEGORIES = ["duyuru", "haber", "aciklama", "faaliyet"];
+const DEFAULT_GALLERY_ALBUMS = [
+  "Köyümüzden Kareler",
+  "Dernek Faaliyetleri",
+  "Eğitim & Kültür",
+];
+
+function InlineCategoryCreator({
+  value,
+  onChange,
+  onAdd,
+  onCancel,
+  placeholder,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  onAdd: () => void;
+  onCancel: () => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="mt-2 flex gap-1.5">
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            onAdd();
+          } else if (e.key === "Escape") {
+            onCancel();
+          }
+        }}
+        placeholder={placeholder}
+        className="flex-1 rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs outline-none focus:border-[#191919]"
+      />
+      <button
+        type="button"
+        onClick={onAdd}
+        className="rounded-lg bg-[#191919] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#333333]"
+      >
+        Ekle
+      </button>
+      <button
+        type="button"
+        onClick={onCancel}
+        className="rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs text-[#666560] hover:bg-[#f4f3ef]"
+      >
+        İptal
+      </button>
+    </div>
+  );
+}
 
 export function AdminDashboard({ initialData }: { initialData: StoreData }) {
   const router = useRouter();
@@ -107,6 +162,8 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
   const [postFilter, setPostFilter] = useState<string>("tumu");
   const [editingId, setEditingId] = useState<string | undefined>(undefined);
   const [postCategory, setPostCategory] = useState<PostCategory>("duyuru");
+  const [addingPostCat, setAddingPostCat] = useState(false);
+  const [newPostCatInput, setNewPostCatInput] = useState("");
   const [postTitle, setPostTitle] = useState("");
   const [postSummary, setPostSummary] = useState("");
   const [postContent, setPostContent] = useState("");
@@ -133,7 +190,9 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
 
   function resetPostForm() {
     setEditingId(undefined);
-    setPostCategory("duyuru");
+    const activeCat =
+      postFilter !== "tumu" && postFilter !== "taslak" ? postFilter : "duyuru";
+    setPostCategory(activeCat);
     setPostTitle("");
     setPostSummary("");
     setPostContent("");
@@ -308,8 +367,83 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
   );
   const [galTitle, setGalTitle] = useState("");
   const [galAlbum, setGalAlbum] = useState("Köyümüzden Kareler");
+  const [addingGalAlbum, setAddingGalAlbum] = useState(false);
+  const [newGalAlbumInput, setNewGalAlbumInput] = useState("");
   const [galUrl, setGalUrl] = useState("");
   const [galYear, setGalYear] = useState("2026");
+
+  const postCategories = Array.from(
+    new Set([
+      ...DEFAULT_POST_CATEGORIES,
+      ...(data.site_settings.custom_post_categories || []),
+      ...data.posts.map((p) => p.category).filter(Boolean),
+    ])
+  );
+
+  const galleryAlbums = Array.from(
+    new Set([
+      ...DEFAULT_GALLERY_ALBUMS,
+      ...(data.site_settings.custom_gallery_albums || []),
+      ...data.gallery_photos.map((g) => g.album).filter(Boolean),
+    ])
+  );
+
+  async function handleAddCustomCategory(kind: "post" | "gallery") {
+    const raw = kind === "post" ? newPostCatInput : newGalAlbumInput;
+    const trimmed = raw.trim();
+    if (!trimmed) return;
+
+    const field =
+      kind === "post" ? "custom_post_categories" : "custom_gallery_albums";
+    const existingList = kind === "post" ? postCategories : galleryAlbums;
+
+    const matched = existingList.find(
+      (c) =>
+        c.toLocaleLowerCase("tr-TR") === trimmed.toLocaleLowerCase("tr-TR") ||
+        getCategoryLabel(c).toLocaleLowerCase("tr-TR") ===
+          trimmed.toLocaleLowerCase("tr-TR")
+    );
+    const targetValue = matched || trimmed;
+
+    if (!matched) {
+      const currentCustom = data.site_settings[field] || [];
+      const nextSettings: SiteSettings = {
+        ...data.site_settings,
+        [field]: [...currentCustom, targetValue],
+      };
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site_settings: nextSettings }),
+      });
+      if (!res.ok) {
+        notify("Kategori eklenemedi.", true);
+        return;
+      }
+      setSettingsForm((prev) => ({
+        ...prev,
+        [field]: nextSettings[field],
+      }));
+      await refreshAll();
+      notify(
+        kind === "post"
+          ? `"${targetValue}" kategorisi eklendi.`
+          : `"${targetValue}" albüm kategorisi eklendi.`
+      );
+    }
+
+    if (kind === "post") {
+      setPostCategory(targetValue);
+      setPostFilter(targetValue);
+      setNewPostCatInput("");
+      setAddingPostCat(false);
+    } else {
+      setGalAlbum(targetValue);
+      setGalFilter(targetValue);
+      setNewGalAlbumInput("");
+      setAddingGalAlbum(false);
+    }
+  }
 
   function loadGalForEdit(g: GalleryPhoto) {
     setEditingGalId(g.id);
@@ -324,7 +458,7 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
   function resetGalForm() {
     setEditingGalId(undefined);
     setGalTitle("");
-    setGalAlbum("Köyümüzden Kareler");
+    setGalAlbum(galFilter !== "Tümü" ? galFilter : "Köyümüzden Kareler");
     setGalUrl("");
     setGalYear("2026");
   }
@@ -357,10 +491,7 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
     notify("Fotoğraf kaldırıldı.");
   }
 
-  const albums = [
-    "Tümü",
-    ...Array.from(new Set(data.gallery_photos.map((g) => g.album))),
-  ];
+  const albums = ["Tümü", ...galleryAlbums];
   const filteredGallery =
     galFilter === "Tümü"
       ? data.gallery_photos
@@ -641,21 +772,49 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-medium text-[#191919]">
-                  Tür
-                </label>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="block text-xs font-medium text-[#191919]">
+                    Tür / Kategori
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setAddingPostCat((v) => !v)}
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-[#1f4d36] hover:underline"
+                  >
+                    <Plus className="h-3 w-3" />
+                    Yeni Kategori
+                  </button>
+                </div>
                 <select
                   value={postCategory}
-                  onChange={(e) =>
-                    setPostCategory(e.target.value as PostCategory)
-                  }
+                  onChange={(e) => {
+                    if (e.target.value === "__new__") {
+                      setAddingPostCat(true);
+                    } else {
+                      setPostCategory(e.target.value as PostCategory);
+                    }
+                  }}
                   className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-sm"
                 >
-                  <option value="duyuru">Duyuru</option>
-                  <option value="haber">Haber</option>
-                  <option value="aciklama">Resmî Açıklama</option>
-                  <option value="faaliyet">Faaliyet Raporu</option>
+                  {postCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {getCategoryLabel(cat)}
+                    </option>
+                  ))}
+                  <option value="__new__">+ Yeni Kategori Ekle...</option>
                 </select>
+                {addingPostCat && (
+                  <InlineCategoryCreator
+                    value={newPostCatInput}
+                    onChange={setNewPostCatInput}
+                    onAdd={() => handleAddCustomCategory("post")}
+                    onCancel={() => {
+                      setAddingPostCat(false);
+                      setNewPostCatInput("");
+                    }}
+                    placeholder="Yeni kategori adı..."
+                  />
+                )}
               </div>
 
               {postCategory === "faaliyet" && (
@@ -855,16 +1014,21 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
               <div className="no-scrollbar flex flex-nowrap gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
                 {[
                   { k: "tumu", l: "Tümü" },
-                  { k: "duyuru", l: "Duyuru" },
-                  { k: "haber", l: "Haber" },
-                  { k: "aciklama", l: "Açıklama" },
-                  { k: "faaliyet", l: "Faaliyet" },
+                  ...postCategories.map((c) => ({
+                    k: c,
+                    l: getCategoryLabel(c),
+                  })),
                   { k: "taslak", l: "Taslaklar" },
                 ].map((f) => (
                   <button
                     key={f.k}
                     type="button"
-                    onClick={() => setPostFilter(f.k)}
+                    onClick={() => {
+                      setPostFilter(f.k);
+                      if (!editingId && f.k !== "tumu" && f.k !== "taslak") {
+                        setPostCategory(f.k);
+                      }
+                    }}
                     className={`shrink-0 rounded-md px-2.5 py-1.5 text-xs font-medium ${
                       postFilter === f.k
                         ? "bg-[#191919] text-white"
@@ -874,7 +1038,27 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
                     {f.l}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => setAddingPostCat((v) => !v)}
+                  className="inline-flex shrink-0 items-center gap-1 rounded-md border border-dashed border-[#cfcec8] bg-white px-2.5 py-1.5 text-xs font-medium text-[#1f4d36] hover:border-[#1f4d36] hover:bg-[#f4f7f5]"
+                >
+                  <Plus className="h-3 w-3" />
+                  Yeni Kategori
+                </button>
               </div>
+              {addingPostCat && (
+                <InlineCategoryCreator
+                  value={newPostCatInput}
+                  onChange={setNewPostCatInput}
+                  onAdd={() => handleAddCustomCategory("post")}
+                  onCancel={() => {
+                    setAddingPostCat(false);
+                    setNewPostCatInput("");
+                  }}
+                  placeholder="Yeni kategori adı yazın..."
+                />
+              )}
             </div>
 
             {filteredPosts.length === 0 ? (
@@ -894,7 +1078,7 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2 text-xs text-[#666560]">
                       <span className="rounded bg-[#f4f3ef] px-2 py-0.5 font-medium text-[#191919]">
-                        {CATEGORY_LABELS[p.category]}
+                        {getCategoryLabel(p.category)}
                       </span>
                       {p.is_pinned && (
                         <span className="rounded bg-[#191919] px-2 py-0.5 text-white">
@@ -1234,15 +1418,49 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#191919]">
-                Albüm Adı
-              </label>
-              <input
-                type="text"
+              <div className="flex items-center justify-between gap-2">
+                <label className="block text-xs font-medium text-[#191919]">
+                  Albüm / Kategori
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setAddingGalAlbum((v) => !v)}
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-[#1f4d36] hover:underline"
+                >
+                  <Plus className="h-3 w-3" />
+                  Yeni Kategori
+                </button>
+              </div>
+              <select
                 value={galAlbum}
-                onChange={(e) => setGalAlbum(e.target.value)}
+                onChange={(e) => {
+                  if (e.target.value === "__new__") {
+                    setAddingGalAlbum(true);
+                  } else {
+                    setGalAlbum(e.target.value);
+                  }
+                }}
                 className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-sm"
-              />
+              >
+                {galleryAlbums.map((alb) => (
+                  <option key={alb} value={alb}>
+                    {alb}
+                  </option>
+                ))}
+                <option value="__new__">+ Yeni Kategori / Albüm Ekle...</option>
+              </select>
+              {addingGalAlbum && (
+                <InlineCategoryCreator
+                  value={newGalAlbumInput}
+                  onChange={setNewGalAlbumInput}
+                  onAdd={() => handleAddCustomCategory("gallery")}
+                  onCancel={() => {
+                    setAddingGalAlbum(false);
+                    setNewGalAlbumInput("");
+                  }}
+                  placeholder="Yeni albüm / kategori adı..."
+                />
+              )}
             </div>
             <div>
               <label className="block text-xs font-medium text-[#191919]">
@@ -1305,21 +1523,48 @@ export function AdminDashboard({ initialData }: { initialData: StoreData }) {
           </div>
 
           <div className="space-y-4 lg:col-span-8">
-            <div className="no-scrollbar flex flex-nowrap gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
-              {albums.map((alb) => (
+            <div className="rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] p-3">
+              <div className="no-scrollbar flex flex-nowrap gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
+                {albums.map((alb) => (
+                  <button
+                    key={alb}
+                    type="button"
+                    onClick={() => {
+                      setGalFilter(alb);
+                      if (!editingGalId && alb !== "Tümü") {
+                        setGalAlbum(alb);
+                      }
+                    }}
+                    className={`shrink-0 rounded-md px-3 py-1.5 text-xs font-medium ${
+                      galFilter === alb
+                        ? "bg-[#191919] text-white"
+                        : "border border-[#e6e5e0] bg-white text-[#666560] hover:text-[#191919]"
+                    }`}
+                  >
+                    {alb}
+                  </button>
+                ))}
                 <button
-                  key={alb}
                   type="button"
-                  onClick={() => setGalFilter(alb)}
-                  className={`shrink-0 rounded-md px-3 py-1.5 text-xs font-medium ${
-                    galFilter === alb
-                      ? "bg-[#191919] text-white"
-                      : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:text-[#191919]"
-                  }`}
+                  onClick={() => setAddingGalAlbum((v) => !v)}
+                  className="inline-flex shrink-0 items-center gap-1 rounded-md border border-dashed border-[#cfcec8] bg-white px-2.5 py-1.5 text-xs font-medium text-[#1f4d36] hover:border-[#1f4d36] hover:bg-[#f4f7f5]"
                 >
-                  {alb}
+                  <Plus className="h-3 w-3" />
+                  Yeni Kategori
                 </button>
-              ))}
+              </div>
+              {addingGalAlbum && (
+                <InlineCategoryCreator
+                  value={newGalAlbumInput}
+                  onChange={setNewGalAlbumInput}
+                  onAdd={() => handleAddCustomCategory("gallery")}
+                  onCancel={() => {
+                    setAddingGalAlbum(false);
+                    setNewGalAlbumInput("");
+                  }}
+                  placeholder="Yeni albüm / kategori adı yazın..."
+                />
+              )}
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">

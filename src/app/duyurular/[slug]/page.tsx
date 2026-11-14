@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, Calendar, Clock, FileDown, MessageSquare } from "lucide-react";
 import { ShareWhatsAppButton } from "@/components/ShareWhatsAppButton";
-import { CATEGORY_LABELS, STATUS_LABELS, formatDateTR } from "@/lib/format";
+import { STATUS_LABELS, formatDateTR, getCategoryLabel } from "@/lib/format";
 import { getAllStoreData, getPostBySlug } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -65,7 +65,7 @@ export default async function PostDetailPage({
       <header className="mt-5 border-b border-[#e6e5e0] pb-6 sm:mt-6">
         <div className="flex flex-wrap items-center gap-2 text-xs text-[#666560]">
           <span className="rounded-md bg-[#f4f3ef] px-2.5 py-1 font-medium text-[#191919]">
-            {CATEGORY_LABELS[post.category]}
+            {getCategoryLabel(post.category)}
           </span>
           {post.project_status && (
             <span className="rounded-md border border-[#e6e5e0] bg-[#fbfbfa] px-2.5 py-1 font-medium text-[#191919]">
@@ -164,7 +164,7 @@ export default async function PostDetailPage({
               >
                 <div>
                   <span className="inline-block rounded bg-[#f4f3ef] px-2 py-0.5 text-[10px] font-medium text-[#191919]">
-                    {CATEGORY_LABELS[rel.category]}
+                    {getCategoryLabel(rel.category)}
                   </span>
                   <h3 className="mt-2 line-clamp-2 text-sm font-semibold text-[#191919] group-hover:underline">
                     {rel.title}

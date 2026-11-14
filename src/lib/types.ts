@@ -1,4 +1,4 @@
-export type PostCategory = "duyuru" | "haber" | "aciklama" | "faaliyet";
+export type PostCategory = "duyuru" | "haber" | "aciklama" | "faaliyet" | string;
 export type ProjectStatus = "planlandi" | "devam_ediyor" | "tamamlandi";
 
 export interface Post {
@@ -59,6 +59,8 @@ export interface SiteSettings {
   iban_number?: string | null;
   donation_note?: string | null;
   mukhtar_phone?: string | null;
+  custom_post_categories?: string[];
+  custom_gallery_albums?: string[];
 }
 
 export interface ContactMessage {

@@ -1,11 +1,15 @@
-import { PostCategory, ProjectStatus } from "./types";
+import { ProjectStatus } from "./types";
 
-export const CATEGORY_LABELS: Record<PostCategory, string> = {
+export const CATEGORY_LABELS: Record<string, string> = {
   duyuru: "Duyuru",
   haber: "Haber",
   aciklama: "Resmî Açıklama",
   faaliyet: "Faaliyet Raporu",
 };
+
+export function getCategoryLabel(category: string): string {
+  return CATEGORY_LABELS[category] || category;
+}
 
 export const STATUS_LABELS: Record<ProjectStatus, string> = {
   planlandi: "Planlandı",
