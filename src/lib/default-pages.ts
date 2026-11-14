@@ -480,5 +480,176 @@ export function buildDefaultPages(): PageConfig[] {
         },
       ],
     },
+    {
+      slug: "/kvkk",
+      title: "KVKK Aydınlatma Metni",
+      seo_title: "KVKK Aydınlatma Metni | Büyük Akören Köyü Derneği",
+      seo_description:
+        "6698 sayılı Kişisel Verilerin Korunması Kanunu (md. 10) kapsamında Büyük Akören Köyü Derneği kişisel veri işleme, aktarım ve saklama ilkeleri.",
+      status: "published",
+      show_in_menu: false,
+      menu_order: 91,
+      menu_label: "KVKK Aydınlatma Metni",
+      updated_at: now,
+      revisions: [],
+      blocks: [
+        {
+          id: "kvkk-hero",
+          type: "hero",
+          visible: true,
+          order: 1,
+          data: {
+            badge: "6698 Sayılı Kanun Madde 10",
+            title: "KVKK Kişisel Verilerin Korunması Aydınlatma Metni",
+            subtitle:
+              "Veri Sorumlusu: Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği • Büyükakören Köyü, Yıldızeli / Sivas (58502)",
+          },
+        },
+        {
+          id: "kvkk-body",
+          type: "rich_text",
+          visible: true,
+          order: 2,
+          data: {
+            eyebrow: "Yasal Bilgilendirme",
+            title: "Kişisel Verilerin İşlenme İlkeleri",
+            content:
+              "## 1. Veri Sorumlusu Kimliği\n\n6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) uyarınca kişisel verileriniz; veri sorumlusu sıfatıyla **Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği** (Adres: Büyükakören Köyü, Yıldızeli / Sivas, Posta Kodu: 58502) tarafından aşağıda açıklanan çerçevede işlenmektedir.\n\n## 2. İşlenen Kişisel Veriler ve Toplama Yöntemi\n\n- **İletişim Formu:** Ad-soyad, isteğe bağlı telefon numarası, konu ve mesaj içeriği, açık rıza onay bilgisi ile kötü niyetli otomatik gönderimleri önlemek amacıyla tek yönlü özetlenmiş (anonimleştirilmiş) zaman/hız sınırı kaydı.\n- **Taziye İlanları:** Yalnızca yakınlarının açık rızası onaylanarak dernek yöneticilerince girilen merhum adı-soyadı ve cenaze bilgilendirme notları.\n- **Yönetim Paneli Kayıtları:** Yetkili dernek yöneticilerinin ve editörlerinin ad-soyad ve kullanıcı hesap kayıtları.\n\n## 3. İşleme Amaçları ve Hukuki Sebepler (KVKK Madde 5)\n\nİletişim formu üzerinden iletilen veriler; üyelik, dayanışma, duyuru, fotoğraf paylaşımı ve öneri başvurularınızın incelenerek yanıtlanması amacıyla 6698 sayılı Kanun'un 5. maddesinin 1. fıkrası (açık rıza) ve 2/f bendi (meşru menfaat) hukuki sebeplerine dayanılarak işlenir.\n\n## 4. Verilerin Aktarımı ve Yurt Dışı Barındırma (KVKK Madde 9)\n\nWeb portalımız bulut barındırma ve depolama altyapısı (Vercel Inc. ve şifreli nesne depolama altyapısı) üzerinden yayınlanmaktadır. 6698 sayılı Kanun'un 9. maddesinde yapılan güncel düzenlemeler kapsamında, iletişim formu mesajları iletildiği anda sunucu tarafında **AES-256-GCM algoritması ile şifrelenerek** özel erişimli depoda saklanır; yalnızca yetkili dernek yöneticileri tarafından görüntülenir ve üçüncü kişi veya ticari kurumlarla paylaşılmaz.\n\n## 5. Saklama Süresi ve İmha\n\nİletişim talebi mesajları, talebin sonuçlanmasını takip eden en fazla **1 (bir) yıl** (yasal yükümlülük gerektiren hallerde en çok 2 yıl) süreyle saklanır; süresi dolan veya silinmesi talep edilen kayıtlar yönetim paneli üzerinden kalıcı olarak silinir. Taziye ilanları belirli süre sonunda arşive alınabilir veya yakınlarının talebi üzerine yayından kaldırılır.\n\n## 6. İlgili Kişinin Hakları (KVKK Madde 11) ve Başvuru Yolu\n\nKVKK'nın 11. maddesi uyarınca derneğimize başvurarak kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenmişse bilgi talep etme, amacına uygun kullanılıp kullanılmadığını öğrenme, düzeltilmesini veya silinmesini/yok edilmesini isteme haklarına sahipsiniz. Başvurularınızı [İletişim Sayfası](/iletisim) üzerinden yazılı olarak iletebilirsiniz.",
+            source_note:
+              "Dayanak: 6698 sayılı Kişisel Verilerin Korunması Kanunu (md. 5, md. 9, md. 10, md. 11).",
+          },
+        },
+      ],
+    },
+    {
+      slug: "/gizlilik",
+      title: "Gizlilik ve Çerez Politikası",
+      seo_title: "Gizlilik ve Çerez Politikası | Büyük Akören Köyü Derneği",
+      seo_description:
+        "Büyük Akören Köyü Derneği web portalında yalnızca zorunlu güvenlik oturum çerezi kullanıldığına ve ziyaretçi gizliliğine ilişkin politika.",
+      status: "published",
+      show_in_menu: false,
+      menu_order: 92,
+      menu_label: "Gizlilik & Çerezler",
+      updated_at: now,
+      revisions: [],
+      blocks: [
+        {
+          id: "gizlilik-hero",
+          type: "hero",
+          visible: true,
+          order: 1,
+          data: {
+            badge: "Gizlilik İlkesi",
+            title: "Gizlilik ve Çerez (Cookie) Politikası",
+            subtitle:
+              "Ziyaretçilerimizden reklam veya davranışsal takip amacıyla hiçbir çerez veya izleme verisi toplanmaz.",
+          },
+        },
+        {
+          id: "gizlilik-body",
+          type: "rich_text",
+          visible: true,
+          order: 2,
+          data: {
+            eyebrow: "Şeffaflık Bildirimi",
+            title: "Çerez Kullanımı ve Üçüncü Taraf Hizmetler",
+            content:
+              "## 1. Ziyaretçiler İçin Çerez Politikası\n\nBu web portalı, ziyaretçilerin site içinde gezinmesini takip eden, reklam profili oluşturan veya üçüncü taraf pazarlama ağlarıyla veri paylaşan **hiçbir analitik ya da reklam çerezi kullanmaz**. Bu nedenle genel ziyaretçi sayfalarında rahatsız edici bir çerez onay penceresi gösterilmez; ileride istatistik/analitik aracı eklenirse önceden açık rıza bandı sunulacaktır.\n\n## 2. Zorunlu Oturum ve Güvenlik Çerezi\n\nYalnızca [Yönetici Girişi](/admin) sayfasından oturum açan yetkili dernek yöneticileri ve editörler için, güvenli oturum doğrulaması amacıyla **`akoren_admin_session`** adlı zorunlu oturum çerezi (`HttpOnly`, `SameSite=Lax`, 12 saat süreli) tarayıcıda tutulur.\n\n## 3. Sunucu Güvenlik Kayıtları\n\nKötü niyetli giriş denemelerini ve iletişim formu spam saldırılarını engellemek amacıyla yalnızca tek yönlü özetlenmiş (hash'lenmiş) IP kimlikleri geçici hız sınırı penceresinde değerlendirilir.\n\n## 4. Harici Bağlantılar ve Harita Katmanı\n\nKöyümüz ve İletişim sayfalarında konum gösterimi için açık kaynaklı **OpenStreetMap** harita katmanı yer alabilir; ayrıca MEB, Yıldızeli Kaymakamlığı, Sivas Valiliği ve sosyal ağ bağlantıları harici adreslere yönlendirebilir. Harici sitelerin gizlilik uygulamaları ilgili kurumların sorumluluğundadır.",
+            source_note: "Son güncelleme: 14 Kasım 2026 • Yalnızca zorunlu teknik çerezler aktif.",
+          },
+        },
+      ],
+    },
+    {
+      slug: "/kullanim-kosullari",
+      title: "Kullanım Koşulları",
+      seo_title: "Kullanım Koşulları | Büyük Akören Köyü Derneği",
+      seo_description:
+        "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği resmî web portalı kullanım koşulları, içerik ilkeleri ve görsel lisans kuralları.",
+      status: "published",
+      show_in_menu: false,
+      menu_order: 93,
+      menu_label: "Kullanım Koşulları",
+      updated_at: now,
+      revisions: [],
+      blocks: [
+        {
+          id: "kullanim-hero",
+          type: "hero",
+          visible: true,
+          order: 1,
+          data: {
+            badge: "Portal İlkeleri",
+            title: "Kullanım Koşulları",
+            subtitle:
+              "Dernek web portalının kullanım esasları, telif hakları ve içerik doğruluğu ilkeleri.",
+          },
+        },
+        {
+          id: "kullanim-body",
+          type: "rich_text",
+          visible: true,
+          order: 2,
+          data: {
+            eyebrow: "Yayın İlkeleri",
+            title: "Genel Hükümler",
+            content:
+              "## 1. Hizmetin Amacı\n\nBu web sitesi; Sivas ili Yıldızeli ilçesi Büyükakören Köyü sakinleri ve hemşehrilerimizin köy duyurularına, faaliyet raporlarına, taziye ilanlarına, doğrulanmış köy bilgilerine ve dernek iletişim kanallarına ulaşması amacıyla hazırlanmış kamusal bilgilendirme portalıdır.\n\n## 2. İçerik ve Telif Hakları\n\n- Portalda yayımlanan dernek duyuruları ve metinler kaynak gösterilerek paylaşılabilir.\n- Galeri ve sayfalarda yer alan tarih/coğrafya görselleri Wikimedia Commons özgür lisansları (CC0, Kamu Malı, CC BY, CC BY-SA) kapsamında sunulmakta olup, her görselin altında yer alan **yazar ve lisans atfı** kaldırılmadan kullanılabilir.\n\n## 3. Taziye ve Kişisel İçerik Paylaşımı\n\nTaziye ilanları yalnızca vefat eden hemşehrimizin yakınlarının rızası ile yayımlanır. Düzeltme veya kaldırma talepleriniz için [İletişim Sayfası](/iletisim) üzerinden yönetimle irtibata geçebilirsiniz.\n\n## 4. Sistem Güvenliği\n\nPortal formlarına otomatik spam gönderimi, yetkisiz erişim denemesi veya hizmet aksatıcı müdahaleler yasaktır ve hız sınırlama ile sunucu günlüğü koruması altındadır.",
+          },
+        },
+      ],
+    },
+    {
+      slug: "/kunye",
+      title: "Kurumsal Künye",
+      seo_title: "Kurumsal Künye | Büyük Akören Köyü Derneği",
+      seo_description:
+        "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği kurumsal künye, yönetim bilgileri ve portal sorumluluk bilgileri.",
+      status: "published",
+      show_in_menu: false,
+      menu_order: 94,
+      menu_label: "Künye",
+      updated_at: now,
+      revisions: [],
+      blocks: [
+        {
+          id: "kunye-hero",
+          type: "hero",
+          visible: true,
+          order: 1,
+          data: {
+            badge: "Resmî Künye",
+            title: "Kurumsal Künye ve Yayın Bilgileri",
+            subtitle:
+              "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği resmî yayın künyesi.",
+          },
+        },
+        {
+          id: "kunye-board",
+          type: "board_members",
+          visible: true,
+          order: 2,
+          data: {
+            eyebrow: "Yönetim",
+            title: "Yetkili Kurul ve Temsil",
+            description:
+              "Yönetim ve denetim kurulu bilgileri yönetici panelinden güncellendikçe burada yayınlanır.",
+          },
+        },
+        {
+          id: "kunye-legal",
+          type: "rich_text",
+          visible: true,
+          order: 3,
+          data: {
+            eyebrow: "Yayıncı & Teknik Altyapı",
+            title: "Yayın İlkeleri ve İletişim",
+            content:
+              "## Yayın Sahibi Kuruluş\n\n**Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği**\nYerleşim: Büyükakören Köyü, Yıldızeli / Sivas • Posta Kodu: 58502\n\n## İçerik Sorumluluğu ve Güncelleme\n\nPortal içerikleri dernek yönetimi tarafından yetkilendirilen yöneticiler ve editörler tarafından hazırlanır. Kütük numarası (DERBİS), vergi dairesi, kuruluş yılı ve güncel muhtar/iletişim bilgileri yönetici panelinden girildiğinde otomatik olarak bu sayfada ve ilgili bölümlerde yayınlanır.\n\n## Yasal Belgeler\n\n- [KVKK Aydınlatma Metni](/kvkk)\n- [Gizlilik ve Çerez Politikası](/gizlilik)\n- [Kullanım Koşulları](/kullanim-kosullari)\n- [Dernek İletişim Formu](/iletisim)",
+          },
+        },
+      ],
+    },
   ];
 }

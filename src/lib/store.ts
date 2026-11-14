@@ -91,11 +91,13 @@ function sanitizeLegacyPlaceholders(
   posts: Post[],
   condolences: Condolence[],
   boardMembers: BoardMember[],
+  galleryPhotos: GalleryPhoto[],
   settings: SiteSettings
 ): {
   posts: Post[];
   condolences: Condolence[];
   boardMembers: BoardMember[];
+  galleryPhotos: GalleryPhoto[];
   settings: SiteSettings;
 } {
   const cleanIbanRaw = (settings.iban_number || "").trim();
@@ -129,17 +131,30 @@ function sanitizeLegacyPlaceholders(
       !/panelden|örnek/i.test(m.full_name || "")
   );
 
-  const cleanPosts = posts.filter(
-    (p) =>
-      !/lorem implus|bu bir deneme|örnek posttur|sistem denemesi|gizli taslak test/i.test(
-        `${p.title || ""} ${p.summary || ""} ${p.content || ""}`
-      )
+  const movedPendingRe = /\/images\/koy\/0[2-6]_/i;
+
+  const cleanPosts = posts
+    .filter(
+      (p) =>
+        !/lorem implus|bu bir deneme|örnek posttur|sistem denemesi|gizli taslak test/i.test(
+          `${p.title || ""} ${p.summary || ""} ${p.content || ""}`
+        )
+    )
+    .map((p) =>
+      p.image_url && movedPendingRe.test(p.image_url)
+        ? { ...p, image_url: null }
+        : p
+    );
+
+  const cleanGallery = galleryPhotos.filter(
+    (g) => !movedPendingRe.test(g.image_url || "")
   );
 
   return {
     posts: cleanPosts,
     condolences: cleanCondolences,
     boardMembers: cleanBoard,
+    galleryPhotos: cleanGallery,
     settings: {
       ...settings,
       iban_number: ibanClean,
@@ -185,6 +200,7 @@ function normalizeStore(raw: Partial<StoreData> | null | undefined): StoreData {
     Array.isArray(raw.posts) ? raw.posts : defaults.posts,
     Array.isArray(raw.condolences) ? raw.condolences : defaults.condolences,
     Array.isArray(raw.board_members) ? raw.board_members : defaults.board_members,
+    Array.isArray(raw.gallery_photos) ? raw.gallery_photos : defaults.gallery_photos,
     mergedSettings
   );
 
@@ -193,9 +209,7 @@ function normalizeStore(raw: Partial<StoreData> | null | undefined): StoreData {
     updated_at: raw.updated_at || new Date().toISOString(),
     posts: cleaned.posts,
     condolences: cleaned.condolences,
-    gallery_photos: Array.isArray(raw.gallery_photos)
-      ? raw.gallery_photos
-      : defaults.gallery_photos,
+    gallery_photos: cleaned.galleryPhotos,
     board_members: cleaned.boardMembers,
     site_settings: cleaned.settings,
     contact_messages: [], // PII asla genel state blob'unda saklanmaz

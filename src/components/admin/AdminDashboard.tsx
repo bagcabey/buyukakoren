@@ -279,6 +279,9 @@ export function AdminDashboard({
   const [postContent, setPostContent] = useState("");
   const [postImage, setPostImage] = useState("");
   const [postImageAlt, setPostImageAlt] = useState("");
+  const [postImgAuthor, setPostImgAuthor] = useState("");
+  const [postImgLicense, setPostImgLicense] = useState("");
+  const [postImgSource, setPostImgSource] = useState("");
   const [postAttachment, setPostAttachment] = useState("");
   const [postStatus, setPostStatus] = useState<ProjectStatus | "">("");
   const [postPinned, setPostPinned] = useState(false);
@@ -302,6 +305,9 @@ export function AdminDashboard({
     setPostContent(p.content);
     setPostImage(p.image_url || "");
     setPostImageAlt(p.image_alt || "");
+    setPostImgAuthor(p.image_attribution?.author || "");
+    setPostImgLicense(p.image_attribution?.license || "");
+    setPostImgSource(p.image_attribution?.source_url || "");
     setPostAttachment(p.attachment_url || "");
     setPostStatus(p.project_status || "");
     setPostPinned(p.is_pinned);
@@ -324,6 +330,9 @@ export function AdminDashboard({
     setPostContent("");
     setPostImage("");
     setPostImageAlt("");
+    setPostImgAuthor("");
+    setPostImgLicense("");
+    setPostImgSource("");
     setPostAttachment("");
     setPostStatus("");
     setPostPinned(false);
@@ -349,6 +358,14 @@ export function AdminDashboard({
         content: postContent,
         image_url: postImage || null,
         image_alt: postImageAlt || null,
+        image_attribution:
+          postImgAuthor || postImgLicense || postImgSource
+            ? {
+                author: postImgAuthor || undefined,
+                license: postImgLicense || undefined,
+                source_url: postImgSource || undefined,
+              }
+            : null,
         attachment_url: postAttachment || null,
         project_status:
           postCategory === "faaliyet" && postStatus ? postStatus : null,
@@ -532,7 +549,11 @@ export function AdminDashboard({
   const [addingGalAlbum, setAddingGalAlbum] = useState(false);
   const [newGalAlbumInput, setNewGalAlbumInput] = useState("");
   const [galUrl, setGalUrl] = useState("");
+  const [galAlt, setGalAlt] = useState("");
   const [galYear, setGalYear] = useState("2026");
+  const [galAuthor, setGalAuthor] = useState("");
+  const [galLicense, setGalLicense] = useState("");
+  const [galSourceUrl, setGalSourceUrl] = useState("");
 
   const postCategories = Array.from(
     new Set([
@@ -612,7 +633,11 @@ export function AdminDashboard({
     setGalTitle(g.title);
     setGalAlbum(g.album);
     setGalUrl(g.image_url);
+    setGalAlt(g.image_alt || "");
     setGalYear(g.taken_year || "");
+    setGalAuthor(g.attribution_author || "");
+    setGalLicense(g.attribution_license || "");
+    setGalSourceUrl(g.source_url || "");
     setMobileFormOpen((prev) => ({ ...prev, gallery: true }));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -622,7 +647,11 @@ export function AdminDashboard({
     setGalTitle("");
     setGalAlbum(galFilter !== "Tümü" ? galFilter : "Köyümüzden Kareler");
     setGalUrl("");
+    setGalAlt("");
     setGalYear("2026");
+    setGalAuthor("");
+    setGalLicense("");
+    setGalSourceUrl("");
   }
 
   async function handleSaveGallery(e: React.FormEvent) {
@@ -635,7 +664,11 @@ export function AdminDashboard({
         title: galTitle,
         album: galAlbum,
         image_url: galUrl,
+        image_alt: galAlt,
         taken_year: galYear,
+        attribution_author: galAuthor,
+        attribution_license: galLicense,
+        source_url: galSourceUrl,
         expected_version: storeVersion,
       }),
     });
@@ -1203,7 +1236,18 @@ export function AdminDashboard({
                 <select
                   value=""
                   onChange={(e) => {
-                    if (e.target.value) setPostImage(e.target.value);
+                    const url = e.target.value;
+                    if (!url) return;
+                    setPostImage(url);
+                    const match = data.gallery_photos.find((g) => g.image_url === url);
+                    if (match) {
+                      if (!postImageAlt && (match.image_alt || match.title)) {
+                        setPostImageAlt(match.image_alt || match.title);
+                      }
+                      if (match.attribution_author) setPostImgAuthor(match.attribution_author);
+                      if (match.attribution_license) setPostImgLicense(match.attribution_license);
+                      if (match.source_url) setPostImgSource(match.source_url);
+                    }
                   }}
                   className="mt-2 w-full rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs text-[#666560]"
                 >
@@ -1230,6 +1274,29 @@ export function AdminDashboard({
                     value={postImageAlt}
                     onChange={(e) => setPostImageAlt(e.target.value)}
                     className="w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-1.5 text-xs"
+                  />
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <input
+                      type="text"
+                      placeholder="Görsel Sahibi / Yazar"
+                      value={postImgAuthor}
+                      onChange={(e) => setPostImgAuthor(e.target.value)}
+                      className="w-full rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Lisans (ör. CC BY-SA 4.0)"
+                      value={postImgLicense}
+                      onChange={(e) => setPostImgLicense(e.target.value)}
+                      className="w-full rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs"
+                    />
+                  </div>
+                  <input
+                    type="url"
+                    placeholder="Görsel Kaynak URL (ör. Commons sayfası)"
+                    value={postImgSource}
+                    onChange={(e) => setPostImgSource(e.target.value)}
+                    className="w-full rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs"
                   />
                 </div>
               )}
@@ -1885,11 +1952,46 @@ export function AdminDashboard({
                 <div className="mt-2 overflow-hidden rounded-lg border border-[#e6e5e0] bg-white p-1">
                   <img
                     src={galUrl}
-                    alt="Önizleme"
+                    alt={galAlt || "Önizleme"}
                     className="h-32 w-full rounded object-cover"
                   />
                 </div>
               )}
+            </div>
+            <div className="space-y-2 rounded-lg border border-[#e6e5e0] bg-white p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#666560]">
+                Erişilebilirlik ve Lisans / Kaynak Atfı
+              </p>
+              <input
+                type="text"
+                value={galAlt}
+                onChange={(e) => setGalAlt(e.target.value)}
+                placeholder="Görsel Alt Metni (SEO)"
+                className="w-full rounded-lg border border-[#e6e5e0] px-2.5 py-1.5 text-xs"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  value={galAuthor}
+                  onChange={(e) => setGalAuthor(e.target.value)}
+                  placeholder="Yazar / Çeken Kişi"
+                  className="w-full rounded-lg border border-[#e6e5e0] px-2.5 py-1.5 text-xs"
+                />
+                <input
+                  type="text"
+                  value={galLicense}
+                  onChange={(e) => setGalLicense(e.target.value)}
+                  placeholder="Lisans (CC0 / CC BY-SA)"
+                  className="w-full rounded-lg border border-[#e6e5e0] px-2.5 py-1.5 text-xs"
+                />
+              </div>
+              <input
+                type="url"
+                value={galSourceUrl}
+                onChange={(e) => setGalSourceUrl(e.target.value)}
+                placeholder="Kaynak URL (https://...)"
+                className="w-full rounded-lg border border-[#e6e5e0] px-2.5 py-1.5 text-xs"
+              />
             </div>
             <button
               type="submit"

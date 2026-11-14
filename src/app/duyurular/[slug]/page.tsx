@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { ShareWhatsAppButton } from "@/components/ShareWhatsAppButton";
 import { STATUS_LABELS, formatDateTR, getCategoryLabel } from "@/lib/format";
-import { renderSafeRichText } from "@/lib/sanitize";
+import { renderSafeRichText, sanitizeSafeUrl } from "@/lib/sanitize";
 import { getAllStoreData, getPostBySlugWithRedirect } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -124,10 +124,35 @@ export default async function PostDetailPage({
             alt={post.image_alt || post.title}
             className="w-full object-cover"
           />
-          {post.image_attribution?.license && (
-            <figcaption className="border-t border-[#e6e5e0] px-4 py-2 text-[11px] text-[#666560]">
-              Görsel Kaynağı: {post.image_attribution.author || "Arşiv"} •{" "}
-              {post.image_attribution.license}
+          {(post.image_attribution?.license ||
+            post.image_attribution?.author ||
+            post.image_attribution?.source_url) && (
+            <figcaption className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e6e5e0] px-4 py-2 text-[11px] text-[#666560]">
+              <span>
+                Görsel Kaynağı:{" "}
+                {[
+                  post.image_attribution.author,
+                  post.image_attribution.license,
+                ]
+                  .filter(Boolean)
+                  .join(" • ") || "Arşiv"}
+              </span>
+              {(() => {
+                const safeSrc = sanitizeSafeUrl(
+                  post.image_attribution.source_url || ""
+                );
+                if (!safeSrc) return null;
+                return (
+                  <a
+                    href={safeSrc}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium underline hover:text-[#191919]"
+                  >
+                    Kaynak Sayfası
+                  </a>
+                );
+              })()}
             </figcaption>
           )}
         </figure>

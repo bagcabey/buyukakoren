@@ -136,7 +136,27 @@ export function Footer({
                   KVKK Aydınlatma Metni
                 </Link>
               </li>
-              {extraPages.map((p) => {
+              <li>
+                <Link href="/gizlilik" className="hover:text-[#191919]">
+                  Gizlilik ve Çerez Politikası
+                </Link>
+              </li>
+              <li>
+                <Link href="/kullanim-kosullari" className="hover:text-[#191919]">
+                  Kullanım Koşulları
+                </Link>
+              </li>
+              <li>
+                <Link href="/kunye" className="hover:text-[#191919]">
+                  Kurumsal Künye
+                </Link>
+              </li>
+              {extraPages
+                .filter((p) => {
+                  const norm = p.slug.startsWith("/") ? p.slug : `/${p.slug}`;
+                  return !["/kvkk", "/gizlilik", "/kullanim-kosullari", "/kunye"].includes(norm);
+                })
+                .map((p) => {
                 const href = p.slug.startsWith("/") ? p.slug : `/${p.slug}`;
                 return (
                   <li key={href}>
