@@ -18,9 +18,18 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://buyukakoren.vercel.app"),
   title: "B.Akören | Büyük Akören Köyü Derneği — Sivas Yıldızeli",
   description:
     "Sivas Yıldızeli Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği resmî duyuru, faaliyet raporu, taziye ve bilgi portalı.",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
+  verification: {
+    google: "5cdf4f27709d4a0f",
+  },
 };
 
 export const dynamic = "force-dynamic";

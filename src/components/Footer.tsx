@@ -112,9 +112,19 @@ export function Footer({ settings }: { settings: SiteSettings }) {
               </a>
             </p>
           </div>
-          <Link href="/admin" className="hover:text-[#191919]">
-            Yönetici Girişi →
-          </Link>
+          <div className="flex items-center gap-4">
+            <a
+              href="/sitemap.xml"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#191919]"
+            >
+              Site Haritası
+            </a>
+            <Link href="/admin" className="hover:text-[#191919]">
+              Yönetici Girişi →
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

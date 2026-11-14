@@ -17,7 +17,7 @@ import {
   ShieldCheck,
   X,
 } from "lucide-react";
-import { Logo } from "./Logo";
+import { Logo, TurkishFlagSvg } from "./Logo";
 
 const NAV_LINKS = [
   { href: "/", label: "Ana Sayfa" },
@@ -62,6 +62,23 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#e6e5e0] bg-white/95 backdrop-blur-md">
+      {/* Kırmızı Üst Kuşak */}
+      <div className="border-b border-[#9a0715] bg-gradient-to-r from-[#b5091a] via-[#e30a17] to-[#b5091a] px-3 py-1 text-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-center gap-2 text-center sm:gap-3">
+          <TurkishFlagSvg className="h-3 w-[18px] ring-white/30 sm:h-3.5 sm:w-[21px]" />
+          <p className="flex flex-wrap items-center justify-center gap-x-1.5 text-[10px] font-semibold tracking-[0.1em] uppercase sm:gap-x-2 sm:text-[11px]">
+            <span>Gazi Mustafa Kemal Atatürk</span>
+            <span className="text-white/75" aria-hidden="true">
+              ★
+            </span>
+            <span className="font-bold tracking-[0.14em] text-white">
+              Sonsuza Dek
+            </span>
+          </p>
+          <TurkishFlagSvg className="h-3 w-[18px] ring-white/30 sm:h-3.5 sm:w-[21px]" />
+        </div>
+      </div>
+
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:h-16 sm:px-6">
         <Logo />
 
@@ -117,7 +134,7 @@ export function Navbar() {
       </div>
 
       {open && (
-        <div className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-[#e6e5e0] bg-white px-4 py-4 shadow-lg lg:hidden">
+        <div className="max-h-[calc(100vh-5.5rem)] overflow-y-auto border-t border-[#e6e5e0] bg-white px-4 py-4 shadow-lg lg:hidden">
           <div className="space-y-5">
             {MOBILE_GROUPS.map((group) => (
               <div key={group.title}>
