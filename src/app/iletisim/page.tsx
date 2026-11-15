@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Phone, School, ShieldAlert } from "lucide-react";
+import { Phone, ShieldAlert, Users } from "lucide-react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
 import { PageBlocksRenderer } from "@/components/PageBlocksRenderer";
@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
       page?.seo_title || "İletişim Bilgileri | Büyük Akören Köyü",
     description:
       page?.seo_description ||
-      "Büyükakören Köyü Derneği güvenli iletişim formu, Büyük Akören Ortaokulu erişim hattı ve konum haritası.",
+      "Büyük Akören Köyü Derneği iletişim hattı (+90 542 349 58 90), güvenli iletişim formu ve konum haritası.",
     path: "/iletisim",
     ogImage: page?.og_image,
   });
@@ -46,30 +46,30 @@ export default async function IletisimPage() {
       <section className="mt-10 grid gap-4 sm:grid-cols-2">
         <div className="rounded-2xl border border-[#e6e5e0] bg-[#fbfbfa] p-5">
           <div className="flex items-center gap-2 text-xs font-semibold tracking-wider text-[#666560] uppercase">
-            <School className="h-4 w-4 text-red-800" />
-            Doğrulanmış Resmî Okul
+            <Users className="h-4 w-4 text-emerald-800" />
+            Dernek İletişim Hattı
           </div>
           <h3 className="mt-2 text-base font-bold text-[#191919]">
-            Büyük Akören Ortaokulu (MEB)
+            Büyük Akören Köyü Derneği
           </h3>
           <p className="mt-1 text-xs leading-relaxed text-[#666560]">
-            T.C. Millî Eğitim Bakanlığı resmî iletişim ve kurum hattı:
+            Dernek Başkanı: <strong className="text-[#191919]">Mustafa Çetiner</strong>
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <a
-              href="tel:+903467531122"
+              href="tel:+905423495890"
               className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-[#e6e5e0] bg-white px-3 py-1.5 text-xs font-semibold text-[#191919] hover:bg-[#f4f3ef]"
             >
               <Phone className="h-3.5 w-3.5 text-[#666560]" />
-              (0346) 753 11 22
+              +90 542 349 58 90
             </a>
             <a
-              href="https://buyukakorenoo.meb.k12.tr"
+              href="https://wa.me/905423495890"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-[#e6e5e0] bg-white px-3 py-1.5 text-xs font-medium text-[#191919] hover:bg-[#f4f3ef]"
             >
-              buyukakorenoo.meb.k12.tr ↗
+              WhatsApp ↗
             </a>
           </div>
         </div>

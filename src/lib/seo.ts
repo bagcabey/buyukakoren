@@ -304,7 +304,7 @@ export function buildContactPageJsonLd(
     "@type": "ContactPage",
     name: `İletişim Bilgileri | ${settings.association_name || SITE_NAME}`,
     description:
-      "Büyük Akören Köyü Derneği mesajlaşma formu ve Büyük Akören Ortaokulu (Tel: 0346 753 11 22) resmî erişim bilgileri.",
+      "Büyük Akören Köyü Derneği iletişim hattı (+90 542 349 58 90) ve resmî mesajlaşma formu.",
     url: `${SITE_URL}/iletisim`,
     mainEntity: {
       "@id": `${SITE_URL}/#organization`,

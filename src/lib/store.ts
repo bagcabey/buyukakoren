@@ -149,10 +149,14 @@ function sanitizePageBlocks(
 
 function stripMuhtarFromPage(rp: PageConfig, defPage?: PageConfig): PageConfig {
   const muhtarRe = /muhtar|özüdoğru|0536 722/i;
+  const oldIletisimSchoolRe = /Ortaokulu\s*\(Tel:\s*0346 753 11 22\)/i;
   const defById = new Map((defPage?.blocks || []).map((b) => [b.id, b]));
   const blocks = Array.isArray(rp.blocks)
     ? rp.blocks.map((blk) => {
-        if (!muhtarRe.test(JSON.stringify(blk))) return blk;
+        const serialized = JSON.stringify(blk);
+        if (!muhtarRe.test(serialized) && !(rp.slug === "/iletisim" && oldIletisimSchoolRe.test(serialized))) {
+          return blk;
+        }
         const defBlk = defById.get(blk.id);
         return defBlk ? defBlk : blk;
       })
@@ -164,7 +168,7 @@ function stripMuhtarFromPage(rp: PageConfig, defPage?: PageConfig): PageConfig {
         ? defPage?.seo_title || rp.seo_title.replace(/\s*ve\s*Muhtarlık/gi, "")
         : rp.seo_title,
     seo_description:
-      rp.seo_description && muhtarRe.test(rp.seo_description)
+      rp.seo_description && (muhtarRe.test(rp.seo_description) || (rp.slug === "/iletisim" && /Ortaokulu/i.test(rp.seo_description)))
         ? defPage?.seo_description || ""
         : rp.seo_description,
     blocks,
@@ -344,9 +348,18 @@ function normalizeStore(raw: Partial<StoreData> | null | undefined): StoreData {
         )
       : defaults.site_settings.nav_items || DEFAULT_NAV_ITEMS;
 
+  const hasCustomPhone =
+    typeof rawSettings.association_phone === "string" &&
+    rawSettings.association_phone.trim().length > 0;
   const mergedSettings: SiteSettings = {
     ...defaults.site_settings,
     ...rawSettings,
+    association_phone: hasCustomPhone
+      ? rawSettings.association_phone
+      : "+90 542 349 58 90",
+    show_association_phone: hasCustomPhone
+      ? Boolean(rawSettings.show_association_phone)
+      : true,
     nav_items: navItems,
     ataturk_ribbon_visible: true,
     ataturk_ribbon_text:

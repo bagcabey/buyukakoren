@@ -252,8 +252,8 @@ export const INITIAL_STORE_DATA: StoreData = {
     hero_title: "Sivas Yıldızeli Büyük Akören Köyü Resmî Derneği",
     hero_subtitle:
       "Köyümüzün duyurularını, yapılan faaliyet raporlarını, taziye ilanlarını ve kültürel mirasını şeffaf bir çatı altında buluşturuyoruz.",
-    association_phone: "",
-    show_association_phone: false,
+    association_phone: "+90 542 349 58 90",
+    show_association_phone: true,
     association_email: "",
     association_address: "Büyükakören Köyü, Yıldızeli / Sivas (Posta Kodu: 58502)",
     iban_bank: "",

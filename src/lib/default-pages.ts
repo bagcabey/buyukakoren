@@ -592,7 +592,7 @@ export function buildDefaultPages(): PageConfig[] {
       title: "İletişim",
       seo_title: "İletişim Bilgileri | Büyük Akören Köyü",
       seo_description:
-        "Büyükakören Köyü Derneği güvenli iletişim formu, Büyük Akören Ortaokulu erişim hattı ve konum haritası.",
+        "Büyük Akören Köyü Derneği iletişim hattı (+90 542 349 58 90), güvenli iletişim formu ve konum haritası.",
       status: "published",
       show_in_menu: true,
       menu_order: 9,
@@ -607,9 +607,9 @@ export function buildDefaultPages(): PageConfig[] {
           order: 1,
           data: {
             badge: "İletişim & Kurumsal Bilgi",
-            title: "Dernek Yönetimi ve Köy İletişimi",
+            title: "Dernek Yönetimi ve İletişim",
             subtitle:
-              "Büyük Akören Köyü Derneği yönetimi ve Büyük Akören Ortaokulu (Tel: 0346 753 11 22) resmî iletişim kanalları.",
+              "Büyük Akören Köyü Derneği doğrudan iletişim hattı: +90 542 349 58 90 (Mustafa Çetiner).",
           },
         },
         {
