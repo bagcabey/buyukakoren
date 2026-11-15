@@ -528,38 +528,52 @@ async function readStateFromBlobWithMeta(): Promise<{
 
 function readLocalStoreFile(): StoreData {
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    if (fs.existsSync(STORE_PATH)) {
+      const raw = fs.readFileSync(STORE_PATH, "utf-8");
+      const parsed = JSON.parse(raw) as Partial<StoreData>;
+      if (
+        Array.isArray(parsed.contact_messages) &&
+        parsed.contact_messages.length > 0
+      ) {
+        try {
+          const existingEnc = readLocalEncryptedMessages();
+          const merged = mergeMessages(existingEnc, parsed.contact_messages);
+          writeLocalEncryptedMessages(merged);
+          const clean = normalizeStore(parsed);
+          fs.writeFileSync(STORE_PATH, JSON.stringify(clean, null, 2), "utf-8");
+          return clean;
+        } catch (writeErr) {
+          console.error("[store] Yerel mesaj taşıma/yazma atlandı (salt okunur FS olabilir):", writeErr);
+        }
+      }
+      return normalizeStore(parsed);
     }
-    if (!fs.existsSync(STORE_PATH)) {
-      const initial = normalizeStore(cloneInitial());
+
+    const initial = normalizeStore(cloneInitial());
+    try {
+      if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+      }
       fs.writeFileSync(STORE_PATH, JSON.stringify(initial, null, 2), "utf-8");
-      return initial;
+    } catch (writeErr) {
+      console.error("[store] İlk yerel veri dosyası yazılamadı, bellekten dönülüyor:", writeErr);
     }
-    const raw = fs.readFileSync(STORE_PATH, "utf-8");
-    const parsed = JSON.parse(raw) as Partial<StoreData>;
-    if (
-      Array.isArray(parsed.contact_messages) &&
-      parsed.contact_messages.length > 0
-    ) {
-      const existingEnc = readLocalEncryptedMessages();
-      const merged = mergeMessages(existingEnc, parsed.contact_messages);
-      writeLocalEncryptedMessages(merged);
-      const clean = normalizeStore(parsed);
-      fs.writeFileSync(STORE_PATH, JSON.stringify(clean, null, 2), "utf-8");
-      return clean;
-    }
-    return normalizeStore(parsed);
+    return initial;
   } catch (err) {
-    console.error("[store] Yerel veri dosyası okunamadı:", err);
-    throw new StoreReadError("Yerel veri dosyası okunamadı.");
+    console.error("[store] Yerel veri dosyası okunamadı, varsayılan veriye dönülüyor:", err);
+    return normalizeStore(cloneInitial());
   }
 }
 
 async function readContentState(): Promise<StoreData> {
   if (isBlobConfigured()) {
-    const { state } = await readStateFromBlobWithMeta();
-    return state;
+    try {
+      const { state } = await readStateFromBlobWithMeta();
+      return state;
+    } catch (err) {
+      console.error("[store] Blob veri okuma hatası, yerel/varsayılan veriye dönülüyor:", err);
+      return readLocalStoreFile();
+    }
   }
   return readLocalStoreFile();
 }

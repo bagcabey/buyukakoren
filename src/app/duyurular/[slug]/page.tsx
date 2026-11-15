@@ -58,7 +58,8 @@ export default async function PostDetailPage({
     notFound();
   }
 
-  const wordCount = post.content.trim().split(/\s+/).length;
+  const safeContent = post.content || "";
+  const wordCount = safeContent.trim().split(/\s+/).filter(Boolean).length;
   const readingMinutes = Math.max(1, Math.ceil(wordCount / 180));
 
   const relatedPosts = storeData.posts

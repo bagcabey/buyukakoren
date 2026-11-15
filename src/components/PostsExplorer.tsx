@@ -42,8 +42,8 @@ export function PostsExplorer({
     const q = query.trim().toLowerCase();
     const qOk =
       !q ||
-      p.title.toLowerCase().includes(q) ||
-      p.summary.toLowerCase().includes(q);
+      (p.title || "").toLowerCase().includes(q) ||
+      (p.summary || "").toLowerCase().includes(q);
     return catOk && qOk;
   });
 
