@@ -9,9 +9,9 @@ import { getAllStoreData } from "@/lib/store";
 export const revalidate = 60;
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Fotoğraf Galerisi | Yıldızeli ve Sivas Arşivi | B.Akören",
+  title: "Fotoğraf Galerisi | Büyük Akören, Yıldızeli ve Sivas",
   description:
-    "Sivas, Yıldızeli ve Büyükakören çevresinden lisanslı doğa, tarih, kültür ve kırsal yaşam fotoğrafları.",
+    "Büyükakören Köyü çevresi, Yıldızeli yaylaları, Sivas tarih-kültür mirası ve kırsal tarım yaşamından lisanslı fotoğraf arşivi.",
   path: "/galeri",
 });
 

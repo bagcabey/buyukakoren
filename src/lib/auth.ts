@@ -22,10 +22,6 @@ export function isPrimaryAdminAlias(value: string): boolean {
   );
 }
 
-// Tek yönlü scrypt başlangıç karması (Vercel env ADMIN_PASSWORD henüz tanımlanmadığında ilk girişte Blob'a yazılır)
-const INITIAL_ADMIN_PASSWORD_HASH =
-  "scrypt:v1:7f03b56b4f23f432e3a365013ac98825:e6fd05440adb2cd8816fa136c9ad8d6118ebdbea61dda6a647637f5faf16c7eabb019cc4a3d9f755d6394090d6dcdbd5e13eccb19c7f5eff6017abd1bea1edc1";
-
 export interface AdminSessionPayload {
   sub: string;
   displayName: string;
@@ -207,7 +203,7 @@ export async function authenticateAdminCredentials(
     return { ok: false, configMissing: true };
   }
 
-  const rawUser = (usernameInput || "yönetmenbgc").trim().toLowerCase();
+  const rawUser = (usernameInput || "").trim().toLowerCase();
   const username = isPrimaryAdminAlias(rawUser) ? "yönetmenbgc" : rawUser;
   const password = typeof passwordInput === "string" ? passwordInput : "";
   if (!username || !password) {
@@ -259,19 +255,21 @@ export async function authenticateAdminCredentials(
     return { ok: false };
   }
 
-  // 2) Henüz hiç kullanıcı oluşturulmamışsa env ADMIN_PASSWORD veya tek yönlü başlangıç karmasıyla ilk yöneticiyi doğrula
+  // 2) Henüz hiç kullanıcı oluşturulmamışsa env ADMIN_PASSWORD ile ilk yöneticiyi doğrula
   if (secState.users.length === 0) {
-    const matchedEnv = envPassword ? safeCompareStrings(password, envPassword) : false;
-    const matchedInitialHash =
-      !envPassword && verifyPassword(password, INITIAL_ADMIN_PASSWORD_HASH);
-    if (isPrimaryAdminAlias(username) && (matchedEnv || matchedInitialHash)) {
+    if (!envPassword) {
+      // Çevre değişkeni tanımlanmamışsa ve kayıtlı kullanıcı yoksa güvenli modda erişimi reddet (fail-closed)
+      return { ok: false, configMissing: true };
+    }
+    const matchedEnv = safeCompareStrings(password, envPassword);
+    if (isPrimaryAdminAlias(username) && matchedEnv) {
       const now = new Date().toISOString();
       const bootstrapAdmin: AdminUser = {
         id: "user-admin-1",
         username: "yönetmenbgc",
         display_name: "Baş Yönetici",
         role: "yonetici",
-        password_hash: matchedEnv ? hashPassword(password) : INITIAL_ADMIN_PASSWORD_HASH,
+        password_hash: hashPassword(password),
         is_active: true,
         created_at: now,
         updated_at: now,

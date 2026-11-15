@@ -64,6 +64,11 @@ function encodeSecurityPayload(state: SecurityStateData): string {
   if (isEncryptionConfigured()) {
     return encryptServerData(json);
   }
+  if (isBlobConfigured()) {
+    throw new Error(
+      "Kritik Güvenlik Hatası: ADMIN_SESSION_SECRET yapılandırılmadan güvenlik verileri uzak depoya açık metin yazılamaz."
+    );
+  }
   return json;
 }
 

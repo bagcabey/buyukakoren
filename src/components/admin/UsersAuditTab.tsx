@@ -14,6 +14,31 @@ interface PublicAdminUser {
   last_login_at?: string;
 }
 
+function getPasswordStrength(pwd: string): {
+  score: number; // 0 to 3
+  label: "Zayıf" | "Orta" | "Güçlü";
+  colorClass: string;
+  barColor: string;
+} {
+  if (!pwd) {
+    return { score: 0, label: "Zayıf", colorClass: "text-stone-400", barColor: "bg-stone-200" };
+  }
+  let points = 0;
+  if (pwd.length >= 10) points += 1;
+  if (pwd.length >= 14) points += 1;
+  if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) points += 1;
+  if (/\d/.test(pwd)) points += 1;
+  if (/[^a-zA-Z0-9]/.test(pwd)) points += 1;
+
+  if (points <= 2 || pwd.length < 10) {
+    return { score: 1, label: "Zayıf", colorClass: "text-red-600", barColor: "bg-red-500" };
+  } else if (points <= 4) {
+    return { score: 2, label: "Orta", colorClass: "text-amber-600", barColor: "bg-amber-500" };
+  } else {
+    return { score: 3, label: "Güçlü", colorClass: "text-emerald-600", barColor: "bg-emerald-500" };
+  }
+}
+
 export function UsersAuditTab({
   currentUser,
   notify,
@@ -27,11 +52,13 @@ export function UsersAuditTab({
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
 
   const [newUsername, setNewUsername] = useState("");
   const [newDisplayName, setNewDisplayName] = useState("");
   const [newRole, setNewRole] = useState<AdminRole>("editor");
   const [newUserPassword, setNewUserPassword] = useState("");
+  const [newUserPasswordConfirm, setNewUserPasswordConfirm] = useState("");
 
   const loadData = useCallback(async () => {
     const uRes = await fetch("/api/auth/users", { cache: "no-store" });
@@ -54,6 +81,14 @@ export function UsersAuditTab({
 
   async function handleChangeOwnPassword(e: React.FormEvent) {
     e.preventDefault();
+    if (newPassword.length < 10) {
+      notify("Yeni şifre en az 10 karakter olmalıdır.", true);
+      return;
+    }
+    if (newPassword !== newPasswordConfirm) {
+      notify("Girdiğiniz yeni şifreler birbiriyle eşleşmiyor.", true);
+      return;
+    }
     const res = await fetch("/api/auth/users", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -69,11 +104,20 @@ export function UsersAuditTab({
     }
     setCurrentPassword("");
     setNewPassword("");
+    setNewPasswordConfirm("");
     notify("Şifreniz güncellendi.");
   }
 
   async function handleCreateUser(e: React.FormEvent) {
     e.preventDefault();
+    if (newUserPassword.length < 10) {
+      notify("Şifre en az 10 karakter olmalıdır.", true);
+      return;
+    }
+    if (newUserPassword !== newUserPasswordConfirm) {
+      notify("Şifreler eşleşmiyor! Lütfen şifre tekrarını kontrol edin.", true);
+      return;
+    }
     const res = await fetch("/api/auth/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -92,6 +136,7 @@ export function UsersAuditTab({
     setNewUsername("");
     setNewDisplayName("");
     setNewUserPassword("");
+    setNewUserPasswordConfirm("");
     await loadData();
     notify("Yeni yönetici/editör hesabı oluşturuldu.");
   }
@@ -128,39 +173,104 @@ export function UsersAuditTab({
     notify("Kullanıcı silindi.");
   }
 
+  const ownPwStrength = getPasswordStrength(newPassword);
+  const userPwStrength = getPasswordStrength(newUserPassword);
+
   return (
     <div className="mt-6 space-y-6">
       {/* Own Password */}
       <form
         onSubmit={handleChangeOwnPassword}
-        className="max-w-xl rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] p-5"
+        className="max-w-2xl rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] p-5"
       >
         <h2 className="flex items-center gap-1.5 text-base font-semibold text-[#191919]">
           <KeyRound className="h-4 w-4" />
           Hesap Şifresini Güncelle ({currentUser.display_name} • {currentUser.role})
         </h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <input
-            type="password"
-            required
-            placeholder="Mevcut şifre"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            className="rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
-          />
-          <input
-            type="password"
-            required
-            minLength={10}
-            placeholder="Yeni şifre (en az 10 karakter)"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
-          />
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <div>
+            <label className="block text-[11px] font-medium text-[#666560]">
+              Mevcut Şifre *
+            </label>
+            <input
+              type="password"
+              required
+              placeholder="Mevcut şifre"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-medium text-[#666560]">
+              Yeni Şifre (en az 10) *
+            </label>
+            <input
+              type="password"
+              required
+              minLength={10}
+              placeholder="Yeni şifre"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
+            />
+            {newPassword.length > 0 && (
+              <div className="mt-1 flex items-center gap-1.5 text-[10px]">
+                <span className="text-[#666560]">Güç:</span>
+                <span className={`font-semibold ${ownPwStrength.colorClass}`}>
+                  {ownPwStrength.label}
+                </span>
+                <div className="flex flex-1 gap-1">
+                  <div
+                    className={`h-1 flex-1 rounded-full ${
+                      ownPwStrength.score >= 1 ? ownPwStrength.barColor : "bg-[#e6e5e0]"
+                    }`}
+                  />
+                  <div
+                    className={`h-1 flex-1 rounded-full ${
+                      ownPwStrength.score >= 2 ? ownPwStrength.barColor : "bg-[#e6e5e0]"
+                    }`}
+                  />
+                  <div
+                    className={`h-1 flex-1 rounded-full ${
+                      ownPwStrength.score >= 3 ? ownPwStrength.barColor : "bg-[#e6e5e0]"
+                    }`}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="block text-[11px] font-medium text-[#666560]">
+              Yeni Şifre Tekrarı *
+            </label>
+            <input
+              type="password"
+              required
+              minLength={10}
+              placeholder="Şifre tekrarı"
+              value={newPasswordConfirm}
+              onChange={(e) => setNewPasswordConfirm(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
+            />
+            {newPasswordConfirm.length > 0 && (
+              <p
+                className={`mt-1 text-[10px] font-medium ${
+                  newPassword === newPasswordConfirm
+                    ? "text-emerald-600"
+                    : "text-red-600"
+                }`}
+              >
+                {newPassword === newPasswordConfirm
+                  ? "✓ Şifreler eşleşiyor"
+                  : "✗ Şifreler eşleşmiyor"}
+              </p>
+            )}
+          </div>
         </div>
         <button
           type="submit"
-          className="mt-3 rounded-lg bg-[#191919] px-4 py-2 text-xs font-medium text-white hover:bg-[#333333]"
+          className="mt-4 rounded-lg bg-[#191919] px-4 py-2 text-xs font-medium text-white hover:bg-[#333333]"
         >
           Şifreyi Güncelle
         </button>
@@ -180,39 +290,116 @@ export function UsersAuditTab({
               <strong>Yönetici:</strong> tüm ayarlara ve kullanıcı yönetimine erişir.{" "}
               <strong>Editör:</strong> içerik, sayfa ve galeri düzenler; IBAN ve sistem ayarlarını değiştiremez.
             </p>
-            <input
-              type="text"
-              required
-              placeholder="Kullanıcı adı (örn. editor1)"
-              value={newUsername}
-              onChange={(e) => setNewUsername(e.target.value)}
-              className="w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
-            />
-            <input
-              type="text"
-              required
-              placeholder="Ad Soyad / Görünen Ad"
-              value={newDisplayName}
-              onChange={(e) => setNewDisplayName(e.target.value)}
-              className="w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
-            />
-            <select
-              value={newRole}
-              onChange={(e) => setNewRole(e.target.value as AdminRole)}
-              className="w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
-            >
-              <option value="editor">Editör (İçerik & Galeri)</option>
-              <option value="yonetici">Tam Yönetici</option>
-            </select>
-            <input
-              type="password"
-              required
-              minLength={10}
-              placeholder="Başlangıç şifresi (en az 10 karakter)"
-              value={newUserPassword}
-              onChange={(e) => setNewUserPassword(e.target.value)}
-              className="w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
-            />
+            <div>
+              <label className="block text-[11px] font-medium text-[#666560]">
+                Kullanıcı Adı *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="Örn. editor1"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-medium text-[#666560]">
+                Ad Soyad / Görünen Ad *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="Örn. Ahmet Yılmaz"
+                value={newDisplayName}
+                onChange={(e) => setNewDisplayName(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-medium text-[#666560]">
+                Rol & Yetki *
+              </label>
+              <select
+                value={newRole}
+                onChange={(e) => setNewRole(e.target.value as AdminRole)}
+                className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
+              >
+                <option value="editor">Editör (İçerik & Galeri)</option>
+                <option value="yonetici">Tam Yönetici</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-medium text-[#666560]">
+                Başlangıç Şifresi (en az 10 karakter) *
+              </label>
+              <input
+                type="password"
+                required
+                minLength={10}
+                placeholder="Güçlü bir şifre giriniz..."
+                value={newUserPassword}
+                onChange={(e) => setNewUserPassword(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
+              />
+              {newUserPassword.length > 0 && (
+                <div className="mt-1.5 space-y-1">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-[#666560]">Şifre Gücü:</span>
+                    <span className={`font-semibold ${userPwStrength.colorClass}`}>
+                      {userPwStrength.label}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1">
+                    <div
+                      className={`h-1.5 rounded-full transition-colors ${
+                        userPwStrength.score >= 1 ? userPwStrength.barColor : "bg-[#e6e5e0]"
+                      }`}
+                    />
+                    <div
+                      className={`h-1.5 rounded-full transition-colors ${
+                        userPwStrength.score >= 2 ? userPwStrength.barColor : "bg-[#e6e5e0]"
+                      }`}
+                    />
+                    <div
+                      className={`h-1.5 rounded-full transition-colors ${
+                        userPwStrength.score >= 3 ? userPwStrength.barColor : "bg-[#e6e5e0]"
+                      }`}
+                    />
+                  </div>
+                  <p className="text-[10px] text-[#666560]">
+                    En az 10 karakter, büyük-küçük harf, rakam ve sembol önerilir.
+                  </p>
+                </div>
+              )}
+            </div>
+            <div>
+              <label className="block text-[11px] font-medium text-[#666560]">
+                Şifre Tekrarı *
+              </label>
+              <input
+                type="password"
+                required
+                minLength={10}
+                placeholder="Şifreyi tekrar doğrulayın..."
+                value={newUserPasswordConfirm}
+                onChange={(e) => setNewUserPasswordConfirm(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
+              />
+              {newUserPasswordConfirm.length > 0 && (
+                <p
+                  className={`mt-1 text-[11px] font-medium ${
+                    newUserPassword === newUserPasswordConfirm
+                      ? "text-emerald-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {newUserPassword === newUserPasswordConfirm
+                    ? "✓ Şifreler eşleşiyor"
+                    : "✗ Şifreler eşleşmiyor"}
+                </p>
+              )}
+            </div>
             <button
               type="submit"
               className="w-full rounded-lg bg-[#191919] py-2.5 text-xs font-medium text-white hover:bg-[#333333]"
@@ -279,7 +466,43 @@ export function UsersAuditTab({
             <ShieldAlert className="h-4 w-4 text-red-700" />
             Son İşlem Günlüğü (Audit Log — Son {logs.length} Kayıt)
           </h2>
-          <div className="mt-4 overflow-x-auto">
+          {/* Mobile Stacked Cards (under md) */}
+          <div className="mt-4 space-y-3 md:hidden">
+            {logs.slice(0, 60).map((log) => (
+              <div
+                key={log.id}
+                className="rounded-lg border border-[#e6e5e0] bg-[#fbfbfa] p-3 text-xs"
+              >
+                <div className="flex items-center justify-between gap-2 border-b border-[#e6e5e0]/60 pb-2">
+                  <span className="font-mono text-[10px] text-[#666560]">
+                    {new Date(log.timestamp).toLocaleString("tr-TR")}
+                  </span>
+                  <span className="inline-flex items-center rounded bg-[#e6e5e0] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#191919]">
+                    {log.action}
+                  </span>
+                </div>
+                <div className="mt-2 flex min-w-0 items-center justify-between gap-2">
+                  <span className="font-medium text-[#191919]">
+                    {log.username}{" "}
+                    <span className="text-[11px] font-normal text-[#666560]">
+                      ({log.role})
+                    </span>
+                  </span>
+                  <span className="min-w-0 truncate font-mono text-[11px] text-[#666560]">
+                    {log.target}
+                  </span>
+                </div>
+                {log.detail && (
+                  <p className="mt-2 break-words rounded border border-[#e6e5e0]/60 bg-white px-2.5 py-1.5 text-[11px] text-[#4a4945]">
+                    {log.detail}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table (md and above) */}
+          <div className="mt-4 hidden overflow-x-auto md:block">
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b border-[#e6e5e0] text-[#666560]">

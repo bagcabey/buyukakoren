@@ -100,7 +100,7 @@ export function MenuFooterTab({
 
       {/* Üst Menü Öğeleri */}
       <div className="rounded-xl border border-[#e6e5e0] bg-white p-5">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-base font-semibold text-[#191919]">
               Üst Navigasyon Menüsü ({navItems.length})
@@ -112,7 +112,7 @@ export function MenuFooterTab({
           <button
             type="button"
             onClick={addNavItem}
-            className="inline-flex items-center gap-1 rounded-lg border border-[#e6e5e0] bg-[#fbfbfa] px-3 py-1.5 text-xs font-medium hover:bg-[#f4f3ef]"
+            className="inline-flex items-center justify-center gap-1 self-start rounded-lg border border-[#e6e5e0] bg-[#fbfbfa] px-3 py-1.5 text-xs font-medium hover:bg-[#f4f3ef] sm:self-auto"
           >
             <Plus className="h-3.5 w-3.5" />
             Öğe Ekle
@@ -123,81 +123,138 @@ export function MenuFooterTab({
           {navItems.map((item, idx) => (
             <div
               key={item.id}
-              className="flex flex-wrap items-center gap-2 rounded-lg border border-[#e6e5e0] bg-[#fbfbfa] p-2.5"
+              className="flex flex-col gap-2 rounded-lg border border-[#e6e5e0] bg-[#fbfbfa] p-2.5 sm:flex-row sm:items-center"
             >
-              <button
-                type="button"
-                onClick={() => moveNav(idx, -1)}
-                className="rounded border border-[#e6e5e0] bg-white p-1.5 text-[#666560] hover:text-[#191919]"
-              >
-                <ArrowUp className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => moveNav(idx, 1)}
-                className="rounded border border-[#e6e5e0] bg-white p-1.5 text-[#666560] hover:text-[#191919]"
-              >
-                <ArrowDown className="h-3.5 w-3.5" />
-              </button>
-              <input
-                type="text"
-                placeholder="Menü Adı"
-                value={item.label}
-                onChange={(e) => {
-                  const next = [...navItems];
-                  next[idx] = { ...item, label: e.target.value };
-                  updateNavItems(next);
-                }}
-                className="min-w-[140px] flex-1 rounded border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs font-medium"
-              />
-              <input
-                type="text"
-                placeholder="URL (/sayfa veya https://...)"
-                value={item.href}
-                onChange={(e) => {
-                  const next = [...navItems];
-                  next[idx] = { ...item, href: e.target.value };
-                  updateNavItems(next);
-                }}
-                className="min-w-[140px] flex-1 rounded border border-[#e6e5e0] bg-white px-2.5 py-1.5 font-mono text-xs"
-              />
-              <label className="inline-flex items-center gap-1 rounded border border-[#e6e5e0] bg-white px-2 py-1.5 text-[11px]">
+              <div className="flex items-center justify-between gap-1 sm:justify-start">
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => moveNav(idx, -1)}
+                    className="rounded border border-[#e6e5e0] bg-white p-1.5 text-[#666560] hover:text-[#191919]"
+                    title="Yukarı Taşı"
+                  >
+                    <ArrowUp className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveNav(idx, 1)}
+                    className="rounded border border-[#e6e5e0] bg-white p-1.5 text-[#666560] hover:text-[#191919]"
+                    title="Aşağı Taşı"
+                  >
+                    <ArrowDown className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                {/* Mobile action controls */}
+                <div className="flex items-center gap-1.5 sm:hidden">
+                  <label className="inline-flex items-center gap-1 rounded border border-[#e6e5e0] bg-white px-2 py-1 text-[11px] text-[#666560]">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(item.is_external)}
+                      onChange={(e) => {
+                        const next = [...navItems];
+                        next[idx] = { ...item, is_external: e.target.checked };
+                        updateNavItems(next);
+                      }}
+                    />
+                    Dış Link
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = [...navItems];
+                      next[idx] = { ...item, visible: !item.visible };
+                      updateNavItems(next);
+                    }}
+                    className="rounded border border-[#e6e5e0] bg-white p-1.5 text-[#666560] hover:text-[#191919]"
+                    title={item.visible ? "Gizle" : "Göster"}
+                  >
+                    {item.visible ? (
+                      <Eye className="h-3.5 w-3.5" />
+                    ) : (
+                      <EyeOff className="h-3.5 w-3.5 text-amber-700" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateNavItems(navItems.filter((n) => n.id !== item.id))
+                    }
+                    className="rounded border border-[#e6e5e0] bg-white p-1.5 text-red-600 hover:bg-red-50"
+                    title="Sil"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Text inputs */}
+              <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
                 <input
-                  type="checkbox"
-                  checked={Boolean(item.is_external)}
+                  type="text"
+                  placeholder="Menü Adı"
+                  value={item.label}
                   onChange={(e) => {
                     const next = [...navItems];
-                    next[idx] = { ...item, is_external: e.target.checked };
+                    next[idx] = { ...item, label: e.target.value };
                     updateNavItems(next);
                   }}
+                  className="w-full rounded border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs font-medium sm:min-w-[140px] sm:flex-1"
                 />
-                Dış Link
-              </label>
-              <button
-                type="button"
-                onClick={() => {
-                  const next = [...navItems];
-                  next[idx] = { ...item, visible: !item.visible };
-                  updateNavItems(next);
-                }}
-                className="rounded border border-[#e6e5e0] bg-white p-1.5 text-[#666560] hover:text-[#191919]"
-                title={item.visible ? "Gizle" : "Göster"}
-              >
-                {item.visible ? (
-                  <Eye className="h-3.5 w-3.5" />
-                ) : (
-                  <EyeOff className="h-3.5 w-3.5 text-amber-700" />
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  updateNavItems(navItems.filter((n) => n.id !== item.id))
-                }
-                className="rounded border border-[#e6e5e0] bg-white p-1.5 text-red-600 hover:bg-red-50"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
+                <input
+                  type="text"
+                  placeholder="URL (/sayfa veya https://...)"
+                  value={item.href}
+                  onChange={(e) => {
+                    const next = [...navItems];
+                    next[idx] = { ...item, href: e.target.value };
+                    updateNavItems(next);
+                  }}
+                  className="w-full rounded border border-[#e6e5e0] bg-white px-2.5 py-1.5 font-mono text-xs sm:min-w-[140px] sm:flex-1"
+                />
+              </div>
+
+              {/* Desktop action controls */}
+              <div className="hidden sm:flex sm:items-center sm:gap-1.5">
+                <label className="inline-flex items-center gap-1 rounded border border-[#e6e5e0] bg-white px-2 py-1.5 text-[11px]">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(item.is_external)}
+                    onChange={(e) => {
+                      const next = [...navItems];
+                      next[idx] = { ...item, is_external: e.target.checked };
+                      updateNavItems(next);
+                    }}
+                  />
+                  Dış Link
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = [...navItems];
+                    next[idx] = { ...item, visible: !item.visible };
+                    updateNavItems(next);
+                  }}
+                  className="rounded border border-[#e6e5e0] bg-white p-1.5 text-[#666560] hover:text-[#191919]"
+                  title={item.visible ? "Gizle" : "Göster"}
+                >
+                  {item.visible ? (
+                    <Eye className="h-3.5 w-3.5" />
+                  ) : (
+                    <EyeOff className="h-3.5 w-3.5 text-amber-700" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateNavItems(navItems.filter((n) => n.id !== item.id))
+                  }
+                  className="rounded border border-[#e6e5e0] bg-white p-1.5 text-red-600 hover:bg-red-50"
+                  title="Sil"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -233,41 +290,49 @@ export function MenuFooterTab({
             </button>
           </div>
           {footerLinks.map((fl, idx) => (
-            <div key={fl.id} className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="Etiket"
-                value={fl.label}
-                onChange={(e) => {
-                  const next = [...footerLinks];
-                  next[idx] = { ...fl, label: e.target.value };
-                  setSettings({ ...settings, footer_links: next });
-                }}
-                className="flex-1 rounded border border-[#e6e5e0] bg-white px-2 py-1 text-xs"
-              />
-              <input
-                type="text"
-                placeholder="URL"
-                value={fl.href}
-                onChange={(e) => {
-                  const next = [...footerLinks];
-                  next[idx] = { ...fl, href: e.target.value };
-                  setSettings({ ...settings, footer_links: next });
-                }}
-                className="flex-1 rounded border border-[#e6e5e0] bg-white px-2 py-1 font-mono text-xs"
-              />
-              <button
-                type="button"
-                onClick={() =>
-                  setSettings({
-                    ...settings,
-                    footer_links: footerLinks.filter((x) => x.id !== fl.id),
-                  })
-                }
-                className="rounded border border-[#e6e5e0] bg-white p-1.5 text-red-600"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
+            <div
+              key={fl.id}
+              className="flex flex-col gap-2 rounded-lg border border-[#e6e5e0] bg-white p-2.5 sm:flex-row sm:items-center sm:border-0 sm:bg-transparent sm:p-0"
+            >
+              <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
+                <input
+                  type="text"
+                  placeholder="Etiket"
+                  value={fl.label}
+                  onChange={(e) => {
+                    const next = [...footerLinks];
+                    next[idx] = { ...fl, label: e.target.value };
+                    setSettings({ ...settings, footer_links: next });
+                  }}
+                  className="w-full rounded border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs sm:flex-1"
+                />
+                <input
+                  type="text"
+                  placeholder="URL (/sayfa veya https://...)"
+                  value={fl.href}
+                  onChange={(e) => {
+                    const next = [...footerLinks];
+                    next[idx] = { ...fl, href: e.target.value };
+                    setSettings({ ...settings, footer_links: next });
+                  }}
+                  className="w-full rounded border border-[#e6e5e0] bg-white px-2.5 py-1.5 font-mono text-xs sm:flex-1"
+                />
+              </div>
+              <div className="flex justify-end sm:justify-start">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSettings({
+                      ...settings,
+                      footer_links: footerLinks.filter((x) => x.id !== fl.id),
+                    })
+                  }
+                  className="rounded border border-[#e6e5e0] bg-white p-1.5 text-red-600 hover:bg-red-50"
+                  title="Sil"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
           ))}
         </div>

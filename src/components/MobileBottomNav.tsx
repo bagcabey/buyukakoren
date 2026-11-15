@@ -20,6 +20,12 @@ const BOTTOM_ITEMS = [
 
 export function MobileBottomNav() {
   const rawPathname = usePathname() || "/";
+  if (
+    rawPathname.startsWith("/admin") ||
+    rawPathname.startsWith("/yonetmenbgc")
+  ) {
+    return null;
+  }
   const pathname =
     rawPathname === "/index" || rawPathname === "" ? "/" : rawPathname;
 

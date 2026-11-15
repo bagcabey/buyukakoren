@@ -8,10 +8,12 @@ export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getPageBySlug("/gizlilik", false);
   return buildPageMetadata({
-    title: page?.seo_title || "Gizlilik ve Çerez Politikası | B.Akören",
+    title:
+      page?.seo_title ||
+      "Gizlilik ve Çerez Politikası | Büyük Akören Köyü Derneği",
     description:
       page?.seo_description ||
-      "Büyük Akören Köyü Derneği portalında yalnızca zorunlu güvenlik oturum çerezi kullanıldığına ve ziyaretçi gizliliğine ilişkin politika.",
+      "Büyük Akören Köyü Derneği web portalında yalnızca zorunlu güvenlik oturum çerezi kullanıldığına ve ziyaretçi gizliliğine ilişkin politika.",
     path: "/gizlilik",
   });
 }

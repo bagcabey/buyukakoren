@@ -3,6 +3,7 @@
     "name": "buyuk-akoren-dernegi",
     "version": "1.0.0",
     "scripts": {
+        "test": "node scripts/run-e2e-suite.mjs",
         "lint": "tsc --noEmit --incremental false",
         "build": "next build",
         "dev": "next dev",

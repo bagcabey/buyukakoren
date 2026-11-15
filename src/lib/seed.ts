@@ -44,11 +44,11 @@ export const INITIAL_STORE_DATA: StoreData = {
       id: "post-2",
       slug: "koy-arazisinde-agaclandirma-ve-fidan-dikimi",
       category: "faaliyet",
-      title: "Köy Arazisinde Ağaçlandırma ve Fidan Dikimi Çalışması",
+      title: "900 Çam Fidanı Dikimi ve Ağaçlandırma Seferberliği",
       summary:
-        "Derneğimiz öncülüğünde, köy gençlerimizin ve hemşehrilerimizin katılımıyla köyümüzün ortak alanlarında fidan dikimi gerçekleştirildi.",
+        "Derneğimiz öncülüğünde, köy halkı ve gençlerin katılımıyla köy ortak arazisine 900 adet çam fidanı dikildi.",
       content:
-        "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği olarak doğamıza ve geleceğimize sahip çıkmak amacıyla köyümüzde ağaçlandırma çalışması gerçekleştirdik.\n\nGençlerimizin, çocuklarımızın ve büyüklerimizin imece usulüyle katıldığı etkinlikte çok sayıda fidan toprakla buluşturuldu. Katkı sunan tüm hemşehrilerimize teşekkür ederiz.",
+        "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği olarak doğamıza ve geleceğimize sahip çıkmak amacıyla köyümüzde kapsamlı bir ağaçlandırma çalışması gerçekleştirdik.\n\nDernek Başkanımız Mustafa Tanju Çetiner koordinesinde; köyümüzün gençleri, çocukları ve büyüklerimizin imece usulüyle katıldığı etkinlikte 900 adet çam fidanı toprakla buluşturuldu. Köyümüzün ortak arazisinde yeşil bir kuşak oluşturmayı hedefleyen bu seferberliğe katkı sunan tüm hemşehrilerimize teşekkür ederiz.",
       image_url: "/images/katalog/01-koy-cevresi/06_iki_agac_bozkir.webp",
       image_alt: "Yıldızeli bölgesi bozkır peyzajında ağaç silueti (Wikimedia Commons — Büyükakören yakın çevresi)",
       image_attribution: {
@@ -243,7 +243,7 @@ export const INITIAL_STORE_DATA: StoreData = {
       id: "bm-1",
       full_name: "Mustafa Tanju Çetiner",
       role: "Dernek Başkanı",
-      bio: "Köyümüzün sosyal dayanışması, eğitim gezileri ve çevre projelerinin koordinasyonundan sorumlu.",
+      bio: "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği Başkanı. 900 çam fidanı dikimi, mezarlık imece temizliği ve öğrencilere Sivas tarihi mekânlar kültür gezisi gibi toplum projelerinin koordinatörü.",
       display_order: 1,
     },
   ],
@@ -261,8 +261,8 @@ export const INITIAL_STORE_DATA: StoreData = {
     iban_number: "",
     donation_note:
       "Bağış ve aidat gönderimlerinde açıklama kısmına ad-soyad ve katkı amacını yazmanız rica olunur.",
-    mukhtar_name: "",
-    mukhtar_phone: "",
+    mukhtar_name: "Hasan Özüdoğru",
+    mukhtar_phone: "0536 722 16 07",
     founded_year: "",
     association_registry_no: "",
     tax_office: "",

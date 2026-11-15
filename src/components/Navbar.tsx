@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Logo, TurkishFlagSvg } from "./Logo";
 import { NavItem, SiteSettings } from "@/lib/types";
+import { sanitizeSafeUrl } from "@/lib/sanitize";
 
 export interface NavbarExtraPage {
   slug: string;
@@ -62,6 +63,7 @@ const MOBILE_GROUPS = [
 function normalizeHref(slug: string): string {
   const s = (slug || "/").trim();
   if (s === "/" || s === "") return "/";
+  if (s.startsWith("http://") || s.startsWith("https://")) return s;
   return s.startsWith("/") ? s : `/${s}`;
 }
 
@@ -141,7 +143,9 @@ export function Navbar({
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Ana menü">
           {visibleNavItems.map((item) => {
-            const href = normalizeHref(item.href);
+            const safe = sanitizeSafeUrl(item.href);
+            if (!safe) return null;
+            const href = normalizeHref(safe);
             const isExternal = item.is_external || href.startsWith("http");
             const active =
               !isExternal &&
@@ -150,7 +154,7 @@ export function Navbar({
               return (
                 <a
                   key={item.id}
-                  href={item.href}
+                  href={safe}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="rounded-md px-2.5 py-1.5 text-[13.5px] font-medium text-[#666560] transition-colors hover:bg-[#fbfbfa] hover:text-[#191919]"
@@ -211,14 +215,16 @@ export function Navbar({
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {filteredItems.map((item) => {
+                      const safeHref =
+                        sanitizeSafeUrl(item.href) || normalizeHref(item.href);
                       const active = item.exact
-                        ? pathname === item.href
-                        : pathname.startsWith(item.href);
+                        ? pathname === safeHref
+                        : pathname.startsWith(safeHref);
                       const Icon = item.icon;
                       return (
                         <Link
-                          key={item.href}
-                          href={item.href}
+                          key={safeHref}
+                          href={safeHref}
                           onClick={() => setOpen(false)}
                           className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-[13px] font-medium transition-colors ${
                             active
@@ -247,7 +253,10 @@ export function Navbar({
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   {extraPages.map((p) => {
-                    const href = normalizeHref(p.slug);
+                    const safe =
+                      sanitizeSafeUrl(p.slug) ||
+                      (p.slug.startsWith("/") ? p.slug : `/${p.slug}`);
+                    const href = normalizeHref(safe);
                     const active = pathname.startsWith(href);
                     return (
                       <Link

@@ -190,7 +190,7 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const auth = await requireAdminAuth();
+  const auth = await requireAdminAuth(["yonetici"]);
   if (auth.errorResponse) return auth.errorResponse;
 
   const { searchParams } = new URL(req.url);

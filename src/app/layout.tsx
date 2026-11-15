@@ -4,7 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
-import { SITE_NAME, SITE_URL } from "@/lib/seo";
+import { DEFAULT_SEO_KEYWORDS, SITE_NAME, SITE_URL } from "@/lib/seo";
 import { getAllStoreData } from "@/lib/store";
 
 const inter = Inter({
@@ -24,6 +24,7 @@ export const metadata: Metadata = {
   title: `${SITE_NAME} | Yıldızeli, Sivas`,
   description:
     "Sivas Yıldızeli Büyükakören (Büyük Akören) Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği resmî duyuru, faaliyet ve taziye portalı.",
+  keywords: DEFAULT_SEO_KEYWORDS,
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "48x48" },
@@ -84,7 +85,7 @@ export default async function RootLayout({
     <html lang="tr" className={`${inter.variable} ${jakarta.variable}`}>
       <body className="flex min-h-screen flex-col bg-white text-[#191919] antialiased">
         <Navbar settings={data.site_settings} extraPages={extraMenuPages} />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 pb-24 lg:pb-0">{children}</main>
         <Footer settings={data.site_settings} extraPages={extraMenuPages} />
         <MobileBottomNav />
       </body>

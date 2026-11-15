@@ -67,6 +67,7 @@ export async function POST(req: Request) {
       burial_place: string;
       message: string;
       relatives?: string;
+      image_url?: string | null;
       is_published?: boolean;
       family_consent_confirmed?: boolean;
       expected_version?: number;
@@ -98,6 +99,7 @@ export async function POST(req: Request) {
           body.message?.trim() ||
           "Merhuma/Merhumeye Allah'tan rahmet, kederli ailesine başsağlığı dileriz.",
         relatives: body.relatives?.trim() || null,
+        image_url: body.image_url?.trim() || null,
         is_published: body.is_published !== false,
         family_consent_confirmed: Boolean(body.family_consent_confirmed ?? true),
       },
@@ -132,7 +134,7 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const auth = await requireAdminAuth();
+  const auth = await requireAdminAuth(["yonetici"]);
   if (auth.errorResponse) return auth.errorResponse;
 
   const { searchParams } = new URL(req.url);

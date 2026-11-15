@@ -7,9 +7,9 @@ import { getPublishedPosts } from "@/lib/store";
 export const revalidate = 60;
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Büyükakören Köyü Duyuru ve Haberler | B.Akören",
+  title: "Duyuru ve Haberler | Büyük Akören Köyü Derneği",
   description:
-    "Sivas Yıldızeli Büyükakören (Büyük Akören) köyü resmî duyuruları, haberler, dernek açıklamaları ve köy gündemi.",
+    "Büyükakören Köyü ve derneğimizden en güncel haberler, resmî açıklamalar, toplantı kararları ve çevre duyuruları.",
   path: "/duyurular",
 });
 

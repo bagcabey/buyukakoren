@@ -1,4 +1,8 @@
-export function JsonLd({ data }: { data: Record<string, unknown> }) {
+export function JsonLd({
+  data,
+}: {
+  data: Record<string, unknown> | Array<Record<string, unknown>>;
+}) {
   const serialized = JSON.stringify(data).replace(/</g, "\\u003c");
   return (
     <script

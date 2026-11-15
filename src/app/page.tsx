@@ -17,10 +17,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const page = await getPageBySlug("/", false);
   return buildPageMetadata({
     title:
-      page?.seo_title || "Büyükakören (Büyük Akören) Köyü Derneği | Yıldızeli, Sivas",
+      page?.seo_title || "Büyük Akören Köyü Derneği | Yıldızeli, Sivas",
     description:
       page?.seo_description ||
-      "Sivas Yıldızeli Büyükakören (Büyük Akören) Köyü Derneği resmî portalı. Güncel köy duyuruları, nüfus 449, posta kodu 58502, taziye ve faaliyetler.",
+      "Sivas Yıldızeli Büyükakören (Büyük Akören) Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği resmî duyuru, faaliyet, taziye ve hemşehri iletişim portalı.",
     path: "/",
     ogImage: page?.og_image,
   });

@@ -11,10 +11,12 @@ export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getPageBySlug("/dernek", false);
   return buildPageMetadata({
-    title: page?.seo_title || "Büyükakören Köyü Derneği | Yönetim ve Amaç",
+    title:
+      page?.seo_title ||
+      "Derneğimiz ve Yönetim Kurulu | Büyük Akören Köyü Derneği",
     description:
       page?.seo_description ||
-      "Sivas Yıldızeli Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği kurumsal yapısı, çalışma ilkeleri ve yönetim kurulu.",
+      "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği çalışma ilkeleri, yönetim kurulu başkanı Mustafa Tanju Çetiner ve tüzük hedefleri.",
     path: "/dernek",
     ogImage: page?.og_image,
   });

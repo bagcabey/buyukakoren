@@ -82,11 +82,12 @@ export function buildDefaultPages(): PageConfig[] {
             image_attribution: "Fotoğraf: cankurtaran • CC BY 3.0 (Yıldızeli bölgesi)",
             image_attribution_url: "https://commons.wikimedia.org/wiki/File:Kalek%C3%B6y_k%C4%B1vsak_aras%C4%B1_-_panoramio.jpg",
             image_position: "left",
-            text: "1907 yılı kayıtlarında Ağören, 1928 yılı kayıtlarında ise Büyük Akviran adıyla geçen yerleşimimiz; Sivas ili Yıldızeli ilçesine bağlı köklü bir Anadolu köyüdür.\n\nKöyümüzde Büyük Akören Ortaokulu eğitim-öğretim faaliyetlerini sürdürmektedir.",
+            text: "1907 yılı Osmanlı Salnamesi kayıtlarında Ağören, 1928 yılı Dahiliye Vekaleti kayıtlarında ise Büyük Akviran adıyla geçen yerleşimimiz; Sivas ili Yıldızeli ilçesine bağlı köklü bir Anadolu köyüdür.\n\nKöyümüz; Yukarı Mahalle, Aşağı Mahalle ve Şeyhler Mahallesi olmak üzere 3 geleneksel mahalleye, 3 camiye (Merkez Camii, Yeni Cami, Şeyhler Camii) ve asırlık kış meclislerinin toplandığı 4 geleneksel köy odasına sahiptir.",
             bullets: [
-              "Koordinatlar: 39°36′11″K 36°26′17″D",
-              "Büyük Akören Ortaokulu Tel: (0346) 753 11 22",
-              "PTT Posta Kodu: 58502",
+              "Koordinatlar: 39°36′11″K 36°26′17″D (Rakım: 1.276 m)",
+              "Büyükakören Köyü Muhtarı: Hasan Özüdoğru • Tel: 0536 722 16 07",
+              "Büyük Akören Ortaokulu & İlkokulu Tel: (0346) 753 11 22",
+              "PTT Posta Kodu: 58502 • Telefon Alan Kodu: 0346",
             ],
             cta_label: "Tarihçe ve Nüfus Verilerini İncele",
             cta_href: "/koyumuz",
@@ -140,9 +141,9 @@ export function buildDefaultPages(): PageConfig[] {
     {
       slug: "/koyumuz",
       title: "Köyümüz & Tarihçe",
-      seo_title: "Büyükakören (Büyük Akören) Köyü Tarihçe ve Nüfusu | Yıldızeli",
+      seo_title: "Büyükakören Köyü Tarihçesi ve Nüfusu | Yıldızeli, Sivas",
       seo_description:
-        "Sivas Yıldızeli Büyükakören Köyü tarihçesi (1907 Ağören, 1928 Büyük Akviran), coğrafyası (1.276 m rakım, 33,8 km²), TÜİK 1990-2025 nüfus verileri ve Büyük Akören Ortaokulu bilgileri.",
+        "Sivas Yıldızeli Büyükakören Köyü tarihi (1907 Ağören, 1928 Akviran), 3 mahalle, TÜİK 1990-2025 nüfusu, coğrafyası ve Büyük Akören Ortaokulu bilgileri.",
       status: "published",
       show_in_menu: true,
       menu_order: 5,
@@ -156,10 +157,10 @@ export function buildDefaultPages(): PageConfig[] {
           visible: true,
           order: 1,
           data: {
-            badge: "Sivas • Yıldızeli • 58502",
+            badge: "Sivas • Yıldızeli • Posta Kodu 58502",
             title: "Büyükakören (Büyük Akören) Köyü",
             subtitle:
-              "Doğrulanmış coğrafi konumu, Nişanyan yer adları tarihi, TÜİK nüfus seyri ve köy okulu bilgileriyle köyümüzün resmî bilgi sayfası.",
+              "1907 Salnamesi ve 1928 kayıtları, 3 geleneksel mahallesi, 3 camisi, 4 köy odası, TÜİK resmî nüfusu ve zengin mutfak kültürüyle köyümüzün resmî sayfası.",
             image_url: "/images/katalog/01-koy-cevresi/01_kalekoy_kivsak_arasi_manzara.webp",
             image_alt: "Yıldızeli bölgesi köy çevresi ve yayla manzarası (Kaleköy–Kıvşak arası)",
             attribution: "Görsel: cankurtaran • CC BY 3.0 (Wikimedia Commons — Yıldızeli bölgesi)",
@@ -180,9 +181,9 @@ export function buildDefaultPages(): PageConfig[] {
             title: "Temel Bilgiler",
             subtitle: "Kaynaklar: PTT, BTK, Harita Genel Müdürlüğü, Vikipedi, Nişanyan Index Anatolicus.",
             items: [
-              { id: "ks1", label: "İl / İlçe", value: "Sivas / Yıldızeli", subtext: "Köy statüsü (resmî ad: Büyükakören)" },
+              { id: "ks1", label: "İl / İlçe", value: "Sivas / Yıldızeli", subtext: "Köy statüsü (resmî: Büyükakören • yaygın: Büyük Akören)" },
               { id: "ks2", label: "Rakım & Yüzölçümü", value: "1.276 m", subtext: "33,8 km² yerleşim ve tarım alanı" },
-              { id: "ks3", label: "Ulaşım Mesafesi", value: "Sivas 62 km", subtext: "Yıldızeli ilçe merkezine 49 km" },
+              { id: "ks3", label: "Geleneksel Yapı", value: "3 Mahalle • 3 Cami", subtext: "Yukarı, Aşağı, Şeyhler Mahalleleri" },
               { id: "ks4", label: "Posta & Alan Kodu", value: "58502 / 0346", subtext: "39°36′11″K 36°26′17″D" },
             ],
           },
@@ -193,12 +194,12 @@ export function buildDefaultPages(): PageConfig[] {
           visible: true,
           order: 3,
           data: {
-            eyebrow: "Tarihsel Arka Plan",
-            title: "Eski Adlar ve Yerleşim Tarihi",
+            eyebrow: "Tarihsel Arka Plan & Kültür",
+            title: "Eski Adlar, Mahalleler ve Kültürel Miras",
             content:
-              "## Ağören'den Büyükakören'e\n\nNişanyan Yer Adları Envanteri (Index Anatolicus) kayıtlarına göre köyümüzün adı **1907** yılı belgelerinde **Ağören**, **1928** yılı resmî kayıtlarında ise **Büyük Akviran** olarak geçmektedir. Cumhuriyet dönemi idari düzenlemeleriyle yerleşimimizin resmî adı **Büyükakören** (yaygın kullanımda **Büyük Akören**) olarak tescil edilmiştir.\n\n## Coğrafya, İklim ve Ulaşım\n\nSivas Yıldızeli köyleri arasında yer alan Büyükakören köyü, Sivas il merkezine **62 km**, Yıldızeli ilçe merkezine ise **49 km** uzaklıktadır. **1.276 metre** rakıma ve **33,8 km²** alana sahip yerleşimimizde karasal İç Anadolu bozkır iklimi görülür. Yaz ayları sıcak ve kurak, kış ayları soğuk ve kar yağışlıdır. Başlıca geçim kaynakları tahıl ve yem bitkileri tarımı ile küçükbaş/büyükbaş hayvancılıktır.\n\nSivas merkezden ve Yıldızeli ilçesinden kara yolu bağlantısıyla ulaşım sağlanmakta olup PTT posta kodu **58502**, telefon alan kodu **0346**'dır.",
+              "## Ağören'den Büyükakören'e: Tarihsel Süreç ve İsim Kökeni\n\nKöyümüzün yerleşim tarihi kadim Anadolu medeniyetlerine uzanmaktadır. Sevan Nişanyan Index Anatolicus ve tarihî salname kayıtlarına göre yerleşimimiz:\n- **1907 (Osmanlı Salnamesi):** **\"Ağören\"** olarak kaydedilmiştir. Anadolu toponomisinde \"Ağören\" veya \"Akviran\", ak taşlı ören yeri, antik beyaz taş kalıntıları veya köklü surlu yerleşimi temsil eder.\n- **1928 (Dahiliye Vekaleti Köylerimiz Kayıtları):** Çevredeki diğer benzer isimli mevkilerden ayırt edilmesi amacıyla **\"Büyük Akviran\"** adıyla resmî kayıtlara geçirilmiştir.\n- **Cumhuriyet Dönemi:** T.C. İçişleri Bakanlığı İller İdaresi Genel Müdürlüğü tarafından resmî adı **\"Büyükakören\"** olarak tescil edilmiştir; halk arasında ve kurumsal yazışmalarda **\"Büyük Akören\"** olarak da yaygın kullanılır.\n\nKöyümüz, Tunç Çağı, Hitit, Roma, Doğu Roma (Bizans), Anadolu Selçuklu, Eretna Beyliği ve Osmanlı imparatorlukları mirasını taşıyan Sivas-Yıldızeli havzasında yer alır. Sultan IV. Murad'ın 1639 Bağdat Seferi sırasında Sadrazam Kemankeş Kara Mustafa Paşa tarafından kurulan Yenihan (1936'da Yıldızeli) menzil hattına bağlı kadim bir köydür.\n\n## 3 Geleneksel Mahalle, 3 Cami ve 4 Köy Odası\n\nKöyümüzün köklü sosyal dokusu geleneksel olarak 3 ana mahalleden meydana gelir:\n1. **Yukarı Mahalle:** Tarım arazileri ve yayla yamaçlarına bakan üst yerleşim kuşağı.\n2. **Aşağı Mahalle:** Vadi tabanı ve ana köy yolu boyunca uzanan alt yerleşim bölgesi.\n3. **Şeyhler (Şeyhlar) Mahallesi:** Köyün manevi önderleri ve din âlimlerinin adını taşıyan tarihî yerleşim bölümü.\n\nKöyümüzde ibadet hayatını sürdüren 3 cami bulunmaktadır:\n- **Merkez Camii:** Köy meydanında bulunan, zarif minaresiyle uzaktan seçilen ve son dönem havadan drone çekimleriyle de belgelenen ana ibadethanedir.\n- **Yeni Cami:** Köyün gelişimiyle birlikte inşa edilen çağdaş mahalle camisidir.\n- **Şeyhler Camii:** Şeyhler Mahallesi sakinlerine hizmet veren tarihî mahalle mescididir.\n\nAyrıca köyümüzde köklü bir misafirperverlik ve istişare geleneğini yaşatan **4 Tarihî Köy Odası** bulunmaktadır. Bu odalar; asırlardır kış sohbetlerinin yapıldığı, köy meclislerinin toplandığı, düğün ve taziye günlerinde misafirlerin ağırlandığı ortak kültür ocaklarıdır.\n\n## Geleneksel Gastronomi ve Yöresel Lezzetler\n\nSivas ve Yıldızeli'nin bozkır kültüründen süzülen zengin yöresel lezzetler Büyükakören'de özenle korunmaktadır:\n- **Dal Turşusu (Pepük):** Sivas yöresine özgü yabani pancar (pepük) sapından kurulan, imece ve kış sofralarının baştacı olan meşhur turşumuzdur.\n- **Madımak Aşı:** İlkbaharda Yıldızeli yaylalarından toplanan taze madımak otu, bulgur, pastırma/kavurma ve sarımsaklı yoğurt ile hazırlanan geleneksel ana yemeğimizdir.\n- **Pancar Çorbası & Üzümlü Aş:** Düğün ve bayram sofralarında pişen tarihî aşlarımızdandır.\n- **Tandır Çöreği & Katmer:** Köy tandırlarında pişirilen geleneksel çörek ve katmerler.\n- **Yöresel Patates Yemeği:** Yıldızeli ovasının bereketli patatesleriyle hazırlanan tencere yemeği.\n\n## Coğrafya, İklim ve Ulaşım\n\nSivas il merkezine **62 km**, Yıldızeli ilçe merkezine **49 km** mesafede bulunan köyümüz, deniz seviyesinden **1.276 metre** yükseklikte ve **33,8 km²** yüzölçümüne sahiptir. Sert karasal iklimin hüküm sürdüğü köyümüzde yazlar sıcak ve kurak, kışlar soğuk ve kar yağışlı geçer. Temel geçim kaynağı buğday, arpa, yem bitkileri tarımı ile büyükbaş ve küçükbaş hayvancılıktır. PTT posta kodu **58502**, telefon alan kodu **0346**'dır.",
             source_note:
-              "Kaynaklar: Sevan Nişanyan Index Anatolicus (1907/1928), Vikipedi Büyükakören Maddesi, Harita Genel Müdürlüğü, PTT 58502 kayıtları.",
+              "Kaynaklar: 1907 Osmanlı Salnamesi, 1928 Dahiliye Vekaleti Köylerimiz Envanteri, Sevan Nişanyan Index Anatolicus, buyukakoren.tr.gg arşivi, TÜİK ADNKS ve PTT 58502 kayıtları.",
           },
         },
         {
@@ -228,10 +229,44 @@ export function buildDefaultPages(): PageConfig[] {
           },
         },
         {
+          id: "koy-heritage",
+          type: "card_grid",
+          visible: true,
+          order: 5,
+          data: {
+            eyebrow: "Gelenek ve Kültür",
+            title: "Sosyal Doku, İbadethaneler ve Mutfak",
+            columns: 3,
+            cards: [
+              {
+                id: "h-1",
+                badge: "3 Geleneksel Mahalle",
+                title: "Yukarı, Aşağı ve Şeyhler",
+                description:
+                  "Köyümüz kadimden bu yana Yukarı Mahalle, Aşağı Mahalle ve din âlimlerinin adını taşıyan Şeyhler Mahallesi olmak üzere 3 geleneksel yerleşim kuşağına ayrılır.",
+              },
+              {
+                id: "h-2",
+                badge: "3 Cami & 4 Köy Odası",
+                title: "İbadethane ve Köy Meclisleri",
+                description:
+                  "Merkez Camii, Yeni Cami ve Şeyhler Camii olmak üzere 3 ibadethanemiz ile kış sohbetleri ve imece meclislerinin toplandığı 4 tarihî köy odası bulunmaktadır.",
+              },
+              {
+                id: "h-3",
+                badge: "Yöresel Gastronomi",
+                title: "Dal Turşusu & Madımak Aşı",
+                description:
+                  "Yabani pancar sapından dal turşusu (pepük), yayla madımak aşı, pancar çorbası, tandır çöreği, üzümlü aş ve patates yemeği geleneksel mutfağımızın baş tacıdır.",
+              },
+            ],
+          },
+        },
+        {
           id: "koy-agri-split",
           type: "image_text",
           visible: true,
-          order: 5,
+          order: 6,
           data: {
             eyebrow: "Tarım ve Kırsal Ekonomi",
             title: "Tahıl Üretimi, Bozkır İklimi ve Yaşam",
@@ -254,29 +289,38 @@ export function buildDefaultPages(): PageConfig[] {
           id: "koy-edu",
           type: "card_grid",
           visible: true,
-          order: 6,
+          order: 7,
           data: {
-            eyebrow: "Eğitim ve Kamu Kurumları",
-            title: "Köyümüzdeki Eğitim Kurumu",
-            columns: 2,
+            eyebrow: "Kamu Kurumları & İdare",
+            title: "Köyümüzdeki Resmî Kurumlar ve İdare",
+            columns: 3,
             cards: [
               {
                 id: "edu-1",
                 badge: "T.C. Millî Eğitim Bakanlığı",
-                title: "Büyük Akören Ortaokulu",
+                title: "Büyük Akören Ortaokulu & İlkokulu",
                 description:
-                  "Köyümüzde aktif eğitim veren resmî ortaokulumuzdur. İletişim Tel: (0346) 753 11 22",
+                  "Köyümüzde aktif eğitim veren resmî eğitim kurumumuzdur. İletişim Tel: (0346) 753 11 22",
                 link_label: "MEB Resmî Sayfası",
                 link_href: "https://buyukakorenoo.meb.k12.tr",
               },
               {
                 id: "edu-2",
-                badge: "Katkı Çağrısı",
-                title: "Köyümüzden Bilgi & Fotoğraf Paylaşın",
+                badge: "T.C. Yıldızeli Kaymakamlığı",
+                title: "Büyükakören Köyü Muhtarlığı",
                 description:
-                  "Mahalle tarihçesi, cami, çeşme, yayla ve dernek etkinliklerine dair belgelenmiş bilgi ve görselleri bizimle paylaşabilirsiniz.",
-                link_label: "İletişim Sayfası",
-                link_href: "/iletisim",
+                  "Köy Muhtarı: Hasan Özüdoğru • İletişim Tel: 0536 722 16 07 • Adres: Büyükakören Köyü, Yıldızeli / Sivas (58502)",
+                link_label: "Kaymakamlık Portalı",
+                link_href: "http://www.yildizeli.gov.tr",
+              },
+              {
+                id: "edu-3",
+                badge: "T.C. Sivas Valiliği",
+                title: "Mülki İdare & İl Hizmetleri",
+                description:
+                  "Köyümüzün bağlı bulunduğu mülki idare, il özel idaresi ve kırsal kalkınma hizmetleri resmî iletişim kanalları.",
+                link_label: "Sivas Valiliği",
+                link_href: "http://www.sivas.gov.tr",
               },
             ],
           },
@@ -285,7 +329,7 @@ export function buildDefaultPages(): PageConfig[] {
           id: "koy-regional-showcase",
           type: "card_grid",
           visible: true,
-          order: 7,
+          order: 8,
           data: {
             eyebrow: "Bölge Arşivi (Wikimedia Commons)",
             title: "Yıldızeli Çevresi ve Sivas Kültüründen Görseller",
@@ -327,7 +371,7 @@ export function buildDefaultPages(): PageConfig[] {
           id: "koy-map",
           type: "map",
           visible: true,
-          order: 8,
+          order: 9,
           data: {
             title: "Büyükakören Konum Haritası",
             description:
@@ -342,9 +386,9 @@ export function buildDefaultPages(): PageConfig[] {
     {
       slug: "/dernek",
       title: "Derneğimiz & Yönetim",
-      seo_title: "Büyük Akören Köyü Derneği | Amaç ve Yönetim",
+      seo_title: "Derneğimiz ve Yönetim Kurulu | Büyük Akören Köyü Derneği",
       seo_description:
-        "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği tüzük ilkeleri, faaliyet alanları ve yönetim kurulu.",
+        "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği çalışma ilkeleri, yönetim kurulu başkanı Mustafa Tanju Çetiner ve tüzük hedefleri.",
       status: "published",
       show_in_menu: true,
       menu_order: 6,
@@ -358,10 +402,10 @@ export function buildDefaultPages(): PageConfig[] {
           visible: true,
           order: 1,
           data: {
-            badge: "Kurumsal Yapı",
-            title: "Büyük Akören Köyü Derneği",
+            badge: "Resmî STK • Yıldızeli / Sivas",
+            title: "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği",
             subtitle:
-              "Hemşehri dayanışmasını güçlendirmek, köyümüzün altyapı, eğitim ve kültür ihtiyaçlarına katkı sunmak ve şeffaf iletişim sağlamak için çalışıyoruz.",
+              "Dernek Başkanımız Mustafa Tanju Çetiner ve yönetimimiz öncülüğünde hemşehri dayanışması, doğayı koruma seferberliği ve eğitime destek projeleriyle köyümüz için çalışıyoruz.",
             primary_label: "Faaliyet Raporları",
             primary_href: "/faaliyetler",
             secondary_label: "Bağış ve Aidat",
@@ -403,10 +447,44 @@ export function buildDefaultPages(): PageConfig[] {
           },
         },
         {
+          id: "dernek-milestones",
+          type: "card_grid",
+          visible: true,
+          order: 3,
+          data: {
+            eyebrow: "Teyit Edilmiş Toplum Faaliyetleri",
+            title: "Öne Çıkan Faaliyetlerimiz ve İmece Projeleri",
+            columns: 3,
+            cards: [
+              {
+                id: "ms1",
+                badge: "Doğayı Koruma Seferberliği",
+                title: "900 Çam Fidanı Dikimi",
+                description:
+                  "Dernek Başkanımız Mustafa Tanju Çetiner koordinesinde köy halkı ve gençlerin katılımıyla köy arazisine 900 adet çam fidanı dikilerek yeşil kuşak oluşturuldu.",
+              },
+              {
+                id: "ms2",
+                badge: "İmece Dayanışması",
+                title: "Mezarlık ve Çevre Temizliği",
+                description:
+                  "Köyümüzün gençleri ve çocukları el birliğiyle köy mezarlığı başta olmak üzere ortak alanlarda kapsamlı temizlik ve bakım imecesi gerçekleştirdi.",
+              },
+              {
+                id: "ms3",
+                badge: "Eğitim & Kültür",
+                title: "Sivas Tarih ve Kültür Gezisi",
+                description:
+                  "Öğrencilerimize yönelik Kongre Müzesi, Şehir Müzesi, Buruciye Medresesi, Çifte Minareli Medrese ve Şifaiye Medresesi tarih-kültür gezisi düzenlendi.",
+              },
+            ],
+          },
+        },
+        {
           id: "dernek-board",
           type: "board_members",
           visible: true,
-          order: 3,
+          order: 4,
           data: {
             eyebrow: "Yönetim",
             title: "Yönetim Kurulu",
@@ -418,7 +496,7 @@ export function buildDefaultPages(): PageConfig[] {
           id: "dernek-cta",
           type: "cta",
           visible: true,
-          order: 4,
+          order: 5,
           data: {
             theme: "light",
             eyebrow: "Üyelik ve Katılım",
@@ -434,9 +512,9 @@ export function buildDefaultPages(): PageConfig[] {
     {
       slug: "/bagis",
       title: "Bağış & Aidat",
-      seo_title: "Bağış ve Aidat Bilgileri | Büyük Akören Köyü Derneği",
+      seo_title: "Bağış ve Üyelik Aidatı | Büyük Akören Köyü Derneği",
       seo_description:
-        "Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği resmî bağış ve aidat bilgilendirme sayfası.",
+        "Büyük Akören Köyü Derneği şeffaf bağış ve aidat bilgilendirmesi; 5253 sayılı Dernekler Kanunu mevzuatı ve resmî banka hesabı.",
       status: "published",
       show_in_menu: true,
       menu_order: 8,
@@ -478,8 +556,8 @@ export function buildDefaultPages(): PageConfig[] {
           visible: true,
           order: 3,
           data: {
-            eyebrow: "Sıkça Sorulanlar",
-            title: "Bağış ve Makbuz Süreci Hakkında",
+            eyebrow: "Sıkça Sorulanlar & Mevzuat",
+            title: "Bağış, Makbuz ve Dernekler Mevzuatı",
             items: [
               {
                 id: "fq1",
@@ -491,7 +569,19 @@ export function buildDefaultPages(): PageConfig[] {
                 id: "fq2",
                 question: "Makbuz ve gelir-gider takibi nasıl yapılır?",
                 answer:
-                  "Derneğimizin tüm gelir ve gider kalemleri 5253 sayılı Dernekler Kanunu çerçevesinde resmî defterlere işlenir ve genel kurula sunulur.",
+                  "Derneğimizin tüm gelir ve gider kalemleri 5253 sayılı Dernekler Kanunu Madde 11 çerçevesinde Alındı Belgesi veya banka dekontu ile resmî defterlere işlenir ve genel kurula sunulur.",
+              },
+              {
+                id: "fq3",
+                question: "Yardım Toplama Kanunu ve dernek mevzuatı ilkeleri nelerdir?",
+                answer:
+                  "Derneğimiz 5253 sayılı Dernekler Kanunu ve 2860 sayılı Yardım Toplama Kanunu hükümlerine tam uyumlu çalışır. Sitemiz üzerinden yetkisiz veya izinsiz yardım toplama faaliyeti yürütülmez; paylaşılan banka hesabı yalnızca dernek tüzel kişiliğine ait resmî üyelik aidatları ve tüzük amaçlarına yönelik gönüllü bağışlar içindir.",
+              },
+              {
+                id: "fq4",
+                question: "Banka transferlerinde IBAN güvenliği nasıl sağlanır?",
+                answer:
+                  "Sitede yayınlanan dernek banka hesabı uluslararası Mod-97 algoritmasıyla doğrulanmış resmî TR IBAN standardındadır. Geçersiz veya hatalı hiçbir hesap numarası sistemde gösterilmez.",
               },
             ],
           },
@@ -501,9 +591,9 @@ export function buildDefaultPages(): PageConfig[] {
     {
       slug: "/iletisim",
       title: "İletişim",
-      seo_title: "İletişim | Büyük Akören Köyü Derneği",
+      seo_title: "İletişim ve Muhtarlık Bilgileri | Büyük Akören Köyü",
       seo_description:
-        "Büyük Akören Köyü Derneği iletişim formu, konum haritası ve köy muhtarlık/okul resmî bilgileri.",
+        "Büyükakören Köyü Derneği güvenli iletişim formu, Köy Muhtarı Hasan Özüdoğru bilgileri, Büyük Akören Ortaokulu erişim hattı ve konum haritası.",
       status: "published",
       show_in_menu: true,
       menu_order: 9,
@@ -517,10 +607,10 @@ export function buildDefaultPages(): PageConfig[] {
           visible: true,
           order: 1,
           data: {
-            badge: "Doğrudan İletişim",
-            title: "Dernek Yönetimi ve Köy İletişimi",
+            badge: "İletişim & Kurumsal Bilgi",
+            title: "Dernek Yönetimi, Muhtarlık ve Köy İletişimi",
             subtitle:
-              "Üyelik başvurusu, duyuru talebi, köyümüzle ilgili fotoğraf paylaşımı veya önerileriniz için aşağıdaki formu güvenle doldurabilirsiniz.",
+              "Büyük Akören Köyü Derneği yönetimi, Köy Muhtarı Hasan Özüdoğru (Tel: 0536 722 16 07) ve Büyük Akören Ortaokulu (Tel: 0346 753 11 22) resmî iletişim kanalları.",
           },
         },
         {
@@ -531,7 +621,7 @@ export function buildDefaultPages(): PageConfig[] {
           data: {
             title: "İletişim Bilgileri & Mesaj Formu",
             description:
-              "Gönderdiğiniz mesajlar şifreli olarak saklanır ve yalnızca yetkili dernek yöneticilerine iletilir.",
+              "Gönderdiğiniz mesajlar AES-256-GCM ile sunucuda şifreli olarak saklanır ve yalnızca yetkili dernek yöneticilerine iletilir.",
             show_form: true,
           },
         },
@@ -666,7 +756,7 @@ export function buildDefaultPages(): PageConfig[] {
             eyebrow: "Yayın İlkeleri",
             title: "Genel Hükümler",
             content:
-              "## 1. Hizmetin Amacı\n\nBu web sitesi; Sivas ili Yıldızeli ilçesi Büyükakören Köyü sakinleri ve hemşehrilerimizin köy duyurularına, faaliyet raporlarına, taziye ilanlarına, doğrulanmış köy bilgilerine ve dernek iletişim kanallarına ulaşması amacıyla hazırlanmış kamusal bilgilendirme portalıdır.\n\n## 2. İçerik ve Telif Hakları\n\n- Portalda yayımlanan dernek duyuruları ve metinler kaynak gösterilerek paylaşılabilir.\n- Galeri ve sayfalarda yer alan tarih/coğrafya görselleri Wikimedia Commons özgür lisansları (CC0, Kamu Malı, CC BY, CC BY-SA) kapsamında sunulmakta olup, her görselin altında yer alan **yazar ve lisans atfı** kaldırılmadan kullanılabilir.\n\n## 3. Taziye ve Kişisel İçerik Paylaşımı\n\nTaziye ilanları yalnızca vefat eden hemşehrimizin yakınlarının rızası ile yayımlanır. Düzeltme veya kaldırma talepleriniz için [İletişim Sayfası](/iletisim) üzerinden yönetimle irtibata geçebilirsiniz.\n\n## 4. Sistem Güvenliği\n\nPortal formlarına otomatik spam gönderimi, yetkisiz erişim denemesi veya hizmet aksatıcı müdahaleler yasaktır ve hız sınırlama ile sunucu günlüğü koruması altındadır.",
+              "## 1. Hizmetin Amacı\n\nBu web sitesi; Sivas ili Yıldızeli ilçesi Büyükakören Köyü sakinleri ve hemşehrilerimizin köy duyurularına, faaliyet raporlarına, taziye ilanlarına, doğrulanmış köy bilgilerine ve dernek iletişim kanallarına ulaşması amacıyla hazırlanmış kamusal bilgilendirme portalıdır.\n\n## 2. İçerik ve Telif Hakları\n\n- Portalda yayımlanan dernek duyuruları ve metinler kaynak gösterilerek paylaşılabilir.\n- Galeri ve sayfalarda yer alan tarih/coğrafya görselleri Wikimedia Commons özgür lisansları (CC0, Kamu Malı, CC BY, CC BY-SA) kapsamında sunulmakta olup, her görselin altında yer alan **yazar ve lisans atfı** kaldırılmadan kullanılabilir.\n\n## 3. Taziye ve Kişisel İçerik Paylaşımı\n\nTaziye ilanları yalnızca vefat eden hemşehrimizin yakınlarının rızası ile yayımlanır. Düzeltme veya kaldırma talepleriniz için [İletişim Sayfası](/iletisim) üzerinden yönetimle irtibata geçebilirsiniz.\n\n## 4. Dernek Mevzuatı ve Bağış İlkeleri (5253 ve 2860 Sayılı Kanunlar)\n\nDerneğimiz, 5253 sayılı Dernekler Kanunu ve 2860 sayılı Yardım Toplama Kanunu hükümlerine tam uyumlu olarak faaliyet gösterir:\n- Web portalı üzerinden kamuya açık yetkisiz veya izinsiz yardım toplama faaliyeti yürütülmez.\n- Sitede yer alan dernek banka hesabı yalnızca dernek tüzüğünde belirtilen amaçlar doğrultusunda üye aidatları ve gönüllü bağışların kabulü için kullanılır.\n- 5253 sayılı Kanun Madde 11 uyarınca tüm gelirler Alındı Belgesi veya banka dekontu (ad, soyad ve açıklama ile) kayıt altına alınır.\n\n## 5. Sistem Güvenliği\n\nPortal formlarına otomatik spam gönderimi, yetkisiz erişim denemesi veya hizmet aksatıcı müdahaleler yasaktır ve hız sınırlama ile sunucu günlüğü koruması altındadır.",
           },
         },
       ],

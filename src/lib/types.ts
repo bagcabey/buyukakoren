@@ -54,6 +54,7 @@ export interface Condolence {
   burial_place: string;
   message: string;
   relatives?: string | null;
+  image_url?: string | null;
   is_published: boolean;
   status?: "published" | "archived";
   family_consent_confirmed?: boolean;
@@ -80,6 +81,7 @@ export interface BoardMember {
   full_name: string;
   role: string;
   bio?: string | null;
+  photo_url?: string | null;
   display_order: number;
 }
 

@@ -178,9 +178,9 @@ function BlockSection({
       const attribution = asString(d.attribution);
       const attributionUrl = sanitizeSafeUrl(asString(d.attribution_url));
       const primaryLabel = asString(d.primary_label);
-      const primaryHref = asString(d.primary_href);
+      const primaryHref = sanitizeSafeUrl(asString(d.primary_href));
       const secondaryLabel = asString(d.secondary_label);
-      const secondaryHref = asString(d.secondary_href);
+      const secondaryHref = sanitizeSafeUrl(asString(d.secondary_href));
       const theme = getHeroTheme(pageSlug, pageTitle);
 
       const quickChips =
@@ -249,21 +249,44 @@ function BlockSection({
               {(primaryLabel || secondaryLabel) && (
                 <div className="mt-6 flex flex-wrap gap-3">
                   {primaryLabel && primaryHref && (
-                    <Link
-                      href={primaryHref}
-                      className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold shadow-2xs transition ${theme.primaryBtnClass}`}
-                    >
-                      {primaryLabel}
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
+                    primaryHref.startsWith("http") ? (
+                      <a
+                        href={primaryHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold shadow-2xs transition ${theme.primaryBtnClass}`}
+                      >
+                        {primaryLabel}
+                        <ArrowRight className="h-4 w-4" />
+                      </a>
+                    ) : (
+                      <Link
+                        href={primaryHref}
+                        className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold shadow-2xs transition ${theme.primaryBtnClass}`}
+                      >
+                        {primaryLabel}
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    )
                   )}
                   {secondaryLabel && secondaryHref && (
-                    <Link
-                      href={secondaryHref}
-                      className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition ${theme.secondaryBtnClass}`}
-                    >
-                      {secondaryLabel}
-                    </Link>
+                    secondaryHref.startsWith("http") ? (
+                      <a
+                        href={secondaryHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition ${theme.secondaryBtnClass}`}
+                      >
+                        {secondaryLabel}
+                      </a>
+                    ) : (
+                      <Link
+                        href={secondaryHref}
+                        className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition ${theme.secondaryBtnClass}`}
+                      >
+                        {secondaryLabel}
+                      </Link>
+                    )
                   )}
                 </div>
               )}
@@ -527,7 +550,7 @@ function BlockSection({
       const imagePosition = asString(d.image_position, "left");
       const bullets = asStringArray(d.bullets);
       const ctaLabel = asString(d.cta_label);
-      const ctaHref = asString(d.cta_href);
+      const ctaHref = sanitizeSafeUrl(asString(d.cta_href));
       const html = renderSafeRichText(text);
 
       return (
@@ -598,13 +621,25 @@ function BlockSection({
               )}
               {ctaLabel && ctaHref && (
                 <div className="mt-6">
-                  <Link
-                    href={ctaHref}
-                    className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-[#191919] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#333333]"
-                  >
-                    {ctaLabel}
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
+                  {ctaHref.startsWith("http") ? (
+                    <a
+                      href={ctaHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-[#191919] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#333333]"
+                    >
+                      {ctaLabel}
+                      <ArrowRight className="h-4 w-4" />
+                    </a>
+                  ) : (
+                    <Link
+                      href={ctaHref}
+                      className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-[#191919] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#333333]"
+                    >
+                      {ctaLabel}
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  )}
                 </div>
               )}
             </div>
@@ -658,7 +693,8 @@ function BlockSection({
           )}
           <div className={`grid grid-cols-1 gap-5 ${gridClass}`}>
             {cards.map((card, i) => {
-              const isExternal = card.link_href?.startsWith("http");
+              const safeCardLink = sanitizeSafeUrl(card.link_href);
+              const isExternal = safeCardLink.startsWith("http");
               return (
                 <div
                   key={card.id || i}
@@ -708,11 +744,11 @@ function BlockSection({
                       </p>
                     )}
                   </div>
-                  {card.link_label && card.link_href && (
+                  {card.link_label && safeCardLink && (
                     <div className="mt-4 pt-3">
                       {isExternal ? (
                         <a
-                          href={card.link_href}
+                          href={safeCardLink}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-800 hover:text-red-950"
@@ -722,7 +758,7 @@ function BlockSection({
                         </a>
                       ) : (
                         <Link
-                          href={card.link_href}
+                          href={safeCardLink}
                           className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#191919] hover:underline"
                         >
                           {card.link_label}
@@ -800,7 +836,7 @@ function BlockSection({
       const limit = asNumber(d.limit, 6);
       const category = asString(d.category, "all");
       const moreLabel = asString(d.more_label, "Tümünü Gör");
-      const moreHref = asString(d.more_href, "/duyurular");
+      const moreHref = sanitizeSafeUrl(asString(d.more_href, "/duyurular")) || "/duyurular";
 
       const posts: Post[] = (storeData.posts || [])
         .filter((p) =>
@@ -896,7 +932,7 @@ function BlockSection({
       const limit = asNumber(d.limit, 6);
       const album = asString(d.album, "Tümü");
       const moreLabel = asString(d.more_label, "Galeriyi Aç");
-      const moreHref = asString(d.more_href, "/galeri");
+      const moreHref = sanitizeSafeUrl(asString(d.more_href, "/galeri")) || "/galeri";
 
       const photos = (storeData.gallery_photos || [])
         .filter((g) => (album === "Tümü" || !album ? true : g.album === album))
@@ -936,9 +972,9 @@ function BlockSection({
       const title = asString(d.title);
       const description = asString(d.description);
       const primaryLabel = asString(d.primary_label);
-      const primaryHref = asString(d.primary_href);
+      const primaryHref = sanitizeSafeUrl(asString(d.primary_href));
       const secondaryLabel = asString(d.secondary_label);
-      const secondaryHref = asString(d.secondary_href);
+      const secondaryHref = sanitizeSafeUrl(asString(d.secondary_href));
 
       const wrapperClass =
         theme === "red"
@@ -972,29 +1008,60 @@ function BlockSection({
             </div>
             <div className="flex shrink-0 flex-wrap gap-3">
               {primaryLabel && primaryHref && (
-                <Link
-                  href={primaryHref}
-                  className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition ${
-                    theme === "light"
-                      ? "bg-[#191919] text-white hover:bg-[#333333]"
-                      : "bg-white text-[#191919] hover:bg-stone-100"
-                  }`}
-                >
-                  {primaryLabel}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
+                primaryHref.startsWith("http") ? (
+                  <a
+                    href={primaryHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition ${
+                      theme === "light"
+                        ? "bg-[#191919] text-white hover:bg-[#333333]"
+                        : "bg-white text-[#191919] hover:bg-stone-100"
+                    }`}
+                  >
+                    {primaryLabel}
+                    <ArrowRight className="h-4 w-4" />
+                  </a>
+                ) : (
+                  <Link
+                    href={primaryHref}
+                    className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition ${
+                      theme === "light"
+                        ? "bg-[#191919] text-white hover:bg-[#333333]"
+                        : "bg-white text-[#191919] hover:bg-stone-100"
+                    }`}
+                  >
+                    {primaryLabel}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                )
               )}
               {secondaryLabel && secondaryHref && (
-                <Link
-                  href={secondaryHref}
-                  className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-medium transition ${
-                    theme === "light"
-                      ? "border-[#e6e5e0] bg-white text-[#191919] hover:bg-[#f4f3ef]"
-                      : "border-white/25 bg-white/10 text-white hover:bg-white/20"
-                  }`}
-                >
-                  {secondaryLabel}
-                </Link>
+                secondaryHref.startsWith("http") ? (
+                  <a
+                    href={secondaryHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-medium transition ${
+                      theme === "light"
+                        ? "border-[#e6e5e0] bg-white text-[#191919] hover:bg-[#f4f3ef]"
+                        : "border-white/25 bg-white/10 text-white hover:bg-white/20"
+                    }`}
+                  >
+                    {secondaryLabel}
+                  </a>
+                ) : (
+                  <Link
+                    href={secondaryHref}
+                    className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-medium transition ${
+                      theme === "light"
+                        ? "border-[#e6e5e0] bg-white text-[#191919] hover:bg-[#f4f3ef]"
+                        : "border-white/25 bg-white/10 text-white hover:bg-white/20"
+                    }`}
+                  >
+                    {secondaryLabel}
+                  </Link>
+                )
               )}
             </div>
           </div>
@@ -1169,24 +1236,48 @@ function BlockSection({
             <p className="mt-1.5 text-sm text-[#666560]">{description}</p>
           )}
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {validMembers.map((member) => (
-              <div
-                key={member.id}
-                className="rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] p-5"
-              >
-                <span className="inline-block rounded bg-white px-2.5 py-0.5 text-xs font-semibold text-red-800 ring-1 ring-[#e6e5e0]">
-                  {member.role}
-                </span>
-                <h3 className="mt-2.5 text-base font-bold text-[#191919]">
-                  {member.full_name}
-                </h3>
-                {member.bio && (
-                  <p className="mt-1 text-xs leading-relaxed text-[#666560]">
-                    {member.bio}
-                  </p>
-                )}
-              </div>
-            ))}
+            {validMembers.map((member) => {
+              const initials =
+                (member.full_name || "")
+                  .split(" ")
+                  .filter(Boolean)
+                  .map((n) => n[0])
+                  .slice(0, 2)
+                  .join("")
+                  .toUpperCase() || "Ü";
+
+              return (
+                <div
+                  key={member.id}
+                  className="flex items-start gap-4 rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] p-5"
+                >
+                  {member.photo_url ? (
+                    <img
+                      src={member.photo_url}
+                      alt={member.full_name}
+                      className="h-14 w-14 shrink-0 rounded-full object-cover border border-[#e6e5e0] shadow-xs"
+                    />
+                  ) : (
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#e6e5e0] bg-[#f4f3ef] text-sm font-bold text-stone-700 shadow-xs">
+                      {initials}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <span className="inline-block rounded bg-white px-2.5 py-0.5 text-xs font-semibold text-red-800 ring-1 ring-[#e6e5e0]">
+                      {member.role}
+                    </span>
+                    <h3 className="mt-1.5 text-base font-bold text-[#191919] truncate">
+                      {member.full_name}
+                    </h3>
+                    {member.bio && (
+                      <p className="mt-1 text-xs leading-relaxed text-[#666560]">
+                        {member.bio}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
       );

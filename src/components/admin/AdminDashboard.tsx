@@ -7,15 +7,19 @@ import {
   AlertTriangle,
   ArrowDown,
   ArrowUp,
+  Camera,
   CheckCircle2,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
+  Clock,
   Edit3,
   ExternalLink,
   Eye,
   EyeOff,
   FileText,
   HeartHandshake,
+  Image as ImageIcon,
   Images,
   LayoutTemplate,
   LogOut,
@@ -27,8 +31,10 @@ import {
   RefreshCw,
   Search,
   Settings,
+  Sparkles,
   Trash2,
   Upload,
+  User,
   Users,
 } from "lucide-react";
 import { formatDateTR, getCategoryLabel } from "@/lib/format";
@@ -46,8 +52,12 @@ import {
   SiteSettings,
   StoreData,
 } from "@/lib/types";
+import { BatchGalleryUploader } from "./BatchGalleryUploader";
+import { GalleryImagePickerModal } from "./GalleryImagePickerModal";
+import { MarkdownPostEditor } from "./MarkdownPostEditor";
 import { MenuFooterTab } from "./MenuFooterTab";
 import { PageDesignerTab } from "./PageDesignerTab";
+import { SerpSimulatorCard } from "./SerpSimulatorCard";
 import { UsersAuditTab } from "./UsersAuditTab";
 
 type TabKey =
@@ -65,6 +75,46 @@ const DEFAULT_GALLERY_ALBUMS = [
   "Köyümüzden Kareler",
   "Dernek Faaliyetleri",
   "Eğitim & Kültür",
+];
+
+const BOARD_ROLE_PRESETS = [
+  "Başkan",
+  "Başkan Yardımcısı",
+  "Sayman",
+  "Genel Sekreter",
+  "Asil Üye",
+  "Yedek Üye",
+  "Denetim Kurulu Başkanı",
+  "Denetim Kurulu Üyesi",
+];
+
+const PRAYER_TIME_PRESETS = [
+  "Öğle Namazına Müteakip",
+  "İkindi Namazına Müteakip",
+  "Cuma Namazına Müteakip",
+  "Sabah Namazına Müteakip",
+  "Akşam Namazına Müteakip",
+  "Yatsı Namazına Müteakip",
+  "Saat Belirtilmeksizin",
+];
+
+const CONDOLENCE_MESSAGE_TEMPLATES = [
+  {
+    title: "Genel Taziye",
+    text: "Köyümüz halkından merhuma/merhumeye Allah'tan rahmet, kederli ailesine ve tüm hemşehrilerimize başsağlığı dileriz. Mekânı cennet olsun.",
+  },
+  {
+    title: "İnna Lillahi (Ayetli)",
+    text: "İnna lillahi ve inna ileyhi raciun. Köyümüz sakinlerinden merhuma Cenab-ı Hak'tan rahmet, kederli ailesi ve sevenlerine sabr-ı cemil dileriz.",
+  },
+  {
+    title: "Gurbet Taziyesi",
+    text: "Gurbette yaşayan köylümüzün vefatını derin bir üzüntüyle öğrenmiş bulunmaktayız. Merhuma Allah'tan rahmet, ailesine ve köylülerimize başsağlığı dileriz.",
+  },
+  {
+    title: "Köy Büyüğü",
+    text: "Acı kaybımız. Köyümüzün değerli büyüğüne Allah'tan rahmet, tüm Büyük Akören halkına ve kederli akrabalarına başsağlığı dileriz.",
+  },
 ];
 
 function InlineCategoryCreator({
@@ -271,6 +321,7 @@ export function AdminDashboard({
   const [postSearch, setPostSearch] = useState("");
   const [postFilter, setPostFilter] = useState<string>("tumu");
   const [editingId, setEditingId] = useState<string | undefined>(undefined);
+  const [isGalleryPickerOpen, setIsGalleryPickerOpen] = useState(false);
   const [postCategory, setPostCategory] = useState<PostCategory>("duyuru");
   const [addingPostCat, setAddingPostCat] = useState(false);
   const [newPostCatInput, setNewPostCatInput] = useState("");
@@ -452,6 +503,9 @@ export function AdminDashboard({
   const [deceasedName, setDeceasedName] = useState("");
   const [ageOrNote, setAgeOrNote] = useState("");
   const [funeralDate, setFuneralDate] = useState("");
+  const [condDate, setCondDate] = useState("");
+  const [condPrayerTime, setCondPrayerTime] = useState("Öğle Namazına Müteakip");
+  const [condPhotoUrl, setCondPhotoUrl] = useState("");
   const [burialPlace, setBurialPlace] = useState("Büyük Akören Köyü Mezarlığı");
   const [condMessage, setCondMessage] = useState(
     "Merhuma/Merhumeye Allah'tan rahmet, kederli ailesine ve tüm hemşehrilerimize başsağlığı dileriz."
@@ -459,6 +513,23 @@ export function AdminDashboard({
   const [relatives, setRelatives] = useState("");
   const [condPublished, setCondPublished] = useState(true);
   const [familyConsentConfirmed, setFamilyConsentConfirmed] = useState(true);
+
+  function applyStructuredFuneralDate(dateStr: string, prayerStr: string) {
+    if (!dateStr) return;
+    try {
+      const [year, month, day] = dateStr.split("-").map(Number);
+      const d = new Date(year, month - 1, day);
+      const months = [
+        "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+        "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
+      ];
+      const days = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
+      const formatted = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} ${days[d.getDay()]}, ${prayerStr}`;
+      setFuneralDate(formatted);
+    } catch {
+      setFuneralDate(`${dateStr}, ${prayerStr}`);
+    }
+  }
 
   function loadCondForEdit(c: Condolence) {
     setEditingCondId(c.id);
@@ -468,6 +539,7 @@ export function AdminDashboard({
     setBurialPlace(c.burial_place);
     setCondMessage(c.message);
     setRelatives(c.relatives || "");
+    setCondPhotoUrl(c.image_url || "");
     setCondPublished(c.is_published);
     setFamilyConsentConfirmed(c.family_consent_confirmed !== false);
     setMobileFormOpen((prev) => ({ ...prev, condolences: true }));
@@ -479,6 +551,9 @@ export function AdminDashboard({
     setDeceasedName("");
     setAgeOrNote("");
     setFuneralDate("");
+    setCondDate("");
+    setCondPrayerTime("Öğle Namazına Müteakip");
+    setCondPhotoUrl("");
     setBurialPlace("Büyük Akören Köyü Mezarlığı");
     setCondMessage(
       "Merhuma/Merhumeye Allah'tan rahmet, kederli ailesine ve tüm hemşehrilerimize başsağlığı dileriz."
@@ -505,6 +580,7 @@ export function AdminDashboard({
         burial_place: burialPlace,
         message: condMessage,
         relatives,
+        image_url: condPhotoUrl || null,
         is_published: condPublished,
         family_consent_confirmed: familyConsentConfirmed,
         expected_version: storeVersion,
@@ -734,8 +810,9 @@ export function AdminDashboard({
       {
         id: `bm-${Date.now()}`,
         full_name: "",
-        role: "Yönetim Kurulu Üyesi",
+        role: "Asil Üye",
         bio: "",
+        photo_url: "",
         display_order: prev.length + 1,
       },
     ]);
@@ -923,110 +1000,128 @@ export function AdminDashboard({
       )}
 
       {/* Navigation Tabs */}
-      <div className="no-scrollbar mt-6 flex flex-nowrap gap-2 overflow-x-auto border-b border-[#e6e5e0] pb-4 sm:flex-wrap sm:overflow-visible">
-        <button
-          type="button"
-          onClick={() => setTab("posts")}
-          className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-            tab === "posts"
-              ? "bg-[#191919] text-white"
-              : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:text-[#191919]"
-          }`}
-        >
-          <FileText className="h-3.5 w-3.5" />
-          Duyuru, Haber & Faaliyet ({data.posts.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("condolences")}
-          className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-            tab === "condolences"
-              ? "bg-[#191919] text-white"
-              : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:text-[#191919]"
-          }`}
-        >
-          <HeartHandshake className="h-3.5 w-3.5" />
-          Taziye İlanları ({data.condolences.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("gallery")}
-          className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-            tab === "gallery"
-              ? "bg-[#191919] text-white"
-              : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:text-[#191919]"
-          }`}
-        >
-          <Images className="h-3.5 w-3.5" />
-          Galeri ({data.gallery_photos.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("pages")}
-          className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-            tab === "pages"
-              ? "bg-[#191919] text-white"
-              : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:text-[#191919]"
-          }`}
-        >
-          <LayoutTemplate className="h-3.5 w-3.5" />
-          Sayfa Tasarımcısı ({(data.pages || []).length})
-        </button>
-        {isManager && (
-          <button
-            type="button"
-            onClick={() => setTab("menu")}
-            className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-              tab === "menu"
-                ? "bg-[#191919] text-white"
-                : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:text-[#191919]"
-            }`}
-          >
-            <Navigation className="h-3.5 w-3.5" />
-            Menü & Alt Bilgi
-          </button>
-        )}
-        {isManager && (
-          <button
-            type="button"
-            onClick={() => setTab("settings")}
-            className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-              tab === "settings"
-                ? "bg-[#191919] text-white"
-                : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:text-[#191919]"
-            }`}
-          >
-            <Settings className="h-3.5 w-3.5" />
-            Ayarlar & Yönetim
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={() => {
-            setTab("messages");
-            void refreshMessages();
-          }}
-          className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-            tab === "messages"
-              ? "bg-[#191919] text-white"
-              : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:text-[#191919]"
-          }`}
-        >
-          <Mail className="h-3.5 w-3.5" />
-          Gelen Mesajlar {unreadCount > 0 ? `(${unreadCount} yeni)` : ""}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("users")}
-          className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-            tab === "users"
-              ? "bg-[#191919] text-white"
-              : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:text-[#191919]"
-          }`}
-        >
-          <Users className="h-3.5 w-3.5" />
-          {isManager ? "Kullanıcılar & Kayıtlar" : "Hesabım"}
-        </button>
+      <div className="mt-6 border-b border-[#e6e5e0] pb-3">
+        {/* Mobile touch indicator and active tab hint */}
+        <div className="mb-2 flex items-center justify-between px-1 text-[11px] text-[#666560] sm:hidden">
+          <span className="flex items-center gap-1.5 font-medium">
+            <span className="inline-block h-2 w-2 rounded-full bg-[#191919]" />
+            Yönetim Sekmeleri ({isManager ? 8 : 6})
+          </span>
+          <span className="flex items-center gap-0.5 text-[11px] font-medium text-[#8c8b85]">
+            Yana kaydırın <ChevronRight className="inline h-3 w-3" />
+          </span>
+        </div>
+
+        {/* Scrollable Tabs Container */}
+        <div className="relative">
+          <div className="no-scrollbar flex flex-nowrap gap-2 overflow-x-auto scroll-smooth overscroll-x-contain py-1 sm:flex-wrap sm:overflow-visible">
+            <button
+              type="button"
+              onClick={() => setTab("posts")}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-medium transition-all active:scale-95 ${
+                tab === "posts"
+                  ? "bg-[#191919] text-white shadow-sm ring-1 ring-[#191919]"
+                  : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:border-[#d0cfc9] hover:text-[#191919]"
+              }`}
+            >
+              <FileText className="h-3.5 w-3.5" />
+              Duyuru, Haber & Faaliyet ({data.posts.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("condolences")}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-medium transition-all active:scale-95 ${
+                tab === "condolences"
+                  ? "bg-[#191919] text-white shadow-sm ring-1 ring-[#191919]"
+                  : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:border-[#d0cfc9] hover:text-[#191919]"
+              }`}
+            >
+              <HeartHandshake className="h-3.5 w-3.5" />
+              Taziye İlanları ({data.condolences.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("gallery")}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-medium transition-all active:scale-95 ${
+                tab === "gallery"
+                  ? "bg-[#191919] text-white shadow-sm ring-1 ring-[#191919]"
+                  : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:border-[#d0cfc9] hover:text-[#191919]"
+              }`}
+            >
+              <Images className="h-3.5 w-3.5" />
+              Galeri ({data.gallery_photos.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("pages")}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-medium transition-all active:scale-95 ${
+                tab === "pages"
+                  ? "bg-[#191919] text-white shadow-sm ring-1 ring-[#191919]"
+                  : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:border-[#d0cfc9] hover:text-[#191919]"
+              }`}
+            >
+              <LayoutTemplate className="h-3.5 w-3.5" />
+              Sayfa Tasarımcısı ({(data.pages || []).length})
+            </button>
+            {isManager && (
+              <button
+                type="button"
+                onClick={() => setTab("menu")}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-medium transition-all active:scale-95 ${
+                  tab === "menu"
+                    ? "bg-[#191919] text-white shadow-sm ring-1 ring-[#191919]"
+                    : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:border-[#d0cfc9] hover:text-[#191919]"
+                }`}
+              >
+                <Navigation className="h-3.5 w-3.5" />
+                Menü & Alt Bilgi
+              </button>
+            )}
+            {isManager && (
+              <button
+                type="button"
+                onClick={() => setTab("settings")}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-medium transition-all active:scale-95 ${
+                  tab === "settings"
+                    ? "bg-[#191919] text-white shadow-sm ring-1 ring-[#191919]"
+                    : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:border-[#d0cfc9] hover:text-[#191919]"
+                }`}
+              >
+                <Settings className="h-3.5 w-3.5" />
+                Ayarlar & Yönetim
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setTab("messages");
+                void refreshMessages();
+              }}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-medium transition-all active:scale-95 ${
+                tab === "messages"
+                  ? "bg-[#191919] text-white shadow-sm ring-1 ring-[#191919]"
+                  : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:border-[#d0cfc9] hover:text-[#191919]"
+              }`}
+            >
+              <Mail className="h-3.5 w-3.5" />
+              Gelen Mesajlar {unreadCount > 0 ? `(${unreadCount} yeni)` : ""}
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("users")}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-medium transition-all active:scale-95 ${
+                tab === "users"
+                  ? "bg-[#191919] text-white shadow-sm ring-1 ring-[#191919]"
+                  : "border border-[#e6e5e0] bg-[#fbfbfa] text-[#666560] hover:border-[#d0cfc9] hover:text-[#191919]"
+              }`}
+            >
+              <Users className="h-3.5 w-3.5" />
+              {isManager ? "Kullanıcılar & Kayıtlar" : "Hesabım"}
+            </button>
+          </div>
+          {/* Subtle right-edge fade indicator on mobile to cue scrollable overflow */}
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white via-white/80 to-transparent sm:hidden" />
+        </div>
       </div>
 
       {/* TAB 1: POSTS */}
@@ -1169,37 +1264,15 @@ export function AdminDashboard({
             </div>
 
             <div>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <label className="block text-xs font-medium text-[#191919]">
-                  Detaylı İçerik *
-                </label>
-                <div className="flex flex-wrap gap-1">
-                  {[
-                    ["H2", "## Alt Başlık"],
-                    ["H3", "### Bölüm"],
-                    ["Kalın", "**kalın metin**"],
-                    ["İtalik", "*vurgu*"],
-                    ["Liste", "- Madde 1\n- Madde 2"],
-                    ["Link", "[Bağlantı Adı](https://...)"],
-                  ].map(([lbl, snip]) => (
-                    <button
-                      key={lbl}
-                      type="button"
-                      onClick={() => appendPostMarkdown(snip)}
-                      className="rounded border border-[#e6e5e0] bg-white px-2 py-0.5 text-[11px] font-medium text-[#191919] hover:bg-[#f4f3ef]"
-                    >
-                      {lbl}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <textarea
-                required
-                rows={6}
+              <label className="mb-1 block text-xs font-medium text-[#191919]">
+                Detaylı İçerik *
+              </label>
+              <MarkdownPostEditor
                 value={postContent}
-                onChange={(e) => setPostContent(e.target.value)}
-                placeholder="Haberin veya açıklamanın tam metni..."
-                className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-sm"
+                onChange={setPostContent}
+                rows={8}
+                required
+                placeholder="Haberin veya açıklamanın tam metnini giriniz..."
               />
             </div>
 
@@ -1232,33 +1305,47 @@ export function AdminDashboard({
                   />
                 </label>
               </div>
-              {data.gallery_photos.length > 0 && (
-                <select
-                  value=""
-                  onChange={(e) => {
-                    const url = e.target.value;
-                    if (!url) return;
-                    setPostImage(url);
-                    const match = data.gallery_photos.find((g) => g.image_url === url);
-                    if (match) {
-                      if (!postImageAlt && (match.image_alt || match.title)) {
-                        setPostImageAlt(match.image_alt || match.title);
-                      }
-                      if (match.attribution_author) setPostImgAuthor(match.attribution_author);
-                      if (match.attribution_license) setPostImgLicense(match.attribution_license);
-                      if (match.source_url) setPostImgSource(match.source_url);
-                    }
-                  }}
-                  className="mt-2 w-full rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs text-[#666560]"
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsGalleryPickerOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#e6e5e0] bg-[#fbfbfa] px-3 py-2 text-xs font-semibold text-[#191919] hover:bg-[#f4f3ef] hover:border-[#191919] transition"
                 >
-                  <option value="">Mevcut galeriden görsel seç...</option>
-                  {data.gallery_photos.map((g) => (
-                    <option key={g.id} value={g.image_url}>
-                      {g.title} ({g.album})
-                    </option>
-                  ))}
-                </select>
-              )}
+                  <Images className="h-4 w-4 text-[#191919]" />
+                  Görsel Galerisinden Seç ({data.gallery_photos.length} Fotoğraf)
+                </button>
+                {postImage && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPostImage("");
+                      setPostImageAlt("");
+                      setPostImgAuthor("");
+                      setPostImgLicense("");
+                      setPostImgSource("");
+                    }}
+                    className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-xs font-medium text-red-700 hover:bg-red-100 transition"
+                  >
+                    Görseli Kaldır
+                  </button>
+                )}
+              </div>
+              <GalleryImagePickerModal
+                isOpen={isGalleryPickerOpen}
+                onClose={() => setIsGalleryPickerOpen(false)}
+                onSelect={(photo) => {
+                  setPostImage(photo.image_url);
+                  if (!postImageAlt && (photo.image_alt || photo.title)) {
+                    setPostImageAlt(photo.image_alt || photo.title);
+                  }
+                  if (photo.attribution_author) setPostImgAuthor(photo.attribution_author);
+                  if (photo.attribution_license) setPostImgLicense(photo.attribution_license);
+                  if (photo.source_url) setPostImgSource(photo.source_url);
+                  notify(`"${photo.title}" görseli seçildi.`);
+                }}
+                photos={data.gallery_photos}
+                selectedImageUrl={postImage}
+              />
               {postImage && (
                 <div className="mt-2 space-y-2">
                   <div className="overflow-hidden rounded-lg border border-[#e6e5e0] bg-white p-1">
@@ -1365,25 +1452,15 @@ export function AdminDashboard({
               </div>
             </div>
 
-            <div className="space-y-2 rounded-lg border border-[#e6e5e0] bg-white p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#666560]">
-                SEO Ayarları (Opsiyonel)
-              </p>
-              <input
-                type="text"
-                placeholder="SEO Başlığı (Boşsa yazı başlığı kullanılır)"
-                value={postSeoTitle}
-                onChange={(e) => setPostSeoTitle(e.target.value)}
-                className="w-full rounded border border-[#e6e5e0] px-2.5 py-1.5 text-xs"
-              />
-              <textarea
-                rows={2}
-                placeholder="SEO Açıklaması (Meta description, 140-155 karakter)"
-                value={postSeoDesc}
-                onChange={(e) => setPostSeoDesc(e.target.value)}
-                className="w-full rounded border border-[#e6e5e0] px-2.5 py-1.5 text-xs"
-              />
-            </div>
+            <SerpSimulatorCard
+              title={postTitle}
+              description={postSummary}
+              slug={editingId ? data.posts.find((p) => p.id === editingId)?.slug : undefined}
+              seoTitle={postSeoTitle}
+              seoDesc={postSeoDesc}
+              onSeoTitleChange={setPostSeoTitle}
+              onSeoDescChange={setPostSeoDesc}
+            />
 
             {(!postImage || !postImageAlt || !postSeoDesc) && (
               <div className="rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2 text-[11px] text-amber-900">
@@ -1660,17 +1737,147 @@ export function AdminDashboard({
             </div>
             <div>
               <label className="block text-xs font-medium text-[#191919]">
-                Cenaze Tarihi ve Vakti *
+                Merhum / Merhume Fotoğrafı (Opsiyonel)
               </label>
-              <input
-                type="text"
-                required
-                value={funeralDate}
-                onChange={(e) => setFuneralDate(e.target.value)}
-                placeholder="Örn. 14 Kasım, Öğle namazına müteakip"
-                className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-sm"
-              />
+              <div className="mt-1 flex gap-2">
+                <input
+                  type="text"
+                  value={condPhotoUrl}
+                  onChange={(e) => setCondPhotoUrl(e.target.value)}
+                  placeholder="Görsel bağlantısı veya yükle..."
+                  className="flex-1 rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
+                />
+                <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs font-medium text-[#191919] hover:bg-[#f4f3ef]">
+                  <Upload className="h-3.5 w-3.5" />
+                  Yükle
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const f = e.target.files?.[0];
+                      if (f) {
+                        const url = await uploadFile(f);
+                        if (url) setCondPhotoUrl(url);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+              {condPhotoUrl && (
+                <div className="mt-2 flex items-center justify-between rounded-lg border border-[#e6e5e0] bg-white p-2">
+                  <div className="flex items-center gap-2.5">
+                    <img
+                      src={condPhotoUrl}
+                      alt={deceasedName || "Merhum Fotoğrafı"}
+                      className="h-12 w-12 rounded-lg object-cover border border-[#e6e5e0]"
+                    />
+                    <div>
+                      <p className="text-xs font-semibold text-[#191919]">
+                        {deceasedName || "Merhum / Merhume Fotoğrafı"}
+                      </p>
+                      <p className="text-[11px] text-[#666560]">Fotoğraf ilana eklendi</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCondPhotoUrl("")}
+                    className="rounded p-1 text-xs text-red-600 hover:bg-red-50"
+                  >
+                    Kaldır
+                  </button>
+                </div>
+              )}
             </div>
+
+            {/* Structured Funeral Date & Prayer Time Selector */}
+            <div className="space-y-2.5 rounded-xl border border-[#e6e5e0] bg-white p-3.5">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-1.5 text-xs font-semibold text-[#191919]">
+                  <Clock className="h-3.5 w-3.5 text-[#191919]" />
+                  Cenaze Tarihi ve Vakti (Yapılandırılmış) *
+                </label>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const today = new Date().toISOString().split("T")[0];
+                      setCondDate(today);
+                      applyStructuredFuneralDate(today, condPrayerTime);
+                    }}
+                    className="rounded border border-[#e6e5e0] bg-[#fbfbfa] px-2 py-0.5 text-[10px] font-medium text-[#191919] hover:bg-[#f4f3ef]"
+                  >
+                    Bugün
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const tomorrow = new Date(Date.now() + 86400000)
+                        .toISOString()
+                        .split("T")[0];
+                      setCondDate(tomorrow);
+                      applyStructuredFuneralDate(tomorrow, condPrayerTime);
+                    }}
+                    className="rounded border border-[#e6e5e0] bg-[#fbfbfa] px-2 py-0.5 text-[10px] font-medium text-[#191919] hover:bg-[#f4f3ef]"
+                  >
+                    Yarın
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div>
+                  <span className="block text-[11px] font-medium text-[#666560]">
+                    Tarih Seçici
+                  </span>
+                  <input
+                    type="date"
+                    value={condDate}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setCondDate(val);
+                      applyStructuredFuneralDate(val, condPrayerTime);
+                    }}
+                    className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs text-[#191919]"
+                  />
+                </div>
+                <div>
+                  <span className="block text-[11px] font-medium text-[#666560]">
+                    Namaz Vakti Seçici
+                  </span>
+                  <select
+                    value={condPrayerTime}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setCondPrayerTime(val);
+                      applyStructuredFuneralDate(condDate, val);
+                    }}
+                    className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs text-[#191919]"
+                  >
+                    {PRAYER_TIME_PRESETS.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <span className="block text-[11px] font-medium text-[#666560]">
+                  İlanda Görünecek Metin (İsteğe bağlı serbest düzenleme)
+                </span>
+                <input
+                  type="text"
+                  required
+                  value={funeralDate}
+                  onChange={(e) => setFuneralDate(e.target.value)}
+                  placeholder="Örn. 14 Kasım, Öğle namazına müteakip"
+                  className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-1.5 text-xs"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-medium text-[#191919]">
                 Defin Yeri
@@ -1682,15 +1889,35 @@ export function AdminDashboard({
                 className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-sm"
               />
             </div>
+
+            {/* Condolence Message & Templates */}
             <div>
-              <label className="block text-xs font-medium text-[#191919]">
-                Taziye Mesajı
-              </label>
+              <div className="flex flex-wrap items-center justify-between gap-1">
+                <label className="block text-xs font-medium text-[#191919]">
+                  Taziye Mesajı
+                </label>
+                <span className="text-[11px] text-[#666560]">
+                  Hazır Şablonlar:
+                </span>
+              </div>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {CONDOLENCE_MESSAGE_TEMPLATES.map((tmpl) => (
+                  <button
+                    key={tmpl.title}
+                    type="button"
+                    onClick={() => setCondMessage(tmpl.text)}
+                    className="rounded-md border border-[#e6e5e0] bg-white px-2 py-0.5 text-[11px] font-medium text-[#191919] hover:bg-[#f4f3ef] transition"
+                    title={tmpl.text}
+                  >
+                    {tmpl.title}
+                  </button>
+                ))}
+              </div>
               <textarea
                 rows={3}
                 value={condMessage}
                 onChange={(e) => setCondMessage(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-sm"
+                className="mt-2 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-sm"
               />
             </div>
             <div>
@@ -1747,20 +1974,29 @@ export function AdminDashboard({
                     : "border-dashed border-[#cfcec8] bg-[#fbfbfa]"
                 }`}
               >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-[#191919]">
-                      {c.deceased_name}
+                <div className="flex items-start gap-3">
+                  {c.image_url && (
+                    <img
+                      src={c.image_url}
+                      alt={c.deceased_name}
+                      className="h-11 w-11 shrink-0 rounded-lg object-cover border border-[#e6e5e0]"
+                    />
+                  )}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-[#191919]">
+                        {c.deceased_name}
+                      </p>
+                      {!c.is_published && (
+                        <span className="rounded bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">
+                          Gizli
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-[#666560]">
+                      {c.funeral_date} • {c.burial_place}
                     </p>
-                    {!c.is_published && (
-                      <span className="rounded bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">
-                        Gizli
-                      </span>
-                    )}
                   </div>
-                  <p className="mt-1 text-xs text-[#666560]">
-                    {c.funeral_date} • {c.burial_place}
-                  </p>
                 </div>
                 <div className="flex shrink-0 flex-wrap gap-1.5 border-t border-[#e6e5e0] pt-2.5 sm:border-0 sm:pt-0">
                   <button
@@ -1806,7 +2042,18 @@ export function AdminDashboard({
       {/* TAB 3: GALLERY */}
       {tab === "gallery" && (
         <div className="mt-6 grid gap-6 sm:mt-8 lg:grid-cols-12 lg:gap-8">
-          <div className="lg:col-span-4">
+          <div className="space-y-4 lg:col-span-4">
+            {/* Multi-file Batch Upload Component */}
+            <BatchGalleryUploader
+              album={galAlbum}
+              year={galYear}
+              author={galAuthor}
+              license={galLicense}
+              expectedVersion={storeVersion}
+              onUploadComplete={refreshAll}
+              notify={notify}
+            />
+
             <button
               type="button"
               onClick={() =>
@@ -1821,7 +2068,7 @@ export function AdminDashboard({
                 <Plus className="h-4 w-4" />
                 {editingGalId
                   ? "Fotoğraf Düzenleme Formu"
-                  : "Yeni Fotoğraf Formunu Aç / Kapat"}
+                  : "Tekil Fotoğraf Ekle / Düzenle"}
               </span>
               {mobileFormOpen.gallery ? (
                 <ChevronUp className="h-4 w-4" />
@@ -1838,7 +2085,7 @@ export function AdminDashboard({
             >
             <div className="flex items-center justify-between">
               <h2 className="text-base font-semibold text-[#191919]">
-                {editingGalId ? "Fotoğrafı Düzenle" : "Galeriye Fotoğraf Ekle"}
+                {editingGalId ? "Fotoğrafı Düzenle" : "Tekil Fotoğraf Ekle / Düzenle"}
               </h2>
               {editingGalId && (
                 <button
@@ -2417,74 +2664,209 @@ export function AdminDashboard({
                 Üye Ekle
               </button>
             </div>
-            <div className="mt-4 space-y-3">
-              {boardForm.map((m, idx) => (
-                <div
-                  key={m.id}
-                  className="grid items-center gap-2 rounded-lg border border-[#e6e5e0] bg-[#fbfbfa] p-3 sm:grid-cols-12"
-                >
-                  <div className="flex gap-1 sm:col-span-1">
-                    <button
-                      type="button"
-                      onClick={() => moveBoardMember(idx, -1)}
-                      className="rounded border border-[#e6e5e0] bg-white p-1.5 text-[#666560] hover:text-[#191919]"
-                      title="Yukarı Taşı"
-                    >
-                      <ArrowUp className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => moveBoardMember(idx, 1)}
-                      className="rounded border border-[#e6e5e0] bg-white p-1.5 text-[#666560] hover:text-[#191919]"
-                      title="Aşağı Taşı"
-                    >
-                      <ArrowDown className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Ad Soyad"
-                    value={m.full_name}
-                    onChange={(e) => {
-                      const next = [...boardForm];
-                      next[idx] = { ...m, full_name: e.target.value };
-                      setBoardForm(next);
-                    }}
-                    className="rounded-md border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-sm sm:col-span-3"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Görevi"
-                    value={m.role}
-                    onChange={(e) => {
-                      const next = [...boardForm];
-                      next[idx] = { ...m, role: e.target.value };
-                      setBoardForm(next);
-                    }}
-                    className="rounded-md border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-sm sm:col-span-3"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Kısa Açıklama"
-                    value={m.bio || ""}
-                    onChange={(e) => {
-                      const next = [...boardForm];
-                      next[idx] = { ...m, bio: e.target.value };
-                      setBoardForm(next);
-                    }}
-                    className="rounded-md border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-sm sm:col-span-4"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setBoardForm(boardForm.filter((x) => x.id !== m.id))
-                    }
-                    className="flex items-center justify-center rounded-md border border-[#e6e5e0] bg-white p-1.5 text-red-600 hover:bg-red-50 sm:col-span-1"
+            <div className="mt-4 space-y-4">
+              {boardForm.map((m, idx) => {
+                const isCustomRole =
+                  m.role &&
+                  !BOARD_ROLE_PRESETS.includes(m.role) &&
+                  m.role !== "__custom__";
+
+                return (
+                  <div
+                    key={m.id}
+                    className="rounded-xl border border-[#e6e5e0] bg-[#fbfbfa] p-4 transition-all hover:border-[#cfcec8]"
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
+                    {/* Header Row: Position badge & Order / Delete Controls */}
+                    <div className="flex items-center justify-between border-b border-[#e6e5e0]/60 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#191919] font-mono text-xs font-bold text-white">
+                          #{idx + 1}
+                        </span>
+                        <span className="text-xs font-semibold text-[#191919]">
+                          {m.full_name || "İsimsiz Üye"}{" "}
+                          <span className="text-[11px] font-normal text-[#666560]">
+                            ({m.role || "Görev Belirtilmedi"})
+                          </span>
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => moveBoardMember(idx, -1)}
+                          className="rounded border border-[#e6e5e0] bg-white p-1 text-[#666560] hover:text-[#191919] disabled:opacity-30"
+                          title="Yukarı Taşı"
+                        >
+                          <ArrowUp className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === boardForm.length - 1}
+                          onClick={() => moveBoardMember(idx, 1)}
+                          className="rounded border border-[#e6e5e0] bg-white p-1 text-[#666560] hover:text-[#191919] disabled:opacity-30"
+                          title="Aşağı Taşı"
+                        >
+                          <ArrowDown className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setBoardForm(boardForm.filter((x) => x.id !== m.id))
+                          }
+                          className="rounded border border-[#e6e5e0] bg-white p-1 text-red-600 hover:bg-red-50"
+                          title="Üyeyi Sil"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Member Details: Avatar + Inputs Grid */}
+                    <div className="mt-3.5 grid gap-4 sm:grid-cols-12 sm:items-start">
+                      {/* Avatar Photo Section */}
+                      <div className="flex flex-col items-center gap-2 sm:col-span-3">
+                        <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-2 border-[#e6e5e0] bg-white shadow-xs">
+                          {m.photo_url ? (
+                            <img
+                              src={m.photo_url}
+                              alt={m.full_name || "Üye"}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <User className="h-10 w-10 text-[#a8a7a0]" />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <label className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-[#e6e5e0] bg-white px-2 py-1 text-[11px] font-medium text-[#191919] hover:bg-[#f4f3ef]">
+                            <Camera className="h-3 w-3" />
+                            Fotoğraf
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const f = e.target.files?.[0];
+                                if (f) {
+                                  const url = await uploadFile(f);
+                                  if (url) {
+                                    const next = [...boardForm];
+                                    next[idx] = { ...m, photo_url: url };
+                                    setBoardForm(next);
+                                  }
+                                }
+                              }}
+                            />
+                          </label>
+                          {m.photo_url && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = [...boardForm];
+                                next[idx] = { ...m, photo_url: "" };
+                                setBoardForm(next);
+                              }}
+                              className="rounded-md border border-red-200 bg-red-50 p-1 text-red-600 hover:bg-red-100"
+                              title="Fotoğrafı Kaldır"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Member Form Inputs */}
+                      <div className="space-y-3 sm:col-span-9">
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div>
+                            <label className="block text-[11px] font-medium text-[#666560]">
+                              Adı Soyadı *
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="Örn. Mustafa Tanju Çetiner"
+                              value={m.full_name}
+                              onChange={(e) => {
+                                const next = [...boardForm];
+                                next[idx] = { ...m, full_name: e.target.value };
+                                setBoardForm(next);
+                              }}
+                              className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-1.5 text-xs text-[#191919] focus:border-[#191919] focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-medium text-[#666560]">
+                              Görevi / Ünvanı *
+                            </label>
+                            <select
+                              value={
+                                BOARD_ROLE_PRESETS.includes(m.role)
+                                  ? m.role
+                                  : "__custom__"
+                              }
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                const next = [...boardForm];
+                                if (val === "__custom__") {
+                                  next[idx] = {
+                                    ...m,
+                                    role: isCustomRole ? m.role : "",
+                                  };
+                                } else {
+                                  next[idx] = { ...m, role: val };
+                                }
+                                setBoardForm(next);
+                              }}
+                              className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-1.5 text-xs text-[#191919] focus:border-[#191919] focus:outline-none"
+                            >
+                              {BOARD_ROLE_PRESETS.map((role) => (
+                                <option key={role} value={role}>
+                                  {role}
+                                </option>
+                              ))}
+                              <option value="__custom__">
+                                Diğer / Özel Görev...
+                              </option>
+                            </select>
+                            {(!BOARD_ROLE_PRESETS.includes(m.role) ||
+                              m.role === "") && (
+                              <input
+                                type="text"
+                                placeholder="Özel Görev Adı (örn. Köy Temsilcisi)"
+                                value={m.role}
+                                onChange={(e) => {
+                                  const next = [...boardForm];
+                                  next[idx] = { ...m, role: e.target.value };
+                                  setBoardForm(next);
+                                }}
+                                className="mt-1.5 w-full rounded-lg border border-stone-300 bg-white px-3 py-1 text-xs"
+                              />
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-medium text-[#666560]">
+                            Kısa Biyografi / Meslek / Sorumluluk Alanı
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Örn. Emekli Eğitimci, Dernek Kurucu Başkanı"
+                            value={m.bio || ""}
+                            onChange={(e) => {
+                              const next = [...boardForm];
+                              next[idx] = { ...m, bio: e.target.value };
+                              setBoardForm(next);
+                            }}
+                            className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-1.5 text-xs text-[#191919] focus:border-[#191919] focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

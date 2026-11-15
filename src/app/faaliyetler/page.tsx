@@ -7,9 +7,9 @@ import { getPublishedPosts } from "@/lib/store";
 export const revalidate = 60;
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Büyükakören Faaliyet Raporları | B.Akören",
+  title: "Faaliyet Raporları ve Projeler | Büyük Akören Köyü",
   description:
-    "Büyük Akören Köyü Derneği tarafından Yıldızeli Büyükakören'de tamamlanan ve devam eden köy projeleri ile faaliyet raporları.",
+    "900 çam fidanı dikimi, köy mezarlığı imece temizliği, Sivas tarih-kültür gezisi ve köyümüz yararına tamamlanan faaliyet raporları.",
   path: "/faaliyetler",
 });
 

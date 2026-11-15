@@ -17,13 +17,21 @@ const memoryLoginBuckets = new Map<string, Bucket>();
 const memoryContactBuckets = new Map<string, Bucket>();
 
 export function getClientIp(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) {
-    const first = forwarded.split(",")[0]?.trim();
-    if (first) return first;
-  }
+  const vercelIp = request.headers.get("x-vercel-ip")?.trim();
+  if (vercelIp) return vercelIp;
+
   const realIp = request.headers.get("x-real-ip")?.trim();
   if (realIp) return realIp;
+
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const parts = forwarded
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (parts.length > 0) return parts[parts.length - 1];
+  }
+
   return "127.0.0.1";
 }
 

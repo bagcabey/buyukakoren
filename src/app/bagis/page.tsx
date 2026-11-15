@@ -10,10 +10,11 @@ export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getPageBySlug("/bagis", false);
   return buildPageMetadata({
-    title: page?.seo_title || "Bağış ve Aidat | Büyük Akören Köyü Derneği",
+    title:
+      page?.seo_title || "Bağış ve Üyelik Aidatı | Büyük Akören Köyü Derneği",
     description:
       page?.seo_description ||
-      "Büyükakören (Büyük Akören) Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği resmî bağış ve üyelik aidatı bilgilendirme sayfası.",
+      "Büyük Akören Köyü Derneği şeffaf bağış ve aidat bilgilendirmesi; 5253 sayılı Dernekler Kanunu mevzuatı ve resmî banka hesabı.",
     path: "/bagis",
     ogImage: page?.og_image,
   });

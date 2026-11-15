@@ -10,9 +10,9 @@ import { getAllStoreData } from "@/lib/store";
 export const revalidate = 60;
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Büyükakören Taziye ve Vefat İlanları | B.Akören",
+  title: "Taziye ve Vefat İlanları | Büyükakören Köyü",
   description:
-    "Sivas Yıldızeli Büyükakören (Büyük Akören) köyü vefat duyuruları, cenaze namazı saatleri, defin yeri ve taziye ilanları.",
+    "Büyükakören Köyü sakinleri ve hemşehrilerimizin vefat duyuruları, cenaze vakitleri ve taziye mesajları.",
   path: "/taziye",
 });
 

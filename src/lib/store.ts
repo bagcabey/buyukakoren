@@ -361,6 +361,11 @@ function decodeMessage(rawText: string): ContactMessage | null {
 
 async function persistEncryptedBlobMessage(msg: ContactMessage): Promise<void> {
   if (!isBlobConfigured()) return;
+  if (!isEncryptionConfigured()) {
+    throw new Error(
+      "Kritik Güvenlik Hatası: ADMIN_SESSION_SECRET yapılandırılmadan mesajlar Blob üzerine açık metin depolanamaz."
+    );
+  }
   const encoded = encodeMessage(msg);
   await put(`${PRIVATE_MSG_PREFIX}${msg.id}.enc`, encoded, {
     access: "public",
