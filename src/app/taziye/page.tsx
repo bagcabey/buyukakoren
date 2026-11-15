@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Calendar, HeartHandshake, MapPin, MessageSquarePlus } from "lucide-react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ShareButtons } from "@/components/ShareButtons";
+import { condolenceShareTitle } from "@/lib/condolence";
 import { formatDateTR } from "@/lib/format";
 import { buildPageMetadata } from "@/lib/seo";
 import { getAllStoreData } from "@/lib/store";
@@ -77,24 +78,32 @@ export default async function TaziyePage() {
                 </span>
               </div>
 
-              <div className="mt-4 grid gap-2.5 rounded-lg border border-[#e6e5e0] bg-[#fbfbfa] p-3.5 text-xs sm:grid-cols-2 sm:gap-3 sm:p-4 sm:text-sm">
-                <div className="flex items-start gap-2 text-[#191919]">
-                  <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-[#666560]" />
-                  <span>
-                    <strong>Defin / Vakit:</strong> {item.funeral_date}
-                  </span>
+              {(item.funeral_date || item.burial_place) && (
+                <div className="mt-4 grid gap-2.5 rounded-lg border border-[#e6e5e0] bg-[#fbfbfa] p-3.5 text-xs sm:grid-cols-2 sm:gap-3 sm:p-4 sm:text-sm">
+                  {item.funeral_date && (
+                    <div className="flex items-start gap-2 text-[#191919]">
+                      <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-[#666560]" />
+                      <span>
+                        <strong>Defin / Vakit:</strong> {item.funeral_date}
+                      </span>
+                    </div>
+                  )}
+                  {item.burial_place && (
+                    <div className="flex items-start gap-2 text-[#191919]">
+                      <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#666560]" />
+                      <span>
+                        <strong>Defin Yeri:</strong> {item.burial_place}
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-start gap-2 text-[#191919]">
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#666560]" />
-                  <span>
-                    <strong>Defin Yeri:</strong> {item.burial_place}
-                  </span>
-                </div>
-              </div>
+              )}
 
-              <p className="mt-4 text-sm leading-relaxed text-[#666560]">
-                {item.message}
-              </p>
+              {item.message && (
+                <p className="mt-4 text-sm leading-relaxed text-[#666560]">
+                  {item.message}
+                </p>
+              )}
 
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#e6e5e0] pt-3.5">
                 {item.relatives ? (
@@ -107,7 +116,7 @@ export default async function TaziyePage() {
                   </span>
                 )}
                 <ShareButtons
-                  title={`Vefat & Taziye: ${item.deceased_name} (${item.funeral_date} - ${item.burial_place})`}
+                  title={condolenceShareTitle(item)}
                   path="/taziye"
                   showPrint
                 />

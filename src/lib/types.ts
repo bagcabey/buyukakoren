@@ -51,7 +51,7 @@ export interface Condolence {
   deceased_name: string;
   age_or_note?: string | null;
   funeral_date: string;
-  burial_place: string;
+  burial_place?: string | null;
   message: string;
   relatives?: string | null;
   image_url?: string | null;

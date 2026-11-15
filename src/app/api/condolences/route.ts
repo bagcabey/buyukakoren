@@ -64,7 +64,7 @@ export async function POST(req: Request) {
       deceased_name: string;
       age_or_note?: string;
       funeral_date: string;
-      burial_place: string;
+      burial_place?: string;
       message: string;
       relatives?: string;
       image_url?: string | null;
@@ -93,8 +93,7 @@ export async function POST(req: Request) {
         deceased_name: body.deceased_name.trim(),
         age_or_note: body.age_or_note?.trim() || null,
         funeral_date: body.funeral_date.trim(),
-        burial_place:
-          body.burial_place?.trim() || "Büyükakören Köyü Mezarlığı",
+        burial_place: body.burial_place?.trim() || null,
         message:
           body.message?.trim() ||
           "Merhuma/Merhumeye Allah'tan rahmet, kederli ailesine başsağlığı dileriz.",

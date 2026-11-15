@@ -16,6 +16,7 @@ import {
   readMessageBody,
   upsertMessageBody,
 } from "./db";
+import { normalizeCondolence } from "./condolence";
 import { isValidTurkishIban, slugifyTR } from "./format";
 import { CATALOG_GALLERY_PHOTOS } from "./katalog";
 import { DEFAULT_NAV_ITEMS, INITIAL_STORE_DATA } from "./seed";
@@ -206,9 +207,9 @@ function sanitizeLegacyPlaceholders(
     ? ""
     : noteRaw;
 
-  const cleanCondolences = condolences.filter(
-    (c) => !/örnek|panelden/i.test(c.deceased_name || "")
-  );
+  const cleanCondolences = condolences
+    .filter((c) => !/örnek|panelden/i.test(c.deceased_name || ""))
+    .map(normalizeCondolence);
 
   const cleanBoard = boardMembers.filter(
     (m) =>

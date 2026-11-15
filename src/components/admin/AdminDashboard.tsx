@@ -535,7 +535,7 @@ export function AdminDashboard({
     setDeceasedName(c.deceased_name);
     setAgeOrNote(c.age_or_note || "");
     setFuneralDate(c.funeral_date);
-    setBurialPlace(c.burial_place);
+    setBurialPlace(c.burial_place ?? "");
     setCondMessage(c.message);
     setRelatives(c.relatives || "");
     setCondPhotoUrl(c.image_url || "");
@@ -1949,7 +1949,7 @@ export function AdminDashboard({
                       )}
                     </div>
                     <p className="mt-1 text-xs text-[#666560]">
-                      {c.funeral_date} • {c.burial_place}
+                      {[c.funeral_date, c.burial_place].filter(Boolean).join(" • ")}
                     </p>
                   </div>
                 </div>
