@@ -74,22 +74,21 @@ function encodeSecurityPayload(state: SecurityStateData): string {
 
 async function readSecurityWithEtag(): Promise<{ state: SecurityStateData; etag?: string }> {
   if (isBlobConfigured()) {
-    const result = await get(SECURITY_BLOB_PATH, {
-      access: "public",
-      useCache: false,
-    });
-    if (!result || result.statusCode !== 200 || !result.stream) {
-      return { state: defaultSecurityState() };
-    }
-    const text = await new Response(result.stream).text();
     try {
-      return {
-        state: decodeSecurityPayload(text),
-        etag: result.blob.etag,
-      };
+      const result = await get(SECURITY_BLOB_PATH, {
+        access: "public",
+        useCache: false,
+      });
+      if (result && result.statusCode === 200 && result.stream) {
+        const text = await new Response(result.stream).text();
+        return {
+          state: decodeSecurityPayload(text),
+          etag: result.blob.etag,
+        };
+      }
+      return { state: defaultSecurityState() };
     } catch (err) {
-      console.error("[security-store] Şifreli güvenlik durumu çözümlenemedi:", err);
-      throw new Error("Güvenlik durumu okunamadı.");
+      console.error("[security-store] Blob güvenlik durumu okunamadı, yerel/varsayılan duruma dönülüyor:", err);
     }
   }
 

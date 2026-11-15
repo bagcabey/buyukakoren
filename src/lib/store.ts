@@ -683,26 +683,30 @@ export async function getContactMessages(): Promise<ContactMessage[]> {
   }
 
   if (isBlobConfigured()) {
-    await migrateLegacyMessagesFromBlobsAndState([]);
+    try {
+      await migrateLegacyMessagesFromBlobsAndState([]);
 
-    const { blobs } = await list({ prefix: PRIVATE_MSG_PREFIX, limit: 300 });
-    const loaded = await Promise.all(
-      blobs.map(async (blob) => {
-        try {
-          const res = await fetch(blob.url, { cache: "no-store" });
-          if (!res.ok) return null;
-          return decodeMessage(await res.text());
-        } catch {
-          return null;
-        }
-      })
-    );
-    return loaded
-      .filter((m): m is ContactMessage => m !== null)
-      .sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      const { blobs } = await list({ prefix: PRIVATE_MSG_PREFIX, limit: 300 });
+      const loaded = await Promise.all(
+        blobs.map(async (blob) => {
+          try {
+            const res = await fetch(blob.url, { cache: "no-store" });
+            if (!res.ok) return null;
+            return decodeMessage(await res.text());
+          } catch {
+            return null;
+          }
+        })
       );
+      return loaded
+        .filter((m): m is ContactMessage => m !== null)
+        .sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+    } catch (err) {
+      console.error("[store] Blob iletişim mesajları okunamadı, yerel depoya dönülüyor:", err);
+    }
   }
 
   return readLocalEncryptedMessages();
