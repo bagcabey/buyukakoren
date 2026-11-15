@@ -103,7 +103,7 @@ export async function runTier4Tests(runner: TestRunner): Promise<void> {
 
     // Scenario 3: Visitor opens /iletisim -> submits message with KVKK consent -> Rate limiting checks -> Admin reads message
     await runner.test("Scenario 3: Visitor opens /iletisim -> submits message with KVKK consent -> Rate limit check", async () => {
-      const visitorIp = "88.250.33.12";
+      const visitorIp = `88.250.${Math.floor(Math.random() * 200) + 10}.${Math.floor(Math.random() * 200) + 10}`;
       const req = new Request("https://buyukakoren.vercel.app/api/contact", {
         headers: { "x-vercel-ip": visitorIp },
       });
@@ -126,31 +126,41 @@ export async function runTier4Tests(runner: TestRunner): Promise<void> {
       expect(dashboardContent).toContain("Öğle Namazı");
       expect(dashboardContent).toContain("İkindi Namazı");
 
-      // Step 2: Admin creates a structured condolence with funeral details
-      const created = await createCondolence({
-        id: "cond-e2e-scenario-test",
-        deceased_name: "Merhum Hacı Mehmet Demir",
-        funeral_date: "2026-11-15",
-        age_or_note: "Öğle Namazına Müteakip",
-        burial_place: "Büyükakören Köyü Yukarı Mahalle Mezarlığı",
-        message: "Merhuma Allah'tan rahmet, kederli ailesine başsağlığı dileriz.",
-        relatives: "Ali Demir (Oğlu)",
-        is_published: true,
-        family_consent_confirmed: true,
-      });
+      const storePath = path.resolve("data/store.json");
+      const originalStoreContent = fs.existsSync(storePath) ? fs.readFileSync(storePath, "utf-8") : null;
 
-      expect(created.deceased_name).toBe("Merhum Hacı Mehmet Demir");
-      expect(created.age_or_note).toBe("Öğle Namazına Müteakip");
+      try {
+        // Step 2: Admin creates a structured condolence with funeral details
+        const created = await createCondolence({
+          id: "cond-e2e-scenario-test",
+          deceased_name: "Merhum Hacı Mehmet Demir",
+          funeral_date: "2026-11-15",
+          age_or_note: "Öğle Namazına Müteakip",
+          burial_place: "Büyükakören Köyü Yukarı Mahalle Mezarlığı",
+          message: "Merhuma Allah'tan rahmet, kederli ailesine başsağlığı dileriz.",
+          relatives: "Ali Demir (Oğlu)",
+          is_published: true,
+          family_consent_confirmed: true,
+        });
 
-      // Step 3: Verify condolence appears in public store data
-      const store = await getAllStoreData(false);
-      expect(store.condolences.length).toBeGreaterThan(0);
-      const found = store.condolences.find((c) => c.id === "cond-e2e-scenario-test");
-      expect(found).toBeTruthy();
-      expect(found?.burial_place).toContain("Büyükakören");
+        expect(created.deceased_name).toBe("Merhum Hacı Mehmet Demir");
+        expect(created.age_or_note).toBe("Öğle Namazına Müteakip");
 
-      // Step 4: Verify /taziye page file exists
-      expect(fs.existsSync(path.resolve("src/app/taziye/page.tsx"))).toBeTruthy();
+        // Step 3: Verify condolence appears in public store data
+        const store = await getAllStoreData(false);
+        expect(store.condolences.length).toBeGreaterThan(0);
+        const found = store.condolences.find((c) => c.id === "cond-e2e-scenario-test");
+        expect(found).toBeTruthy();
+        expect(found?.burial_place).toContain("Büyükakören");
+
+        // Step 4: Verify /taziye page file exists
+        expect(fs.existsSync(path.resolve("src/app/taziye/page.tsx"))).toBeTruthy();
+      } finally {
+        // Teardown: revert data/store.json to preserve clean working tree
+        if (originalStoreContent !== null && fs.existsSync(storePath)) {
+          fs.writeFileSync(storePath, originalStoreContent, "utf-8");
+        }
+      }
     });
 
     // Scenario 5: Anonymous attacker attempts XSS link in block or brute-forces login with spoofed IP -> blocked
@@ -161,7 +171,7 @@ export async function runTier4Tests(runner: TestRunner): Promise<void> {
       expect(sanitizedUrl).toBe("");
 
       // Step 2: Login brute force attempt
-      const attackerIp = "185.220.101.5";
+      const attackerIp = `185.220.${Math.floor(Math.random() * 200) + 10}.${Math.floor(Math.random() * 200) + 10}`;
       for (let i = 0; i < 5; i++) {
         await recordLoginFailure(attackerIp);
       }
