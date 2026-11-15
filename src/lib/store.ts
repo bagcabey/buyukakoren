@@ -326,10 +326,22 @@ function normalizeStore(raw: Partial<StoreData> | null | undefined): StoreData {
       pages: defaults.pages || [],
     };
   }
-  const rawSettings = (raw.site_settings || {}) as Partial<SiteSettings>;
+  const rawSettingsObj = (raw.site_settings || {}) as Record<string, unknown>;
+  const {
+    mukhtar_name: _dropMukhtarName,
+    mukhtar_phone: _dropMukhtarPhone,
+    ...restRawSettings
+  } = rawSettingsObj;
+  void _dropMukhtarName;
+  void _dropMukhtarPhone;
+  const rawSettings = restRawSettings as Partial<SiteSettings>;
   const navItems =
     Array.isArray(rawSettings.nav_items) && rawSettings.nav_items.length > 0
-      ? rawSettings.nav_items
+      ? rawSettings.nav_items.map((item) =>
+          item && typeof item.label === "string" && /muhtar/i.test(item.label)
+            ? { ...item, label: "İletişim" }
+            : item
+        )
       : defaults.site_settings.nav_items || DEFAULT_NAV_ITEMS;
 
   const mergedSettings: SiteSettings = {
