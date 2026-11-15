@@ -57,7 +57,6 @@ import { GalleryImagePickerModal } from "./GalleryImagePickerModal";
 import { MarkdownPostEditor } from "./MarkdownPostEditor";
 import { MenuFooterTab } from "./MenuFooterTab";
 import { PageDesignerTab } from "./PageDesignerTab";
-import { SerpSimulatorCard } from "./SerpSimulatorCard";
 import { UsersAuditTab } from "./UsersAuditTab";
 
 type TabKey =
@@ -1357,33 +1356,10 @@ export function AdminDashboard({
                   </div>
                   <input
                     type="text"
-                    placeholder="Görsel Alt Açıklaması (SEO & Erişilebilirlik)"
+                    placeholder="Görsel açıklaması (isteğe bağlı)"
                     value={postImageAlt}
                     onChange={(e) => setPostImageAlt(e.target.value)}
                     className="w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-1.5 text-xs"
-                  />
-                  <div className="grid grid-cols-2 gap-1.5">
-                    <input
-                      type="text"
-                      placeholder="Görsel Sahibi / Yazar"
-                      value={postImgAuthor}
-                      onChange={(e) => setPostImgAuthor(e.target.value)}
-                      className="w-full rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Lisans (ör. CC BY-SA 4.0)"
-                      value={postImgLicense}
-                      onChange={(e) => setPostImgLicense(e.target.value)}
-                      className="w-full rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs"
-                    />
-                  </div>
-                  <input
-                    type="url"
-                    placeholder="Görsel Kaynak URL (ör. Commons sayfası)"
-                    value={postImgSource}
-                    onChange={(e) => setPostImgSource(e.target.value)}
-                    className="w-full rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs"
                   />
                 </div>
               )}
@@ -1451,27 +1427,6 @@ export function AdminDashboard({
                 />
               </div>
             </div>
-
-            <SerpSimulatorCard
-              title={postTitle}
-              description={postSummary}
-              slug={editingId ? data.posts.find((p) => p.id === editingId)?.slug : undefined}
-              seoTitle={postSeoTitle}
-              seoDesc={postSeoDesc}
-              onSeoTitleChange={setPostSeoTitle}
-              onSeoDescChange={setPostSeoDesc}
-            />
-
-            {(!postImage || !postImageAlt || !postSeoDesc) && (
-              <div className="rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2 text-[11px] text-amber-900">
-                <p className="font-semibold">Yayın Öncesi Öneri Listesi:</p>
-                <ul className="mt-1 list-disc space-y-0.5 pl-4">
-                  {!postImage && <li>Kapak görseli seçilmemiş.</li>}
-                  {postImage && !postImageAlt && <li>Görsel alt metni (alt text) boş.</li>}
-                  {!postSeoDesc && <li>Özel SEO açıklaması girilmemiş (kısa özet kullanılır).</li>}
-                </ul>
-              </div>
-            )}
 
             <div className="space-y-2 pt-1">
               <label className="flex items-center gap-2 text-xs font-medium text-[#191919]">
@@ -2204,41 +2159,6 @@ export function AdminDashboard({
                   />
                 </div>
               )}
-            </div>
-            <div className="space-y-2 rounded-lg border border-[#e6e5e0] bg-white p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#666560]">
-                Erişilebilirlik ve Lisans / Kaynak Atfı
-              </p>
-              <input
-                type="text"
-                value={galAlt}
-                onChange={(e) => setGalAlt(e.target.value)}
-                placeholder="Görsel Alt Metni (SEO)"
-                className="w-full rounded-lg border border-[#e6e5e0] px-2.5 py-1.5 text-xs"
-              />
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="text"
-                  value={galAuthor}
-                  onChange={(e) => setGalAuthor(e.target.value)}
-                  placeholder="Yazar / Çeken Kişi"
-                  className="w-full rounded-lg border border-[#e6e5e0] px-2.5 py-1.5 text-xs"
-                />
-                <input
-                  type="text"
-                  value={galLicense}
-                  onChange={(e) => setGalLicense(e.target.value)}
-                  placeholder="Lisans (CC0 / CC BY-SA)"
-                  className="w-full rounded-lg border border-[#e6e5e0] px-2.5 py-1.5 text-xs"
-                />
-              </div>
-              <input
-                type="url"
-                value={galSourceUrl}
-                onChange={(e) => setGalSourceUrl(e.target.value)}
-                placeholder="Kaynak URL (https://...)"
-                className="w-full rounded-lg border border-[#e6e5e0] px-2.5 py-1.5 text-xs"
-              />
             </div>
             <button
               type="submit"

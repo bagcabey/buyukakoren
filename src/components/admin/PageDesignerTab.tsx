@@ -672,78 +672,46 @@ export function PageDesignerTab({
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <label className="block text-xs font-medium text-[#191919]">
-                  SEO Başlığı (title tag)
-                </label>
-                <input
-                  type="text"
-                  value={draftPage.seo_title || ""}
-                  onChange={(e) =>
-                    setDraftPage({ ...draftPage, seo_title: e.target.value })
-                  }
-                  className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-[#191919]">
-                  Menü Sıra / Etiket
-                </label>
-                <div className="mt-1 flex items-center gap-2">
-                  <label className="inline-flex shrink-0 items-center gap-1.5 text-xs">
-                    <input
-                      type="checkbox"
-                      checked={draftPage.show_in_menu}
-                      onChange={(e) =>
-                        setDraftPage({
-                          ...draftPage,
-                          show_in_menu: e.target.checked,
-                        })
-                      }
-                      className="h-4 w-4 rounded border-[#e6e5e0]"
-                    />
-                    Menüde
-                  </label>
+            <div>
+              <label className="block text-xs font-medium text-[#191919]">
+                Menü Sıra / Etiket
+              </label>
+              <div className="mt-1 flex items-center gap-2">
+                <label className="inline-flex shrink-0 items-center gap-1.5 text-xs">
                   <input
-                    type="text"
-                    placeholder="Menü Adı"
-                    value={draftPage.menu_label || ""}
-                    onChange={(e) =>
-                      setDraftPage({ ...draftPage, menu_label: e.target.value })
-                    }
-                    className="flex-1 rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs"
-                  />
-                  <input
-                    type="number"
-                    value={draftPage.menu_order}
+                    type="checkbox"
+                    checked={draftPage.show_in_menu}
                     onChange={(e) =>
                       setDraftPage({
                         ...draftPage,
-                        menu_order: Number(e.target.value) || 1,
+                        show_in_menu: e.target.checked,
                       })
                     }
-                    className="w-16 rounded-lg border border-[#e6e5e0] bg-white px-2 py-1.5 text-xs"
+                    className="h-4 w-4 rounded border-[#e6e5e0]"
                   />
-                </div>
+                  Menüde
+                </label>
+                <input
+                  type="text"
+                  placeholder="Menü Adı"
+                  value={draftPage.menu_label || ""}
+                  onChange={(e) =>
+                    setDraftPage({ ...draftPage, menu_label: e.target.value })
+                  }
+                  className="flex-1 rounded-lg border border-[#e6e5e0] bg-white px-2.5 py-1.5 text-xs"
+                />
+                <input
+                  type="number"
+                  value={draftPage.menu_order}
+                  onChange={(e) =>
+                    setDraftPage({
+                      ...draftPage,
+                      menu_order: Number(e.target.value) || 1,
+                    })
+                  }
+                  className="w-16 rounded-lg border border-[#e6e5e0] bg-white px-2 py-1.5 text-xs"
+                />
               </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-[#191919]">
-                SEO Açıklaması (meta description)
-              </label>
-              <textarea
-                rows={2}
-                value={draftPage.seo_description || ""}
-                onChange={(e) =>
-                  setDraftPage({
-                    ...draftPage,
-                    seo_description: e.target.value,
-                  })
-                }
-                className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-xs"
-              />
             </div>
           </form>
 
