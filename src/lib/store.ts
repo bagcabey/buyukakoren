@@ -147,6 +147,30 @@ function sanitizePageBlocks(
   return updated;
 }
 
+function stripMuhtarFromPage(rp: PageConfig, defPage?: PageConfig): PageConfig {
+  const muhtarRe = /muhtar|özüdoğru|0536 722/i;
+  const defById = new Map((defPage?.blocks || []).map((b) => [b.id, b]));
+  const blocks = Array.isArray(rp.blocks)
+    ? rp.blocks.map((blk) => {
+        if (!muhtarRe.test(JSON.stringify(blk))) return blk;
+        const defBlk = defById.get(blk.id);
+        return defBlk ? defBlk : blk;
+      })
+    : defPage?.blocks || [];
+  return {
+    ...rp,
+    seo_title:
+      rp.seo_title && muhtarRe.test(rp.seo_title)
+        ? defPage?.seo_title || rp.seo_title.replace(/\s*ve\s*Muhtarlık/gi, "")
+        : rp.seo_title,
+    seo_description:
+      rp.seo_description && muhtarRe.test(rp.seo_description)
+        ? defPage?.seo_description || ""
+        : rp.seo_description,
+    blocks,
+  };
+}
+
 function mergeDefaultPages(
   rawPages: PageConfig[] | undefined,
   defaultPages: PageConfig[],
@@ -166,7 +190,7 @@ function mergeDefaultPages(
       const blocks = Array.isArray(rp.blocks)
         ? sanitizePageBlocks(rp.blocks, defPage?.blocks || [], needsCatalogMigration)
         : defPage?.blocks || [];
-      bySlug.set(rp.slug, { ...rp, blocks });
+      bySlug.set(rp.slug, stripMuhtarFromPage({ ...rp, blocks }, defPage));
     }
   }
   return Array.from(bySlug.values());
