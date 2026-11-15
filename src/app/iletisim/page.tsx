@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Landmark, Phone, School, ShieldAlert } from "lucide-react";
+import { Phone, School, ShieldAlert } from "lucide-react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
 import { PageBlocksRenderer } from "@/components/PageBlocksRenderer";
@@ -17,10 +17,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const page = await getPageBySlug("/iletisim", false);
   return buildPageMetadata({
     title:
-      page?.seo_title || "İletişim ve Muhtarlık Bilgileri | Büyük Akören Köyü",
+      page?.seo_title || "İletişim Bilgileri | Büyük Akören Köyü",
     description:
       page?.seo_description ||
-      "Büyükakören Köyü Derneği güvenli iletişim formu, Köy Muhtarı Hasan Özüdoğru bilgileri, Büyük Akören Ortaokulu erişim hattı ve konum haritası.",
+      "Büyükakören Köyü Derneği güvenli iletişim formu, Büyük Akören Ortaokulu erişim hattı ve konum haritası.",
     path: "/iletisim",
     ogImage: page?.og_image,
   });
@@ -36,10 +36,6 @@ export default async function IletisimPage() {
     notFound();
   }
 
-  const s = storeData.site_settings;
-  const mukhtarName = s.mukhtar_name || "Hasan Özüdoğru";
-  const mukhtarPhone = s.mukhtar_phone || "0536 722 16 07";
-
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
       <JsonLd data={buildContactPageJsonLd(storeData.site_settings)} />
@@ -47,37 +43,7 @@ export default async function IletisimPage() {
       <Breadcrumbs items={[{ name: "İletişim", href: "/iletisim" }]} />
       <PageBlocksRenderer page={page} storeData={storeData} />
 
-      <section className="mt-10 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-[#e6e5e0] bg-[#fbfbfa] p-5">
-          <div className="flex items-center gap-2 text-xs font-semibold tracking-wider text-[#666560] uppercase">
-            <Landmark className="h-4 w-4 text-emerald-800" />
-            Köy Muhtarlığı
-          </div>
-          <h3 className="mt-2 text-base font-bold text-[#191919]">
-            Büyükakören Köyü Muhtarlığı
-          </h3>
-          <p className="mt-1 text-xs leading-relaxed text-[#666560]">
-            Köy Muhtarı: <strong className="text-[#191919]">{mukhtarName}</strong>
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <a
-              href={`tel:${mukhtarPhone.replace(/\s+/g, "")}`}
-              className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-[#e6e5e0] bg-white px-3 py-1.5 text-xs font-semibold text-[#191919] hover:bg-[#f4f3ef]"
-            >
-              <Phone className="h-3.5 w-3.5 text-[#666560]" />
-              {mukhtarPhone}
-            </a>
-            <a
-              href="http://www.yildizeli.gov.tr"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-[#e6e5e0] bg-white px-3 py-1.5 text-xs font-medium text-[#191919] hover:bg-[#f4f3ef]"
-            >
-              Kaymakamlık ↗
-            </a>
-          </div>
-        </div>
-
+      <section className="mt-10 grid gap-4 sm:grid-cols-2">
         <div className="rounded-2xl border border-[#e6e5e0] bg-[#fbfbfa] p-5">
           <div className="flex items-center gap-2 text-xs font-semibold tracking-wider text-[#666560] uppercase">
             <School className="h-4 w-4 text-red-800" />

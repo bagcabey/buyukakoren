@@ -869,9 +869,6 @@ export function AdminDashboard({
   ) {
     missingChecklist.push("Resmî dernek e-postası");
   }
-  if (!data.site_settings.mukhtar_phone?.trim()) {
-    missingChecklist.push("Muhtarlık telefonu");
-  }
   const hasRealBoard = (data.board_members || []).some(
     (m) => m.full_name?.trim() && !m.full_name.toLowerCase().includes("panelden")
   );
@@ -2372,42 +2369,6 @@ export function AdminDashboard({
                   }
                   placeholder="05XX XXX XX XX (Boş bırakılabilir)"
                   className="mt-2.5 w-full rounded-lg border border-[#e6e5e0] bg-[#fbfbfa] px-3 py-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[#191919]">
-                  Köy Muhtarı Adı Soyadı (İsteğe Bağlı)
-                </label>
-                <input
-                  type="text"
-                  value={settingsForm.mukhtar_name || ""}
-                  onChange={(e) =>
-                    setSettingsForm({
-                      ...settingsForm,
-                      mukhtar_name: e.target.value,
-                    })
-                  }
-                  placeholder="Boş bırakılabilir"
-                  className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[#191919]">
-                  Köy Muhtarlığı İletişim Numarası (İsteğe Bağlı)
-                </label>
-                <input
-                  type="text"
-                  value={settingsForm.mukhtar_phone || ""}
-                  onChange={(e) =>
-                    setSettingsForm({
-                      ...settingsForm,
-                      mukhtar_phone: e.target.value,
-                    })
-                  }
-                  placeholder="İstenirse muhtarlık telefonu eklenebilir"
-                  className="mt-1 w-full rounded-lg border border-[#e6e5e0] bg-white px-3 py-2 text-sm"
                 />
               </div>
 

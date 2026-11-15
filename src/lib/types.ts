@@ -119,8 +119,6 @@ export interface SiteSettings {
   iban_account_name?: string | null;
   iban_number?: string | null;
   donation_note?: string | null;
-  mukhtar_name?: string | null;
-  mukhtar_phone?: string | null;
   founded_year?: string | null;
   association_registry_no?: string | null;
   tax_office?: string | null;

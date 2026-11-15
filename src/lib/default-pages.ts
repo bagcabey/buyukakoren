@@ -85,7 +85,6 @@ export function buildDefaultPages(): PageConfig[] {
             text: "1907 yılı Osmanlı Salnamesi kayıtlarında Ağören, 1928 yılı Dahiliye Vekaleti kayıtlarında ise Büyük Akviran adıyla geçen yerleşimimiz; Sivas ili Yıldızeli ilçesine bağlı köklü bir Anadolu köyüdür.\n\nKöyümüz; Yukarı Mahalle, Aşağı Mahalle ve Şeyhler Mahallesi olmak üzere 3 geleneksel mahalleye, 3 camiye (Merkez Camii, Yeni Cami, Şeyhler Camii) ve asırlık kış meclislerinin toplandığı 4 geleneksel köy odasına sahiptir.",
             bullets: [
               "Koordinatlar: 39°36′11″K 36°26′17″D (Rakım: 1.276 m)",
-              "Büyükakören Köyü Muhtarı: Hasan Özüdoğru • Tel: 0536 722 16 07",
               "Büyük Akören Ortaokulu & İlkokulu Tel: (0346) 753 11 22",
               "PTT Posta Kodu: 58502 • Telefon Alan Kodu: 0346",
             ],
@@ -307,9 +306,9 @@ export function buildDefaultPages(): PageConfig[] {
               {
                 id: "edu-2",
                 badge: "T.C. Yıldızeli Kaymakamlığı",
-                title: "Büyükakören Köyü Muhtarlığı",
+                title: "Yıldızeli İlçe Kaymakamlığı",
                 description:
-                  "Köy Muhtarı: Hasan Özüdoğru • İletişim Tel: 0536 722 16 07 • Adres: Büyükakören Köyü, Yıldızeli / Sivas (58502)",
+                  "Yıldızeli ilçesi mülki idare ve kamu hizmetleri resmî portalı • Adres: Büyükakören Köyü, Yıldızeli / Sivas (58502)",
                 link_label: "Kaymakamlık Portalı",
                 link_href: "http://www.yildizeli.gov.tr",
               },
@@ -591,9 +590,9 @@ export function buildDefaultPages(): PageConfig[] {
     {
       slug: "/iletisim",
       title: "İletişim",
-      seo_title: "İletişim ve Muhtarlık Bilgileri | Büyük Akören Köyü",
+      seo_title: "İletişim Bilgileri | Büyük Akören Köyü",
       seo_description:
-        "Büyükakören Köyü Derneği güvenli iletişim formu, Köy Muhtarı Hasan Özüdoğru bilgileri, Büyük Akören Ortaokulu erişim hattı ve konum haritası.",
+        "Büyükakören Köyü Derneği güvenli iletişim formu, Büyük Akören Ortaokulu erişim hattı ve konum haritası.",
       status: "published",
       show_in_menu: true,
       menu_order: 9,
@@ -608,9 +607,9 @@ export function buildDefaultPages(): PageConfig[] {
           order: 1,
           data: {
             badge: "İletişim & Kurumsal Bilgi",
-            title: "Dernek Yönetimi, Muhtarlık ve Köy İletişimi",
+            title: "Dernek Yönetimi ve Köy İletişimi",
             subtitle:
-              "Büyük Akören Köyü Derneği yönetimi, Köy Muhtarı Hasan Özüdoğru (Tel: 0536 722 16 07) ve Büyük Akören Ortaokulu (Tel: 0346 753 11 22) resmî iletişim kanalları.",
+              "Büyük Akören Köyü Derneği yönetimi ve Büyük Akören Ortaokulu (Tel: 0346 753 11 22) resmî iletişim kanalları.",
           },
         },
         {
@@ -807,7 +806,7 @@ export function buildDefaultPages(): PageConfig[] {
             eyebrow: "Yayıncı & Teknik Altyapı",
             title: "Yayın İlkeleri ve İletişim",
             content:
-              "## Yayın Sahibi Kuruluş\n\n**Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği**\nYerleşim: Büyükakören Köyü, Yıldızeli / Sivas • Posta Kodu: 58502\n\n## İçerik Sorumluluğu ve Güncelleme\n\nPortal içerikleri dernek yönetimi tarafından yetkilendirilen yöneticiler ve editörler tarafından hazırlanır. Kütük numarası (DERBİS), vergi dairesi, kuruluş yılı ve güncel muhtar/iletişim bilgileri yönetici panelinden girildiğinde otomatik olarak bu sayfada ve ilgili bölümlerde yayınlanır.\n\n## Yasal Belgeler\n\n- [KVKK Aydınlatma Metni](/kvkk)\n- [Gizlilik ve Çerez Politikası](/gizlilik)\n- [Kullanım Koşulları](/kullanim-kosullari)\n- [Dernek İletişim Formu](/iletisim)",
+              "## Yayın Sahibi Kuruluş\n\n**Büyük Akören Köyü Yardımlaşma, Dayanışma ve Kalkınma Derneği**\nYerleşim: Büyükakören Köyü, Yıldızeli / Sivas • Posta Kodu: 58502\n\n## İçerik Sorumluluğu ve Güncelleme\n\nPortal içerikleri dernek yönetimi tarafından yetkilendirilen yöneticiler ve editörler tarafından hazırlanır. Kütük numarası (DERBİS), vergi dairesi, kuruluş yılı ve güncel iletişim bilgileri yönetici panelinden girildiğinde otomatik olarak bu sayfada ve ilgili bölümlerde yayınlanır.\n\n## Yasal Belgeler\n\n- [KVKK Aydınlatma Metni](/kvkk)\n- [Gizlilik ve Çerez Politikası](/gizlilik)\n- [Kullanım Koşulları](/kullanim-kosullari)\n- [Dernek İletişim Formu](/iletisim)",
           },
         },
       ],

@@ -322,10 +322,10 @@ export async function runTier2Tests(runner: TestRunner): Promise<void> {
       expect(store.site_settings.association_name.length).toBeGreaterThan(0);
     });
 
-    await runner.test("F9.B4: Muhtar phone is 0536 722 16 07", async () => {
+    await runner.test("F9.B4: Muhtar phone is absent from store", async () => {
       const store = await getAllStoreData(false);
       const text = JSON.stringify(store);
-      expect(text).toContain("0536 722 16 07");
+      expect(text.includes("0536 722 16 07")).toBe(false);
     });
 
     await runner.test("F9.B5: School phone is (0346) 753 11 22", async () => {

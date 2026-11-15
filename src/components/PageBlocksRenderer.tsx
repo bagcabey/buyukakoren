@@ -1297,8 +1297,6 @@ function BlockSection({
         !settings.association_email.includes("buyukakoren.org")
           ? settings.association_email.trim()
           : "";
-      const mukhtarPhone = settings.mukhtar_phone?.trim() || "";
-      const mukhtarName = settings.mukhtar_name?.trim() || "";
 
       return (
         <section className="grid grid-cols-1 gap-8 lg:grid-cols-12">
@@ -1357,24 +1355,11 @@ function BlockSection({
                   <Users className="mt-0.5 h-4 w-4 shrink-0 text-red-800" />
                   <div>
                     <p className="font-semibold text-[#191919]">
-                      Köy Muhtarlığı
+                      Resmî Kurum Bağlantıları
                     </p>
                     <p className="text-[#666560]">
-                      Büyükakören Köyü Muhtarlığı — Yıldızeli / Sivas
+                      Yıldızeli / Sivas mülki idare portalları
                     </p>
-                    {mukhtarName && (
-                      <p className="mt-0.5 font-medium text-[#191919]">
-                        Muhtar: {mukhtarName}
-                      </p>
-                    )}
-                    {mukhtarPhone && (
-                      <a
-                        href={`tel:${mukhtarPhone.replace(/[^+\d]/g, "")}`}
-                        className="mt-0.5 inline-block text-[#191919] hover:underline"
-                      >
-                        {mukhtarPhone}
-                      </a>
-                    )}
                     <div className="mt-2 flex flex-wrap gap-2 text-xs">
                       <a
                         href="https://www.yildizeli.gov.tr"

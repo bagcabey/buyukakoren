@@ -126,7 +126,7 @@ export function Footer({
               </li>
               <li>
                 <Link href="/iletisim" className="hover:text-[#191919]">
-                  İletişim & Muhtarlık
+                  İletişim
                 </Link>
               </li>
               <li>

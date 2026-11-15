@@ -20,8 +20,6 @@ export const DEFAULT_SEO_KEYWORDS = [
   "Yıldızeli köyleri",
   "Büyük Akören taziye",
   "Büyükakören vefat haberleri",
-  "Büyükakören muhtarlık",
-  "Hasan Özüdoğru",
   "Mustafa Tanju Çetiner",
   "Büyük Akören Ortaokulu",
   "Büyükakören posta kodu 58502",
@@ -304,9 +302,9 @@ export function buildContactPageJsonLd(
   return {
     "@context": "https://schema.org",
     "@type": "ContactPage",
-    name: `İletişim ve Muhtarlık Bilgileri | ${settings.association_name || SITE_NAME}`,
+    name: `İletişim Bilgileri | ${settings.association_name || SITE_NAME}`,
     description:
-      "Büyük Akören Köyü Derneği mesajlaşma formu, Köy Muhtarı Hasan Özüdoğru (Tel: 0536 722 16 07) ve Büyük Akören Ortaokulu (Tel: 0346 753 11 22) resmî erişim bilgileri.",
+      "Büyük Akören Köyü Derneği mesajlaşma formu ve Büyük Akören Ortaokulu (Tel: 0346 753 11 22) resmî erişim bilgileri.",
     url: `${SITE_URL}/iletisim`,
     mainEntity: {
       "@id": `${SITE_URL}/#organization`,

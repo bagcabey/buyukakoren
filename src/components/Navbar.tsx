@@ -55,7 +55,7 @@ const MOBILE_GROUPS = [
       { href: "/koyumuz", label: "Köyümüz & Tarihçe", icon: MapPin, exact: false },
       { href: "/dernek", label: "Derneğimiz & Yönetim", icon: Building2, exact: false },
       { href: "/galeri", label: "Fotoğraf Galerisi", icon: Images, exact: false },
-      { href: "/iletisim", label: "İletişim & Muhtarlık", icon: Phone, exact: false },
+      { href: "/iletisim", label: "İletişim", icon: Phone, exact: false },
     ],
   },
 ];

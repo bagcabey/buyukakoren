@@ -93,11 +93,11 @@ export async function runTier4Tests(runner: TestRunner): Promise<void> {
       expect(content).toContain("1928");
       expect(content).toContain("Büyük Akviran");
 
-      // Step 4: Verify 3 mahalle and school & muhtar
+      // Step 4: Verify 3 mahalle and school (and muhtar removal)
       expect(content).toContain("Yukarı Mahalle");
       expect(content).toContain("Aşağı Mahalle");
       expect(content).toContain("Şeyhler Mahallesi");
-      expect(content).toContain("Hasan Özüdoğru");
+      expect(content.includes("Hasan Özüdoğru")).toBe(false);
       expect(content).toContain("Büyük Akören Ortaokulu");
     });
 

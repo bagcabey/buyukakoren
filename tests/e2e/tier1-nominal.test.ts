@@ -384,11 +384,11 @@ export async function runTier1Tests(runner: TestRunner): Promise<void> {
       expect(text).toContain("Mustafa Tanju Çetiner");
     });
 
-    await runner.test("F9.2: Village muhtar is recorded as Hasan Özüdoğru with phone number", async () => {
+    await runner.test("F9.2: Muhtar fields and phone number are removed from store", async () => {
       const store = await getAllStoreData(false);
       const text = JSON.stringify(store);
-      expect(text).toContain("Hasan Özüdoğru");
-      expect(text).toContain("0536 722 16 07");
+      expect(text.includes("Hasan Özüdoğru")).toBe(false);
+      expect(text.includes("0536 722 16 07")).toBe(false);
     });
 
     await runner.test("F9.3: Association milestone documents 900 pine trees planting (çam fidanı dikimi)", async () => {

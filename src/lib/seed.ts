@@ -261,8 +261,6 @@ export const INITIAL_STORE_DATA: StoreData = {
     iban_number: "",
     donation_note:
       "Bağış ve aidat gönderimlerinde açıklama kısmına ad-soyad ve katkı amacını yazmanız rica olunur.",
-    mukhtar_name: "Hasan Özüdoğru",
-    mukhtar_phone: "0536 722 16 07",
     founded_year: "",
     association_registry_no: "",
     tax_office: "",
