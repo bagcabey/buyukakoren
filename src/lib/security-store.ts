@@ -1,20 +1,16 @@
 import fs from "fs";
 import path from "path";
-import { get, put } from "@vercel/blob";
 import {
   decryptServerData,
   encryptServerData,
   isEncryptedPayload,
   isEncryptionConfigured,
 } from "./crypto";
+import { isDbConfigured, mutateDocument, readDocument } from "./db";
 import { AuditLogEntry, SecurityStateData } from "./types";
 
-const SECURITY_BLOB_PATH = "store/private/security-v2.enc";
+const SECURITY_DOC_KEY = "security";
 const LOCAL_SECURITY_PATH = path.join(process.cwd(), "data", "security.enc.json");
-
-function isBlobConfigured(): boolean {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
-}
 
 function defaultSecurityState(): SecurityStateData {
   return {
@@ -48,7 +44,7 @@ function normalizeSecurityState(raw: Partial<SecurityStateData> | null | undefin
   };
 }
 
-function decodeSecurityPayload(rawText: string): SecurityStateData {
+export function decodeSecurityPayload(rawText: string): SecurityStateData {
   if (!rawText || !rawText.trim()) return defaultSecurityState();
   const trimmed = rawText.trim();
   if (isEncryptedPayload(trimmed)) {
@@ -64,69 +60,51 @@ function encodeSecurityPayload(state: SecurityStateData): string {
   if (isEncryptionConfigured()) {
     return encryptServerData(json);
   }
-  if (isBlobConfigured()) {
+  if (isDbConfigured()) {
     throw new Error(
-      "Kritik Güvenlik Hatası: ADMIN_SESSION_SECRET yapılandırılmadan güvenlik verileri uzak depoya açık metin yazılamaz."
+      "Kritik Güvenlik Hatası: şifreleme anahtarı yapılandırılmadan güvenlik verileri veritabanına açık metin yazılamaz."
     );
   }
   return json;
 }
 
-async function readSecurityWithEtag(): Promise<{ state: SecurityStateData; etag?: string }> {
-  if (isBlobConfigured()) {
-    try {
-      const result = await get(SECURITY_BLOB_PATH, {
-        access: "public",
-        useCache: false,
-      });
-      if (result && result.statusCode === 200 && result.stream) {
-        const text = await new Response(result.stream).text();
-        return {
-          state: decodeSecurityPayload(text),
-          etag: result.blob.etag,
-        };
-      }
-      return { state: defaultSecurityState() };
-    } catch (err) {
-      console.error("[security-store] Blob güvenlik durumu okunamadı, yerel/varsayılan duruma dönülüyor:", err);
-    }
-  }
-
+function readLocalSecurityState(): SecurityStateData {
   try {
     if (!fs.existsSync(LOCAL_SECURITY_PATH)) {
-      return { state: defaultSecurityState() };
+      return defaultSecurityState();
     }
-    const text = fs.readFileSync(LOCAL_SECURITY_PATH, "utf-8");
-    return { state: decodeSecurityPayload(text) };
+    return decodeSecurityPayload(fs.readFileSync(LOCAL_SECURITY_PATH, "utf-8"));
   } catch (err) {
     console.error("[security-store] Yerel güvenlik dosyası okunamadı:", err);
-    return { state: defaultSecurityState() };
+    return defaultSecurityState();
   }
 }
 
+/**
+ * Güvenlik durumunu okur. Veritabanı yapılandırılmışsa okuma hatası yukarı fırlatılır:
+ * boş durumla devam etmek, kayıtlı kullanıcılar varken ilk kurulum şifresini geçerli kılardı.
+ */
 export async function readSecurityState(): Promise<SecurityStateData> {
-  const { state } = await readSecurityWithEtag();
-  return state;
+  if (isDbConfigured()) {
+    const body = await readDocument(SECURITY_DOC_KEY);
+    return body ? decodeSecurityPayload(body) : defaultSecurityState();
+  }
+  return readLocalSecurityState();
 }
 
 export async function mutateSecurityState(
   updater: (current: SecurityStateData) => SecurityStateData
 ): Promise<SecurityStateData> {
-  const { state } = await readSecurityWithEtag();
-  const next = normalizeSecurityState(updater(state));
-  const encoded = encodeSecurityPayload(next);
-
-  if (isBlobConfigured()) {
-    await put(SECURITY_BLOB_PATH, encoded, {
-      access: "public",
-      contentType: "text/plain; charset=utf-8",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      cacheControlMaxAge: 0,
+  if (isDbConfigured()) {
+    return mutateDocument(SECURITY_DOC_KEY, (body) => {
+      const current = body ? decodeSecurityPayload(body) : defaultSecurityState();
+      const next = normalizeSecurityState(updater(current));
+      return { body: encodeSecurityPayload(next), result: next };
     });
-    return next;
   }
 
+  const next = normalizeSecurityState(updater(readLocalSecurityState()));
+  const encoded = encodeSecurityPayload(next);
   const dir = path.dirname(LOCAL_SECURITY_PATH);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });

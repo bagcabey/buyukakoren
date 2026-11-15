@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import { del, get, list, put } from "@vercel/blob";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import {
   decryptServerData,
@@ -8,6 +7,15 @@ import {
   isEncryptedPayload,
   isEncryptionConfigured,
 } from "./crypto";
+import {
+  deleteMessageRow,
+  isDbConfigured,
+  listMessageBodies,
+  mutateDocument,
+  readDocument,
+  readMessageBody,
+  upsertMessageBody,
+} from "./db";
 import { isValidTurkishIban, slugifyTR } from "./format";
 import { CATALOG_GALLERY_PHOTOS } from "./katalog";
 import { DEFAULT_NAV_ITEMS, INITIAL_STORE_DATA } from "./seed";
@@ -29,10 +37,7 @@ const DATA_DIR = path.join(process.cwd(), "data");
 const STORE_PATH = path.join(DATA_DIR, "store.json");
 const LOCAL_MESSAGES_PATH = path.join(DATA_DIR, "messages.enc.json");
 
-const STATE_V2_BLOB_PATH = "store/state-v2.json";
-const LEGACY_STATE_PREFIX = "store/state-";
-const PRIVATE_MSG_PREFIX = "store/private/msg-";
-const LEGACY_MSG_PREFIX = "store/messages/msg-";
+const CONTENT_DOC_KEY = "content";
 
 export class VersionConflictError extends Error {
   public readonly currentVersion: number;
@@ -338,12 +343,12 @@ function normalizeStore(raw: Partial<StoreData> | null | undefined): StoreData {
   };
 }
 
-function encodeMessage(msg: ContactMessage): string {
+export function encodeMessage(msg: ContactMessage): string {
   const json = JSON.stringify(msg);
   return isEncryptionConfigured() ? encryptServerData(json) : json;
 }
 
-function decodeMessage(rawText: string): ContactMessage | null {
+export function decodeMessage(rawText: string): ContactMessage | null {
   try {
     const trimmed = rawText.trim();
     if (!trimmed) return null;
@@ -359,21 +364,14 @@ function decodeMessage(rawText: string): ContactMessage | null {
   }
 }
 
-async function persistEncryptedBlobMessage(msg: ContactMessage): Promise<void> {
-  if (!isBlobConfigured()) return;
+/** Mesajı şifreli olarak veritabanına yazar (aynı kimlik varsa günceller). */
+export async function persistMessage(msg: ContactMessage): Promise<void> {
   if (!isEncryptionConfigured()) {
     throw new Error(
-      "Kritik Güvenlik Hatası: ADMIN_SESSION_SECRET yapılandırılmadan mesajlar Blob üzerine açık metin depolanamaz."
+      "Kritik Güvenlik Hatası: şifreleme anahtarı yapılandırılmadan mesajlar veritabanına açık metin yazılamaz."
     );
   }
-  const encoded = encodeMessage(msg);
-  await put(`${PRIVATE_MSG_PREFIX}${msg.id}.enc`, encoded, {
-    access: "public",
-    contentType: "text/plain; charset=utf-8",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    cacheControlMaxAge: 0,
-  });
+  await upsertMessageBody(msg.id, msg.created_at, encodeMessage(msg));
 }
 
 function mergeMessages(
@@ -415,117 +413,6 @@ function writeLocalEncryptedMessages(messages: ContactMessage[]): void {
   fs.writeFileSync(LOCAL_MESSAGES_PATH, payload, "utf-8");
 }
 
-async function migrateLegacyMessagesFromBlobsAndState(
-  embeddedMessages: ContactMessage[]
-): Promise<void> {
-  if (!isBlobConfigured()) return;
-
-  for (const m of embeddedMessages) {
-    if (m && typeof m.id === "string") {
-      await persistEncryptedBlobMessage(m);
-    }
-  }
-
-  try {
-    const { blobs } = await list({ prefix: LEGACY_MSG_PREFIX, limit: 200 });
-    for (const blob of blobs) {
-      try {
-        const res = await fetch(blob.url, { cache: "no-store" });
-        if (!res.ok) continue;
-        const msg = decodeMessage(await res.text());
-        if (msg) {
-          await persistEncryptedBlobMessage(msg);
-          await del(blob.url);
-        }
-      } catch (err) {
-        console.error("[store] Eski mesaj taşınırken hata:", err);
-      }
-    }
-  } catch (err) {
-    console.error("[store] Eski mesaj listesi okunamadı:", err);
-  }
-}
-
-async function readStateFromBlobWithMeta(): Promise<{
-  state: StoreData;
-  etag?: string;
-}> {
-  const v2 = await get(STATE_V2_BLOB_PATH, {
-    access: "public",
-    useCache: false,
-  });
-
-  if (v2 && v2.statusCode === 200 && v2.stream) {
-    const text = await new Response(v2.stream).text();
-    let parsed: Partial<StoreData>;
-    try {
-      parsed = JSON.parse(text) as Partial<StoreData>;
-    } catch {
-      throw new StoreReadError("Canlı veri dosyası JSON olarak okunamadı.");
-    }
-    return {
-      state: normalizeStore(parsed),
-      etag: v2.blob.etag,
-    };
-  }
-
-  // v2 henüz yoksa eski store/state-*.json dosyalarından en güncel geçerli olanı taşı (eski dosyaları SİLME)
-  const { blobs } = await list({ prefix: LEGACY_STATE_PREFIX, limit: 100 });
-  const sorted = [...blobs]
-    .filter((b) => b.pathname !== STATE_V2_BLOB_PATH)
-    .sort(
-      (a, b) =>
-        new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
-    );
-
-  for (const blob of sorted) {
-    try {
-      const res = await fetch(blob.url, { cache: "no-store" });
-      if (!res.ok) continue;
-      const raw = (await res.json()) as Partial<StoreData>;
-      if (raw && raw.site_settings && Array.isArray(raw.posts)) {
-        const embedded = Array.isArray(raw.contact_messages)
-          ? raw.contact_messages
-          : [];
-        if (embedded.length > 0) {
-          await migrateLegacyMessagesFromBlobsAndState(embedded);
-        }
-        const migrated = normalizeStore(raw);
-        migrated.version = 1;
-        migrated.updated_at = new Date().toISOString();
-        const saved = await put(STATE_V2_BLOB_PATH, JSON.stringify(migrated), {
-          access: "public",
-          contentType: "application/json",
-          addRandomSuffix: false,
-          allowOverwrite: true,
-          cacheControlMaxAge: 60,
-        });
-        return {
-          state: migrated,
-          etag: (saved as { etag?: string }).etag,
-        };
-      }
-    } catch (err) {
-      console.error("[store] Eski blob okuma hatası:", blob.pathname, err);
-    }
-  }
-
-  // İlk kurulum
-  const initial = normalizeStore(cloneInitial());
-  await migrateLegacyMessagesFromBlobsAndState([]);
-  const created = await put(STATE_V2_BLOB_PATH, JSON.stringify(initial), {
-    access: "public",
-    contentType: "application/json",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    cacheControlMaxAge: 60,
-  });
-  return {
-    state: initial,
-    etag: (created as { etag?: string }).etag,
-  };
-}
-
 function readLocalStoreFile(): StoreData {
   try {
     if (fs.existsSync(STORE_PATH)) {
@@ -565,50 +452,22 @@ function readLocalStoreFile(): StoreData {
   }
 }
 
-async function readContentState(): Promise<StoreData> {
-  if (isBlobConfigured()) {
-    try {
-      const { state } = await readStateFromBlobWithMeta();
-      return state;
-    } catch (err) {
-      console.error("[store] Blob veri okuma hatası, yerel/varsayılan veriye dönülüyor:", err);
-      return readLocalStoreFile();
-    }
+function parseContentDocument(body: string | null): StoreData {
+  if (!body) return normalizeStore(cloneInitial());
+  let parsed: Partial<StoreData>;
+  try {
+    parsed = JSON.parse(body) as Partial<StoreData>;
+  } catch {
+    throw new StoreReadError("Kayıtlı site içeriği JSON olarak okunamadı.");
   }
-  return readLocalStoreFile();
+  return normalizeStore(parsed);
 }
 
-async function mutateContentState(
+function nextContentState(
+  current: StoreData,
   updater: (current: StoreData) => StoreData,
   expectedVersion?: number
-): Promise<StoreData> {
-  if (isBlobConfigured()) {
-    const { state } = await readStateFromBlobWithMeta();
-    const currentVersion = state.version ?? 1;
-    if (
-      typeof expectedVersion === "number" &&
-      !Number.isNaN(expectedVersion) &&
-      expectedVersion !== currentVersion
-    ) {
-      throw new VersionConflictError(currentVersion);
-    }
-
-    const updated = normalizeStore(updater(state));
-    updated.version = currentVersion + 1;
-    updated.updated_at = new Date().toISOString();
-    updated.contact_messages = [];
-
-    await put(STATE_V2_BLOB_PATH, JSON.stringify(updated), {
-      access: "public",
-      contentType: "application/json",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      cacheControlMaxAge: 60,
-    });
-    return updated;
-  }
-
-  const current = readLocalStoreFile();
+): StoreData {
   const currentVersion = current.version ?? 1;
   if (
     typeof expectedVersion === "number" &&
@@ -621,6 +480,54 @@ async function mutateContentState(
   updated.version = currentVersion + 1;
   updated.updated_at = new Date().toISOString();
   updated.contact_messages = [];
+  return updated;
+}
+
+async function readContentState(): Promise<StoreData> {
+  if (isDbConfigured()) {
+    try {
+      return parseContentDocument(await readDocument(CONTENT_DOC_KEY));
+    } catch (err) {
+      // Yalnız okuma: ziyaretçi sayfası açık kalsın. Yazmalar kendi kilitli okumalarını yapar,
+      // bu yedek içerik hiçbir zaman veritabanına geri yazılmaz.
+      console.error("[store] Veritabanı okunamadı, varsayılan içerik gösteriliyor:", err);
+      return normalizeStore(cloneInitial());
+    }
+  }
+  return readLocalStoreFile();
+}
+
+/** Ham içerik belgesini (taşıma için) yazar; yalnız henüz hiç düzenlenmemiş veritabanına. */
+export async function importContentStateIfPristine(
+  raw: Partial<StoreData>
+): Promise<boolean> {
+  return mutateDocument(CONTENT_DOC_KEY, (body) => {
+    if (body) {
+      const current = parseContentDocument(body);
+      if ((current.version ?? 1) > 1) {
+        return { body, result: false };
+      }
+    }
+    const imported = normalizeStore(raw);
+    imported.version = Math.max(2, (imported.version ?? 1) + 1);
+    imported.updated_at = new Date().toISOString();
+    imported.contact_messages = [];
+    return { body: JSON.stringify(imported), result: true };
+  });
+}
+
+async function mutateContentState(
+  updater: (current: StoreData) => StoreData,
+  expectedVersion?: number
+): Promise<StoreData> {
+  if (isDbConfigured()) {
+    return mutateDocument(CONTENT_DOC_KEY, (body) => {
+      const updated = nextContentState(parseContentDocument(body), updater, expectedVersion);
+      return { body: JSON.stringify(updated), result: updated };
+    });
+  }
+
+  const updated = nextContentState(readLocalStoreFile(), updater, expectedVersion);
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
@@ -670,7 +577,7 @@ function sortPosts(posts: Post[]): Post[] {
 // ---------- CONTACT MESSAGES (ŞİFRELİ ÖZEL DEPO) ----------
 export async function getContactMessages(): Promise<ContactMessage[]> {
   const sb = getSupabaseAdmin();
-  if (sb && !isBlobConfigured()) {
+  if (sb && !isBlobConfigured() && !isDbConfigured()) {
     const { data, error } = await sb
       .from("contact_messages")
       .select("*")
@@ -682,31 +589,11 @@ export async function getContactMessages(): Promise<ContactMessage[]> {
     }
   }
 
-  if (isBlobConfigured()) {
-    try {
-      await migrateLegacyMessagesFromBlobsAndState([]);
-
-      const { blobs } = await list({ prefix: PRIVATE_MSG_PREFIX, limit: 300 });
-      const loaded = await Promise.all(
-        blobs.map(async (blob) => {
-          try {
-            const res = await fetch(blob.url, { cache: "no-store" });
-            if (!res.ok) return null;
-            return decodeMessage(await res.text());
-          } catch {
-            return null;
-          }
-        })
-      );
-      return loaded
-        .filter((m): m is ContactMessage => m !== null)
-        .sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-    } catch (err) {
-      console.error("[store] Blob iletişim mesajları okunamadı, yerel depoya dönülüyor:", err);
-    }
+  if (isDbConfigured()) {
+    const bodies = await listMessageBodies();
+    return bodies
+      .map((b) => decodeMessage(b))
+      .filter((m): m is ContactMessage => m !== null);
   }
 
   return readLocalEncryptedMessages();
@@ -725,7 +612,7 @@ export async function getAllStoreData(
   includePrivateAndDrafts = false
 ): Promise<StoreData> {
   const sb = getSupabaseAdmin();
-  if (sb && !isBlobConfigured()) {
+  if (sb && !isBlobConfigured() && !isDbConfigured()) {
     const [postsRes, condRes, galRes, boardRes, setRes] = await Promise.all([
       sb
         .from("posts")
@@ -840,7 +727,7 @@ export async function createOrUpdatePost(
   const isPublished = status === "published" && postInput.is_published !== false;
 
   const sb = getSupabaseAdmin();
-  if (sb && !isBlobConfigured()) {
+  if (sb && !isBlobConfigured() && !isDbConfigured()) {
     const id = postInput.id || `post-${Date.now()}`;
     const { data, error } = await sb
       .from("posts")
@@ -940,7 +827,7 @@ export async function deletePost(
   expectedVersion?: number
 ): Promise<void> {
   const sb = getSupabaseAdmin();
-  if (sb && !isBlobConfigured()) {
+  if (sb && !isBlobConfigured() && !isDbConfigured()) {
     const { error } = await sb.from("posts").delete().eq("id", id);
     if (error) {
       console.error("[supabase] post silinemedi:", error.message);
@@ -964,7 +851,7 @@ export async function createCondolence(
 ): Promise<Condolence> {
   const nowIso = new Date().toISOString();
   const sb = getSupabaseAdmin();
-  if (sb && !isBlobConfigured()) {
+  if (sb && !isBlobConfigured() && !isDbConfigured()) {
     const id = input.id || `cond-${Date.now()}`;
     const { data, error } = await sb
       .from("condolences")
@@ -1020,7 +907,7 @@ export async function deleteCondolence(
   expectedVersion?: number
 ): Promise<void> {
   const sb = getSupabaseAdmin();
-  if (sb && !isBlobConfigured()) {
+  if (sb && !isBlobConfigured() && !isDbConfigured()) {
     const { error } = await sb.from("condolences").delete().eq("id", id);
     if (error) {
       console.error("[supabase] taziye silinemedi:", error.message);
@@ -1044,7 +931,7 @@ export async function createGalleryPhoto(
 ): Promise<GalleryPhoto> {
   const nowIso = new Date().toISOString();
   const sb = getSupabaseAdmin();
-  if (sb && !isBlobConfigured()) {
+  if (sb && !isBlobConfigured() && !isDbConfigured()) {
     const id = input.id || `gal-${Date.now()}`;
     const { data, error } = await sb
       .from("gallery_photos")
@@ -1080,7 +967,7 @@ export async function deleteGalleryPhoto(
   expectedVersion?: number
 ): Promise<void> {
   const sb = getSupabaseAdmin();
-  if (sb && !isBlobConfigured()) {
+  if (sb && !isBlobConfigured() && !isDbConfigured()) {
     const { error } = await sb.from("gallery_photos").delete().eq("id", id);
     if (error) {
       console.error("[supabase] galeri silinemedi:", error.message);
@@ -1104,7 +991,7 @@ export async function updateSettingsAndBoard(
   expectedVersion?: number
 ): Promise<StoreData> {
   const sb = getSupabaseAdmin();
-  if (sb && !isBlobConfigured()) {
+  if (sb && !isBlobConfigured() && !isDbConfigured()) {
     if (settingsPartial) {
       const { error } = await sb
         .from("site_settings")
@@ -1295,7 +1182,7 @@ export async function createContactMessage(
   };
 
   const sb = getSupabaseAdmin();
-  if (sb && !isBlobConfigured()) {
+  if (sb && !isBlobConfigured() && !isDbConfigured()) {
     const { data, error } = await sb
       .from("contact_messages")
       .insert(saved)
@@ -1308,8 +1195,8 @@ export async function createContactMessage(
     return data as ContactMessage;
   }
 
-  if (isBlobConfigured()) {
-    await persistEncryptedBlobMessage(saved);
+  if (isDbConfigured()) {
+    await persistMessage(saved);
     return saved;
   }
 
@@ -1323,7 +1210,7 @@ export async function markMessageRead(
   isRead = true
 ): Promise<void> {
   const sb = getSupabaseAdmin();
-  if (sb && !isBlobConfigured()) {
+  if (sb && !isBlobConfigured() && !isDbConfigured()) {
     const { error } = await sb
       .from("contact_messages")
       .update({ is_read: isRead })
@@ -1335,15 +1222,12 @@ export async function markMessageRead(
     return;
   }
 
-  if (isBlobConfigured()) {
-    const blobPath = `${PRIVATE_MSG_PREFIX}${id}.enc`;
-    const existing = await get(blobPath, { access: "public", useCache: false });
-    if (existing && existing.statusCode === 200 && existing.stream) {
-      const msg = decodeMessage(await new Response(existing.stream).text());
-      if (msg) {
-        msg.is_read = isRead;
-        await persistEncryptedBlobMessage(msg);
-      }
+  if (isDbConfigured()) {
+    const body = await readMessageBody(id);
+    const msg = body ? decodeMessage(body) : null;
+    if (msg) {
+      msg.is_read = isRead;
+      await persistMessage(msg);
     }
     return;
   }
@@ -1357,7 +1241,7 @@ export async function markMessageRead(
 
 export async function deleteContactMessage(id: string): Promise<void> {
   const sb = getSupabaseAdmin();
-  if (sb && !isBlobConfigured()) {
+  if (sb && !isBlobConfigured() && !isDbConfigured()) {
     const { error } = await sb.from("contact_messages").delete().eq("id", id);
     if (error) {
       console.error("[supabase] mesaj silinemedi:", error.message);
@@ -1366,8 +1250,8 @@ export async function deleteContactMessage(id: string): Promise<void> {
     return;
   }
 
-  if (isBlobConfigured()) {
-    await del(`${PRIVATE_MSG_PREFIX}${id}.enc`);
+  if (isDbConfigured()) {
+    await deleteMessageRow(id);
     return;
   }
 

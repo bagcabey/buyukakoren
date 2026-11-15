@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Yönetici kimlik doğrulama yapılandırması eksik. Sunucuda ADMIN_PASSWORD ve ADMIN_SESSION_SECRET tanımlanmalıdır.",
+            "Henüz yönetici hesabı yok ve ilk kurulum şifresi tanımlı değil. Sunucuda ADMIN_PASSWORD tanımlanmalıdır.",
         },
         { status: 503 }
       );
