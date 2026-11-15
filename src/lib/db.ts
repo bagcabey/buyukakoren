@@ -6,8 +6,26 @@ import { Pool, PoolClient } from "pg";
  * `contact_messages` tablosunda satır satır tutulur. Blob yalnız görsel dosyaları içindir.
  */
 
-const DATABASE_URL =
-  process.env.DATABASE_URL?.trim() || process.env.POSTGRES_URL?.trim() || "";
+/**
+ * Uzak veritabanında sertifika ve sunucu adı her zaman doğrulanır (sslmode=verify-full).
+ * Neon adresi `sslmode=require` ile gelir; pg 8 bunu zaten verify-full sayar ama v9'da anlamı
+ * zayıflayacak, bu yüzden açıkça yükseltilir. Yerel (localhost) adreslere dokunulmaz.
+ */
+function withStrictSsl(raw: string): string {
+  if (!raw) return raw;
+  try {
+    const url = new URL(raw);
+    if (["localhost", "127.0.0.1", "::1"].includes(url.hostname)) return raw;
+    url.searchParams.set("sslmode", "verify-full");
+    return url.toString();
+  } catch {
+    return raw;
+  }
+}
+
+const DATABASE_URL = withStrictSsl(
+  process.env.DATABASE_URL?.trim() || process.env.POSTGRES_URL?.trim() || ""
+);
 
 export function isDbConfigured(): boolean {
   return DATABASE_URL.length > 0;
